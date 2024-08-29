@@ -1,0 +1,114 @@
+.containPage {
+    padding: 20px 30px;
+  
+    .contentPage {
+      padding: 0px 20px 20px 20px;
+      border-radius: 10px;
+      background-color: #70c2b4;
+    }
+  
+    .timeOrder {
+      margin: auto 0 auto auto;
+      color: #8b8787;
+      font-size: 15px;
+    }
+  
+    .statusOrderDeny,
+    .statusOrderWait,
+    .statusOrderSuccess {
+      border-radius: 5px;
+      font-size: 14px;
+      width: 100px;
+      height: 35px;
+      margin: auto;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+    }
+  
+    .statusOrderWait {
+      border: 1px solid #007bff;
+      color: #007bff;
+    }
+  
+    .statusOrderDeny {
+      background-color: rgba(223, 17, 17, 0.7);
+      color: #fff;
+    }
+  
+    .statusOrderSuccess {
+      color: #ffffff;
+      background-color: rgba(63, 190, 63, 0.7);
+    }
+  }
+  
+  .seletcSize {
+    background-color: orange;
+    color: white;
+    // padding: 5px 0px;
+    margin-bottom: 5px;
+    border: none;
+    outline: none;
+    text-align: center;
+    border-radius: 10px;
+  }
+  
+  .numberCup {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+  
+    .btnquantity {
+      width: 20px;
+      height: 20px;
+      margin: auto 4px;
+      border-radius: 50%;
+      border: none;
+      background-color: #c9bdbd6c;
+      box-shadow: 0px 3px 5px #a78f8f;
+      transition: 0.5s;
+    }
+  
+    .btnquantity:active {
+      transform: scale(1.5);
+    }
+  
+    .quantity {
+      width: 40px;
+      height: 25px;
+      text-align: center;
+      background-color: transparent;
+      border: none;
+      outline: none;
+    }
+  }
+  
+  .inputNumberCup {
+    border: none;
+    outline: none;
+  }
+  
+  .orderEmpty {
+    margin: 20px auto;
+  }
+  
+  .orderEmpty img {
+    width: 200px;
+  }
+  
+  .orderEmpty p {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  td {
+    width: 25%;
+    text-align: center;
+  }

@@ -115,7 +115,7 @@ export default {
 }
 
 .btn-light:hover {
-    background-color: #333;
+    background-color: #d00d0d;
     color: #fff;
     border: 2px solid #fff;
     transform: scale(1.1);

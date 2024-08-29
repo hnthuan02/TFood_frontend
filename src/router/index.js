@@ -6,9 +6,14 @@ import store from "@/store";
 import HomePageOrgan from "@/views/PageOrgan/HomePage/HomePage.vue";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
+import Menu from "../views/Menu/Menu.vue";
 import Login from "../views/User/LoginUser/Login.vue";
 import RegisterUser from "../views/User/RegisterUser/Register.vue";
 const routes = [
+  {
+    path: "/",
+    redirect: "/TFood", // Thêm route mặc định này
+  },
   {
     path: "/user/signup",
     component: RegisterUser,
@@ -24,7 +29,7 @@ const routes = [
     },
   },
   {
-    path: "/user/home",
+    path: "/TFood",
     component: HomePageUser,
     meta: {
       layout: LoginLayout,
@@ -33,6 +38,13 @@ const routes = [
   {
     path: "/home",
     component: HomePageOrgan,
+    meta: {
+      layout: UserLayout,
+    },
+  },
+  {
+    path: "/menu",
+    component: Menu,
     meta: {
       layout: UserLayout,
     },

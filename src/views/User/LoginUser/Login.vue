@@ -27,7 +27,7 @@
                   <label for="form3Example2" class="text-danger">Mật khẩu</label>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
-                  <a href="/user/signup" class="btn btn-link text-danger">Đã có tài khoản?</a>
+                  <a href="/user/signup" class="btn btn-link text-danger">Chưa có tài khoản?</a>
                   <a href="#" class="btn btn-link text-danger" data-bs-toggle="modal"
                     data-bs-target="#forgotPasswordModal">Quên mật khẩu?</a>
                 </div>

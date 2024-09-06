@@ -13,7 +13,7 @@
           <ul class="navbar-nav me-auto">
             <li class="nav-item"><a class="nav-link active" href="/TFood">Trang Chủ</a></li>
             <li class="nav-item"><a class="nav-link" href="about-us.html">Giới Thiệu</a></li>
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown hover-dropdown">
               <a class="nav-link dropdown-toggle" href="menu" role="button" data-bs-toggle="dropdown"
                 aria-expanded="false">
                 Thực Đơn
@@ -197,12 +197,23 @@ header {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 
             .dropdown-item {
-              color: #f70a0a;
+              color: #020000;
               transition: background-color 0.3s;
 
               &:hover {
-                background-color: #f5988d;
-                color: white;
+                //background-color: #f5988d;
+                color: rgb(248, 5, 5);
+
+              }
+
+              .dropdown-item img {
+                transition: transform 0.5s ease, filter 0.5s ease;
+              }
+
+              &:hover img {
+                transition: transform 0.5s ease, filter 0.5s ease;
+                transform: scale(1.5);
+                filter: brightness(90%);
               }
             }
           }

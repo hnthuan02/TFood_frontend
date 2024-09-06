@@ -18,14 +18,16 @@
                 <div id="carouselExampleCaptions" class="carousel slide">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="...">
+                            <img src="../../../assets/jolli_saver_banner_web_4142x1713_px-01.jpg" class="d-block w-100"
+                                alt="...">
                             <div class="carousel-caption d-none d-md-block">
                                 <h5>Sản phẩm 1</h5>
                                 <p>Đây là mô tả sản phẩm 1.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="...">
+                            <img src="../../../assets/jolli_saver_banner_web_4142x1713_px-01.jpg" class="d-block w-100"
+                                alt="...">
                             <div class="carousel-caption d-none d-md-block">
                                 <h5>Sản phẩm 2</h5>
                                 <p>Đây là mô tả sản phẩm 2.</p>
@@ -106,8 +108,8 @@ export default {
 
 .btn-light {
     background-color: #fff;
-    color: #333;
-    border: 2px solid #333;
+    color: #ed0909;
+    border: 2px solid #d61a1a;
     transition: all 0.3s ease;
     padding: 10px 20px;
     border-radius: 5px;

@@ -93,99 +93,95 @@
 </template>
 
 <script>
-import axiosClient from '../../../api/axiosClient';
+import axiosClient from '../../../api/axiosClient'; // Import file cấu hình Axios
 
 export default {
-  data() {
-    return {
-      FULLNAME: "",
-      EMAIL: "",
-      ADDRESS: "",
-      PHONE_NUMBER: "",
-      PASSWORD: "",
-      confirmPassword: "",
-      errors: {},
-      showPassword: false,
-      showConfirmPassword: false,
-      otp: "",
-      otpErrors: {},
-    };
-  },
-  methods: {
-    async handleSubmit() {
-      this.errors = {};
-
-      if (this.PASSWORD !== this.confirmPassword) {
-        this.errors.confirmPassword = "Mật khẩu không khớp!";
-        return;
-      }
-
-      try {
-        const response = await axiosClient.post("/users/registerUser", {
-          FULLNAME: this.FULLNAME,
-          ADDRESS: this.ADDRESS,
-          EMAIL: this.EMAIL,
-          PHONE_NUMBER: this.PHONE_NUMBER,
-          PASSWORD: this.PASSWORD,
-        });
-
-        if (response.data.success) {
-          alert("Đăng ký người dùng thành công!");
-          const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
-          otpModal.show();
-        } else if (response.data.errors) {
-          this.errors = response.data.errors;
-        }
-      } catch (error) {
-        if (error.response && error.response.data.errors) {
-          this.errors = error.response.data.errors;
-        } else {
-          console.error("Error registering user:", error);
-          alert("Đã xảy ra lỗi khi đăng ký!");
-        }
-      }
+    data() {
+        return {
+            FULLNAME: "",
+            EMAIL: "",
+            PHONE_NUMBER: "",
+            PASSWORD: "",
+            confirmPassword: "",
+            agreedToTerms: false,
+            errors: {}, // Đối tượng lưu lỗi
+            showPassword: false, // Hiển thị mật khẩu
+            showConfirmPassword: false, // Hiển thị xác nhận mật khẩu
+            showOtpForm: false, // Hiển thị form nhập OTP sau khi đăng ký thành công
+            otp: "", // Biến lưu mã OTP nhập từ người dùng
+            otpErrors: {}, // Đối tượng lưu lỗi cho OTP
+        };
     },
+    methods: {
+        async handleSubmit() {
+            this.errors = {}; // Reset lỗi trước khi gửi yêu cầu
 
-    async verifyOtp() {
-      this.otpErrors = {};
+            // Kiểm tra mật khẩu và xác nhận mật khẩu
+            if (this.PASSWORD !== this.confirmPassword) {
+                this.errors.confirmPassword = "Mật khẩu không khớp!";
+                return;
+            }
 
-      try {
-        const response = await axiosClient.post("/users/verifyUserByOTP", {
-          email: this.EMAIL,
-          otp: this.otp,
-        });
+            try {
+                const response = await axiosClient.post("/users/registerUser", {
+                    FULLNAME: this.FULLNAME,
+                    EMAIL: this.EMAIL,
+                    PHONE_NUMBER: this.PHONE_NUMBER,
+                    PASSWORD: this.PASSWORD,
+                });
 
-        if (response.data.success) {
-          //alert("Xác thực thành công!");
-          //location.reload();
-          this.$router.push('/user/login');
-          setTimeout(() => {
-            location.reload();
-          }, 400);
-        } else if (response.data.errors) {
-          this.otpErrors = response.data.errors;
-        }
-      } catch (error) {
-        if (error.response && error.response.data.errors) {
-          this.otpErrors = error.response.data.errors;
-        } else {
-          console.error("Error verifying OTP:", error);
-          alert("Đã xảy ra lỗi khi xác thực mã OTP!");
-        }
-      }
+                if (response.data.success) {
+                    alert("Đăng ký người dùng thành công!")
+                    this.showOtpForm = true; // Hiển thị form nhập OTP
+                } else if (response.data.errors) {
+                    this.errors = response.data.errors; // Gán lỗi từ backend vào đối tượng errors
+                }
+            } catch (error) {
+                if (error.response && error.response.data.errors) {
+                    this.errors = error.response.data.errors; // Cập nhật lỗi cho từng trường
+                } else {
+                    console.error("Error registering user:", error);
+                    alert("Đã xảy ra lỗi khi đăng ký!");
+                }
+            }
+        },
+
+        async verifyOtp() {
+            this.otpErrors = {}; // Reset lỗi trước khi gửi yêu cầu
+
+            try {
+                const response = await axiosClient.post("/users/verifyUserByOTP", {
+                    email: this.EMAIL,
+                    otp: this.otp,
+                });
+
+                if (response.data.success) {
+                    alert("Xác thực thành công!");
+                    this.$router.push('/user/login');
+                } else if (response.data.errors) {
+                    this.otpErrors = response.data.errors; // Gán lỗi từ backend vào đối tượng otpErrors
+                }
+            } catch (error) {
+                if (error.response && error.response.data.errors) {
+                    this.otpErrors = error.response.data.errors; // Cập nhật lỗi cho từng trường
+                } else {
+                    console.error("Error verifying OTP:", error);
+                    alert("Đã xảy ra lỗi khi xác thực mã OTP!");
+                }
+            }
+        },
+
+        togglePasswordVisibility(field) {
+            if (field === "PASSWORD") {
+                this.showPassword = !this.showPassword;
+            } else if (field === "confirmPassword") {
+                this.showConfirmPassword = !this.showConfirmPassword;
+            }
+        },
     },
-
-    togglePasswordVisibility(field) {
-      if (field === "PASSWORD") {
-        this.showPassword = !this.showPassword;
-      } else if (field === "confirmPassword") {
-        this.showConfirmPassword = !this.showConfirmPassword;
-      }
-    },
-  },
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "./RegisterUser.scss";
 </style>

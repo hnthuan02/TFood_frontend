@@ -46,12 +46,11 @@ export default {
     padding: 10px;
     transition: background-color 0.3s, color 0.3s;
     text-decoration: none;
-    color: #fc0808;
+    color: #100101;
     /* Màu chữ mặc định */
 }
 
 .dropdown-item:hover {
-    background-color: #eb2b09;
     color: #fff;
 }
 

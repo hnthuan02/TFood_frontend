@@ -15,7 +15,7 @@ export default {
     data() {
         return {
             categories: [
-                { id: 1, name: 'Món Ngon Phải Thử', url: '/mon-moi-mon-ngon.html', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
+                { id: 1, name: 'Món Ngon Phải Thử', url: '/menu', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
                 { id: 2, name: 'Gà Giòn Vui Vẻ', url: '/ga-gion-vui-ve.html', image: 'https://jollibee.com.vn//media/catalog/category/web-05_1.png' },
                 { id: 3, name: 'Mì Ý Jolly', url: '/mi-y-sot-bo-bam.html', image: 'https://jollibee.com.vn//media/catalog/category/web-06.png' },
                 { id: 4, name: 'Burger', url: '/burger-com.html', image: 'https://jollibee.com.vn//media/catalog/category/cat_burger_1.png' },

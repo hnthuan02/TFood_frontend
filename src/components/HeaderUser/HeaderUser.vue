@@ -1,5 +1,5 @@
 <template>
-  <header>
+  <header :class="headerClass">
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container">
         <a class="navbar-brand logo" href="/TFood">
@@ -41,7 +41,14 @@
             <li class="nav-item ms-2" v-if="!isLoggedIn">
               <a class="btn btn-outline-danger" href="/user/signup">Đăng ký</a>
             </li>
-            <li class="nav-item ms-2" v-if="isLoggedIn">
+            <li class="nav-item" v-else="isLoggedIn">
+              <span class="username text-danger">{{ userInfo.FULLNAME || 'User' }}</span>
+            </li>
+            <li class="nav-item d-flex align-items-center" v-else="isLoggedIn">
+              <div class="avatar me-2">
+                {{ getInitials(userInfo.FULLNAME) }}
+              </div>
+              <span class="username text-danger me-3">{{ userInfo.FULLNAME || 'User' }}</span>
               <a class="btn btn-danger" href="#" @click="logout">Đăng xuất</a>
             </li>
           </ul>
@@ -52,21 +59,22 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from 'vuex';
 import MenuCategory from './MenuCategory.vue';
 
 export default {
   name: 'HeaderComponent',
-
   components: {
     MenuCategory
   },
-
-  data() {
-    return {
-      isLoggedIn: false // Giả lập trạng thái đăng nhập, cập nhật trạng thái này theo logic thực tế của bạn
-    };
+  computed: {
+    ...mapGetters(['isLoggedIn', 'userInfo']),
+    headerClass() {
+      return this.$route.path === '/menu/best-seller' ? 'header absolute' : 'header sticky';
+    }
   },
   methods: {
+    ...mapActions(['logout']),
     toggleNavbar() {
       const collapseElement = document.getElementById('navbarSupportedContent');
       const bsCollapse = new bootstrap.Collapse(collapseElement, {
@@ -78,13 +86,10 @@ export default {
         bsCollapse.show();
       }
     },
-    logout() {
-      // Xử lý logic đăng xuất ở đây
-      console.log('User logged out');
-      this.isLoggedIn = false; // Cập nhật trạng thái đăng nhập
-    },
-    navigateToMenu() {
-      window.location.href = '/menu'; // Điều hướng đến trang /menu
+    getInitials(fullName) {
+      if (!fullName) return '';
+      const names = fullName.trim().split(' ');
+      return names.length > 1 ? names[names.length - 1][0].toUpperCase() : fullName[0].toUpperCase();
     }
   }
 };
@@ -93,175 +98,6 @@ export default {
 
 
 
-
 <style lang="scss">
-header {
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1000;
-  transition: background 0.4s ease-in-out;
-
-  .navbar {
-    padding: 10px 0;
-    //background: linear-gradient(to right, #ffffff 70%, #ee4545 30%);
-    position: relative;
-
-    .container {
-      display: flex;
-      justify-content: space-evenly;
-      align-items: center;
-
-      .logo img {
-        height: 50px;
-      }
-
-      .navbar-toggler {
-        border: none;
-        background: transparent;
-
-        .navbar-toggler-icon {
-          display: block;
-          width: 30px;
-          height: 3px;
-          background-color: #333;
-          position: relative;
-
-          &:before,
-          &:after {
-            content: '';
-            display: block;
-            width: 30px;
-            height: 3px;
-            background-color: #333;
-            position: absolute;
-            left: 0;
-            transition: transform 0.3s ease;
-          }
-
-          &:before {
-            top: -8px;
-          }
-
-          &:after {
-            top: 8px;
-          }
-        }
-      }
-
-      .navbar-collapse {
-        .navbar-nav {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-
-          .nav-item {
-            position: relative;
-
-            .nav-link {
-              color: #333;
-              padding: 10px 15px;
-              border-radius: 5px;
-              transition: color 0.3s, background-color 0.3s;
-              overflow: hidden;
-              display: inline-block;
-
-              &:hover {
-                color: #fff;
-                background-color: #f80000;
-              }
-
-              &:hover::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
-                border-radius: 5px;
-                box-sizing: border-box;
-                transition: opacity 0.3s;
-                opacity: 1;
-                pointer-events: none;
-              }
-            }
-          }
-
-          .dropdown-menu {
-            background-color: #ffffff;
-            border: 1px solid #e3e3e3;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-
-            .dropdown-item {
-              color: #020000;
-              transition: background-color 0.3s;
-
-              &:hover {
-                //background-color: #f5988d;
-                color: rgb(248, 5, 5);
-
-              }
-
-              .dropdown-item img {
-                transition: transform 0.5s ease, filter 0.5s ease;
-              }
-
-              &:hover img {
-                transition: transform 0.5s ease, filter 0.5s ease;
-                transform: scale(1.5);
-                filter: brightness(90%);
-              }
-            }
-          }
-        }
-      }
-
-      .nav-item .btn {
-        padding: 8px 15px;
-        border-radius: 25px;
-        font-weight: 500;
-        transition: background-color 0.3s ease, color 0.3s ease;
-
-        &:hover {
-          color: #050000;
-          background-color: #f0f0f0;
-        }
-
-        &.btn-outline-primary {
-          color: #007bff;
-          border-color: #007bff;
-
-          &:hover {
-            background-color: #ff6200;
-            color: #ffffff;
-          }
-        }
-
-        &.btn-primary {
-          background-color: #e93d09;
-          color: #fff;
-
-          &:hover {
-            background-color: #c75205;
-          }
-        }
-
-        &.btn-outline-danger {
-          background-color: #fff7f8;
-          color: #170101;
-
-          &:hover {
-            color: #ffffff;
-            background-color: #ee0808;
-          }
-        }
-      }
-    }
-  }
-
-}
+@import "./HeaderUser.scss";
 </style>

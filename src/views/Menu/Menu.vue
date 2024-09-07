@@ -1,17 +1,12 @@
 <template>
     <div class="mon-moi-mon-ngon">
-        <!-- Header -->
-
+        <!-- MenuCategory -->
+        <section class="menu-category">
+            <MenuCategory />
+        </section>
 
         <!-- Main Content -->
         <main>
-            <section class="hero">
-                <div class="container">
-                    <h1>Chào Mừng Bạn Đến Với Jollibee</h1>
-                    <p>Khám Phá Các Món Mới Ngon Miệng</p>
-                </div>
-            </section>
-
             <section class="new-dishes">
                 <div class="container">
                     <h2>Món Mới</h2>
@@ -25,25 +20,26 @@
                 </div>
             </section>
         </main>
-
-        <!-- Footer -->
-        <footer>
-            <div class="container">
-                <p>&copy; 2024 Jollibee Vietnam. All rights reserved.</p>
-            </div>
-        </footer>
     </div>
 </template>
 
 <script>
+import MenuCategory from './MenuCategory.vue'; // Import component
+
 export default {
     name: 'MonMoiMonNgon',
+    components: {
+        MenuCategory
+    },
     data() {
         return {
-            isLoggedIn: false, // Giả lập trạng thái đăng nhập
             dishes: [
-                { id: 1, name: 'Món 1', description: 'Mô tả món 1', image: '@/assets/dish1.jpg' },
-                { id: 2, name: 'Món 2', description: 'Mô tả món 2', image: '@/assets/dish2.jpg' },
+                { id: 1, name: 'Món 1', description: 'Mô tả món 1', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
+                { id: 2, name: 'Món 2', description: 'Mô tả món 2', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
+                { id: 1, name: 'Món 1', description: 'Mô tả món 1', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
+                { id: 2, name: 'Món 2', description: 'Mô tả món 2', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
+                { id: 1, name: 'Món 1', description: 'Mô tả món 1', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
+                { id: 2, name: 'Món 2', description: 'Mô tả món 2', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
                 // Thêm các món khác
             ],
         };
@@ -71,24 +67,8 @@ export default {
 
 <style lang="scss">
 .mon-moi-mon-ngon {
-
     /* Basic styles for the page */
-    .hero {
-        background: url('@/assets/hero-bg.jpg') no-repeat center center;
-        background-size: cover;
-        color: #fff;
-        text-align: center;
-        padding: 60px 0;
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-        }
-
-        p {
-            font-size: 1.25rem;
-        }
-    }
 
     .new-dishes {
         padding: 60px 0;
@@ -120,12 +100,6 @@ export default {
                 }
             }
         }
-    }
-
-    footer {
-        background: #eee;
-        padding: 20px 0;
-        text-align: center;
     }
 }
 </style>

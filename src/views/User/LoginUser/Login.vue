@@ -1,5 +1,5 @@
 <template>
-  <section class="text-center">
+  <section class="my text-center">
     <div class="container py-5">
       <div class="row justify-content-center align-items-stretch form-banner-row">
         <!-- Banner -->
@@ -133,26 +133,24 @@ export default {
       otpResetPass: '' // Biến để lưu giá trị OTP nhập vào
     };
   },
-  mounted() {
-    this.syncBannerHeight();
-    window.addEventListener('resize', this.syncBannerHeight);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.syncBannerHeight);
-  },
+  // mounted() {
+  //   this.syncBannerHeight();
+  //   window.addEventListener('resize', this.syncBannerHeight);
+  // },
+  // beforeDestroy() {
+  //   window.removeEventListener('resize', this.syncBannerHeight);
+  // },
   methods: {
     ...mapActions(['login']),
     async handleSubmit() {
-      // Kiểm tra giá trị đầu vào để xác định là email hay số điện thoại
       const isEmail = this.identifier.includes('@');
       const payload = {
         [isEmail ? 'EMAIL' : 'PHONE_NUMBER']: this.identifier,
         PASSWORD: this.password,
       };
       try {
-        // const result = await this.$store.dispatch('login', payload);
         await this.login(payload);
-
+        localStorage.setItem('isLoggedIn', 'true');
       } catch (error) {
         this.$message.error(
           error.response?.data?.message || "Đăng nhập thất bại!"
@@ -220,10 +218,10 @@ export default {
         }
       }
     },
-    syncBannerHeight() {
-      const formHeight = this.$refs.formCard.clientHeight;
-      this.$refs.bannerContainer.style.height = `${formHeight}px`;
-    }
+    // syncBannerHeight() {
+    //   const formHeight = this.$refs.formCard.clientHeight;
+    //   this.$refs.bannerContainer.style.height = `${formHeight}px`;
+    // }
   }
 };
 </script>

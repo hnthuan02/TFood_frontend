@@ -52,8 +52,10 @@ const store = createStore({
     },
     async logout({ commit }) {
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("isLoggedIn");
       commit("LOGOUT");
       message.success("Đã đăng xuất thành công!");
+      router.push("/user/login");
     },
     async checkToken({ commit }) {
       const token = localStorage.getItem("accessToken");
@@ -67,6 +69,7 @@ const store = createStore({
           if (response.status >= 200 && response.status < 300) {
             const userInfo = response.data;
             commit("SET_USER_INFO", userInfo);
+            console.log("User Info:", userInfo);
 
             // Redirect based on user role
             if (

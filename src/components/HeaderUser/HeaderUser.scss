@@ -1,0 +1,194 @@
+header {
+  background-color: #f9a9a9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: background 0.4s ease-in-out;
+  &.absolute {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  &.sticky {
+    position: sticky;
+    top: 0;
+  }
+  .navbar {
+    padding: 10px 0;
+    //background: linear-gradient(to right, #ffffff 70%, #ee4545 30%);
+    position: relative;
+
+    .container {
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+
+      .logo img {
+        height: 100px;
+      }
+
+      .navbar-toggler {
+        border: none;
+        background: transparent;
+
+        .navbar-toggler-icon {
+          display: block;
+          width: 30px;
+          height: 3px;
+          background-color: #333;
+          position: relative;
+
+          &:before,
+          &:after {
+            content: "";
+            display: block;
+            width: 30px;
+            height: 3px;
+            background-color: #333;
+            position: absolute;
+            left: 0;
+            transition: transform 0.3s ease;
+          }
+
+          &:before {
+            top: -8px;
+          }
+
+          &:after {
+            top: 8px;
+          }
+        }
+      }
+
+      .navbar-collapse {
+        .navbar-nav {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+
+          .nav-item {
+            position: relative;
+
+            .nav-link {
+              color: #333;
+              padding: 10px 15px;
+              border-radius: 5px;
+              transition: color 0.3s, background-color 0.3s;
+              overflow: hidden;
+              display: inline-block;
+
+              &:hover {
+                color: #fff;
+                background-color: #f80000;
+              }
+
+              &:hover::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+                border-radius: 5px;
+                box-sizing: border-box;
+                transition: opacity 0.3s;
+                opacity: 1;
+                pointer-events: none;
+              }
+            }
+          }
+
+          .dropdown-menu {
+            background-color: #ffffff;
+            border: 1px solid #e3e3e3;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+            .dropdown-item {
+              color: #020000;
+              transition: background-color 0.3s;
+
+              &:hover {
+                //background-color: #f5988d;
+                color: rgb(248, 5, 5);
+              }
+
+              .dropdown-item img {
+                transition: transform 0.5s ease, filter 0.5s ease;
+              }
+
+              &:hover img {
+                transition: transform 0.5s ease, filter 0.5s ease;
+                transform: scale(1.5);
+                filter: brightness(90%);
+              }
+            }
+          }
+        }
+      }
+
+      .nav-item .btn {
+        padding: 8px 15px;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: background-color 0.3s ease, color 0.3s ease;
+
+        &:hover {
+          color: #050000;
+          background-color: #f0f0f0;
+        }
+
+        &.btn-outline-primary {
+          color: #007bff;
+          border-color: #007bff;
+
+          &:hover {
+            background-color: #ff6200;
+            color: #ffffff;
+          }
+        }
+
+        &.btn-primary {
+          background-color: #e93d09;
+          color: #fff;
+
+          &:hover {
+            background-color: #c75205;
+          }
+        }
+
+        &.btn-outline-danger {
+          background-color: #fff7f8;
+          color: #170101;
+
+          &:hover {
+            color: #ffffff;
+            background-color: #ee0808;
+          }
+        }
+      }
+    }
+  }
+
+  .navbar-nav .nav-item .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ee4545; // Màu nền của avatar
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-right: 10px;
+  }
+
+  .navbar-nav .nav-item .username {
+    font-weight: 500;
+  }
+}

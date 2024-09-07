@@ -7,7 +7,6 @@
             <div class="container-top">
                 <h1 class="display-4 ">Chào mừng đến với TFOOD</h1>
                 <p class="lead">Khám phá các món ăn ngon và ưu đãi hấp dẫn của chúng tôi</p>
-                <a href="#" class="btn btn-light btn-lg">Đặt Món Ngay</a>
             </div>
         </section>
 
@@ -65,14 +64,7 @@
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="footer bg-dark text-white text-center py-3">
-            <div class="container">
-                <p>&copy; 2024 KFC Vietnam. All rights reserved.</p>
-                <p><a href="#" class="text-white">Chính sách bảo mật</a> | <a href="#" class="text-white">Điều khoản sử
-                        dụng</a></p>
-            </div>
-        </footer>
+
     </div>
 </template>
 
@@ -169,14 +161,5 @@ export default {
 /* About Section Styles */
 .about {
     padding: 2rem 0;
-}
-
-/* Footer Styles */
-.footer {
-    background-color: #343a40;
-}
-
-.footer p {
-    margin: 0;
 }
 </style>

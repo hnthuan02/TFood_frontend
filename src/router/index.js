@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-import UserLayout from "../layouts/UserLayout/UserLayout.vue";
-
 import store from "@/store";
-import HomePageOrgan from "@/views/PageOrgan/HomePage/HomePage.vue";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
@@ -35,18 +32,12 @@ const routes = [
       layout: LoginLayout,
     },
   },
+
   {
-    path: "/home",
-    component: HomePageOrgan,
-    meta: {
-      layout: UserLayout,
-    },
-  },
-  {
-    path: "/menu",
+    path: "/menu/best-seller",
     component: Menu,
     meta: {
-      layout: UserLayout,
+      layout: LoginLayout,
     },
   },
 ];

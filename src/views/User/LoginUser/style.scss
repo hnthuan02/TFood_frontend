@@ -1,8 +1,16 @@
 /* Đảm bảo phần banner và form có chiều cao bằng nhau */
+.my {
+  background-color: #ffffff;
+}
+
 .form-banner-row {
   display: flex;
   align-items: stretch;
   height: 100vh;
+}
+
+.card-body {
+  background: #ffffff;
 }
 
 .banner-container {
@@ -21,6 +29,7 @@
   width: 100%;
   max-width: 100%;
   height: 100%;
+  background-color: white;
 }
 
 /* Custom styles for input focus effects */

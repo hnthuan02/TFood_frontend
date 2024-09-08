@@ -24,10 +24,10 @@ header {
     .container {
       display: flex;
       justify-content: space-evenly;
-      align-items: center;
+      align-items: bottom;
 
       .logo img {
-        height: 100px;
+        height: 70px;
       }
 
       .navbar-toggler {

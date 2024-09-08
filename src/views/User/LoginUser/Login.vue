@@ -37,7 +37,7 @@
                 <div class="text-center mb-4">
                   <p class="text-muted">hoặc đăng nhập bằng:</p>
                   <div class="d-grid mb-4">
-                    <button type="button" class="btn btn-google rounded-pill mb-2">
+                    <button type="button" class="btn btn-google rounded-pill mb-2 btn-block">
                       <i class="fab fa-google"></i> Google
                     </button>
                   </div>
@@ -59,7 +59,6 @@
       </div>
     </div>
 
-    <!-- Forgot Password Modal -->
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel"
       aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -76,7 +75,6 @@
                 <label for="forgotPasswordEmail" class="text-danger">Nhập email của bạn</label>
               </div>
 
-              <!-- Trường OTP xuất hiện ngay dưới ô nhập email khi showOtpField là true -->
               <div v-if="showOtpField" class="form-floating mb-4">
                 <input type="text" v-model="otpResetPass" class="form-control border-danger" id="otpInput"
                   placeholder=" " required>
@@ -126,20 +124,14 @@ export default {
       currentEmail: '',
       newPassword: '',
       confirmNewPassword: '',
-      forgotPasswordEmail: '', // Email nhập vào trong modal quên mật khẩu
-      showOtpField: false, // Biến để kiểm soát việc hiển thị trường OTP
+      forgotPasswordEmail: '',
+      showOtpField: false,
       showNewPasswordField: false,
       showConfirmNewPasswordField: false,
-      otpResetPass: '' // Biến để lưu giá trị OTP nhập vào
+      otpResetPass: ''
     };
   },
-  // mounted() {
-  //   this.syncBannerHeight();
-  //   window.addEventListener('resize', this.syncBannerHeight);
-  // },
-  // beforeDestroy() {
-  //   window.removeEventListener('resize', this.syncBannerHeight);
-  // },
+
   methods: {
     ...mapActions(['login']),
     async handleSubmit() {
@@ -218,10 +210,7 @@ export default {
         }
       }
     },
-    // syncBannerHeight() {
-    //   const formHeight = this.$refs.formCard.clientHeight;
-    //   this.$refs.bannerContainer.style.height = `${formHeight}px`;
-    // }
+
   }
 };
 </script>

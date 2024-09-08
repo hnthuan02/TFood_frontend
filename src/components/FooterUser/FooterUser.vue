@@ -48,6 +48,7 @@ export default {
     /* Màu đỏ chủ đạo */
     color: #ffffff;
     padding: 20px 0;
+    margin-bottom: 0;
 }
 
 .footer-content {

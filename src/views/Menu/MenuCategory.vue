@@ -1,11 +1,10 @@
 <template>
-    <div class="menu-category">
+    <div :class="['menu-category', isScrolled ? 'scrolled' : '']">
         <div class="container">
             <div class="menu-item" v-for="category in categories" :key="category.id">
                 <a :href="category.url">{{ category.name }}
                     <img :src="category.image" class="thumbnail" width="100px" />
                 </a>
-
             </div>
         </div>
     </div>
@@ -23,8 +22,21 @@ export default {
                 { id: 4, name: 'Burger', url: '/burger-com.html', image: 'https://jollibee.com.vn//media/catalog/category/cat_burger_1.png' },
                 { id: 5, name: 'Món Tráng Miệng', url: '/mon-trang-mieng.html', image: 'https://jollibee.com.vn//media/catalog/category/trangmieng.png' },
                 { id: 6, name: 'Thức Uống', url: '/thuc-uong.html', image: 'https://jollibee.com.vn//media/catalog/category/thucuong.png' }
-            ]
+            ],
+            isScrolled: false // Biến trạng thái để kiểm tra cuộn trang
         };
+    },
+    mounted() {
+        window.addEventListener('scroll', this.handleScroll);
+    },
+    beforeDestroy() {
+        window.removeEventListener('scroll', this.handleScroll);
+    },
+    methods: {
+        handleScroll() {
+            const scrollTop = window.scrollY;
+            this.isScrolled = scrollTop > 100; // Thay đổi điều kiện theo yêu cầu
+        }
     }
 };
 </script>
@@ -36,11 +48,16 @@ export default {
     position: sticky;
     top: 0;
     z-index: 999;
-    margin-top: 70px;
+    transition: margin-top 0.5s ease;
+    margin-top: 100px;
     margin-left: 250px;
     margin-right: 250px;
     border-bottom-left-radius: 50px;
     border-bottom-right-radius: 50px;
+}
+
+.menu-category.scrolled {
+    margin-top: 0;
 }
 
 .menu-category .container {
@@ -83,6 +100,53 @@ export default {
         transition: transform 0.5s ease, filter 0.5s ease;
         transform: scale(1.2);
         filter: brightness(90%);
+    }
+}
+
+.MenuPage {
+    /* Basic styles for the page */
+
+    .new-dishes {
+        padding: 60px 0;
+
+        .dish-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+
+            .dish-card {
+                flex: 1 1 calc(33.333% - 20px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                overflow: hidden;
+                text-align: center;
+
+                img {
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                }
+
+                h3 {
+                    margin: 10px 0;
+                }
+
+                p {
+                    padding: 0 10px;
+                }
+            }
+        }
+    }
+
+    /* Phần category cố định khi cuộn */
+    .sticky-category {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
     }
 }
 </style>

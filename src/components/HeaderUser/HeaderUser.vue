@@ -36,10 +36,10 @@
           <!-- Thêm nút đăng nhập, đăng ký và đăng xuất ở đây -->
           <ul class="navbar-nav ms-auto">
             <li class="nav-item" v-if="!isLoggedIn">
-              <a class="btn btn-outline-danger" href="/user/login">Đăng nhập</a>
+              <a class="btn btn-danger" href="/user/login">Đăng nhập</a>
             </li>
             <li class="nav-item ms-2" v-if="!isLoggedIn">
-              <a class="btn btn-outline-danger" href="/user/signup">Đăng ký</a>
+              <a class="btn btn-danger" href="/user/signup">Đăng ký</a>
             </li>
             <li class="nav-item" v-else="isLoggedIn">
               <span class="username text-danger">{{ userInfo.FULLNAME || 'User' }}</span>

@@ -16,11 +16,11 @@ export default {
         return {
             categories: [
                 { id: 1, name: 'Món Ngon Phải Thử', url: '/menu/best-seller', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
-                { id: 2, name: 'Gà Giòn Vui Vẻ', url: '/ga-gion-vui-ve.html', image: 'https://jollibee.com.vn//media/catalog/category/web-05_1.png' },
-                { id: 3, name: 'Mì Ý Jolly', url: '/mi-y-sot-bo-bam.html', image: 'https://jollibee.com.vn//media/catalog/category/web-06.png' },
-                { id: 4, name: 'Burger', url: '/burger-com.html', image: 'https://jollibee.com.vn//media/catalog/category/cat_burger_1.png' },
-                { id: 5, name: 'Món Tráng Miệng', url: '/mon-trang-mieng.html', image: 'https://jollibee.com.vn//media/catalog/category/trangmieng.png' },
-                { id: 6, name: 'Thức Uống', url: '/thuc-uong.html', image: 'https://jollibee.com.vn//media/catalog/category/thucuong.png' }
+                { id: 2, name: 'Gà Giòn Vui Vẻ', url: '/menu/friedchicken', image: 'https://jollibee.com.vn//media/catalog/category/web-05_1.png' },
+                { id: 3, name: 'Mì Ý Jolly', url: '/menu/pasta', image: 'https://jollibee.com.vn//media/catalog/category/web-06.png' },
+                { id: 4, name: 'Burger', url: '/menu/burger', image: 'https://jollibee.com.vn//media/catalog/category/cat_burger_1.png' },
+                { id: 5, name: 'Món Tráng Miệng', url: '/menu/dessert', image: 'https://jollibee.com.vn//media/catalog/category/trangmieng.png' },
+                { id: 6, name: 'Thức Uống', url: '/menu/drink', image: 'https://jollibee.com.vn//media/catalog/category/thucuong.png' }
             ]
         };
     }

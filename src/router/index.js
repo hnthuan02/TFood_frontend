@@ -9,7 +9,7 @@ import Login from "../views/User/LoginUser/Login.vue";
 import RegisterUser from "../views/User/RegisterUser/Register.vue";
 const routes = [
   {
-    path: "/TFood",
+    path: "/",
     redirect: "/TFood", // Thêm route mặc định này
   },
   {
@@ -40,6 +40,46 @@ const routes = [
     meta: {
       layout: MenuLayout,
     },
+  },
+
+  {
+    path: "/menu/friedchicken",
+    name: "FriedChicken",
+    component: Menu,
+    props: { type: "Fried chicken" },
+    meta: { layout: MenuLayout },
+  },
+
+  {
+    path: "/menu/pasta",
+    name: "Pasta",
+    component: Menu,
+    props: { type: "Pasta" },
+    meta: { layout: MenuLayout },
+  },
+
+  {
+    path: "/menu/burger",
+    name: "Burger",
+    component: Menu,
+    props: { type: "Burger" },
+    meta: { layout: MenuLayout },
+  },
+
+  {
+    path: "/menu/dessert",
+    name: "Dessert",
+    component: Menu,
+    props: { type: "Dessert" },
+    meta: { layout: MenuLayout },
+  },
+
+  {
+    path: "/menu/drink",
+    name: "Drink",
+    component: Menu,
+    props: { type: "Drink" },
+    meta: { layout: MenuLayout },
   },
 ];
 const router = createRouter({

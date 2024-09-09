@@ -1,5 +1,5 @@
 <template>
-    <div :class="['menu-category', isScrolled ? 'scrolled' : '']">
+    <div :class="['menu-category', isScrolled ? 'scrolled' : '']" :style="{ marginTop: marginTop }">
         <div class="container">
             <div class="menu-item" v-for="category in categories" :key="category.id">
                 <a :href="category.url">{{ category.name }}
@@ -11,31 +11,32 @@
 </template>
 
 <script>
+import { useRoute } from 'vue-router';
 export default {
     name: 'MenuCategory',
+    props: {
+        isScrolled: {
+            type: Boolean,
+            default: false
+        }
+    },
     data() {
         return {
             categories: [
-                { id: 1, name: 'Món Ngon Phải Thử', url: '/menu', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
-                { id: 2, name: 'Gà Giòn Vui Vẻ', url: '/ga-gion-vui-ve.html', image: 'https://jollibee.com.vn//media/catalog/category/web-05_1.png' },
-                { id: 3, name: 'Mì Ý Jolly', url: '/mi-y-sot-bo-bam.html', image: 'https://jollibee.com.vn//media/catalog/category/web-06.png' },
-                { id: 4, name: 'Burger', url: '/burger-com.html', image: 'https://jollibee.com.vn//media/catalog/category/cat_burger_1.png' },
-                { id: 5, name: 'Món Tráng Miệng', url: '/mon-trang-mieng.html', image: 'https://jollibee.com.vn//media/catalog/category/trangmieng.png' },
-                { id: 6, name: 'Thức Uống', url: '/thuc-uong.html', image: 'https://jollibee.com.vn//media/catalog/category/thucuong.png' }
-            ],
-            isScrolled: false // Biến trạng thái để kiểm tra cuộn trang
+                { id: 1, name: 'Món Ngon Phải Thử', url: '/menu/best-seller', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
+                { id: 2, name: 'Gà Giòn Vui Vẻ', url: '/menu/friedchicken', image: 'https://jollibee.com.vn//media/catalog/category/web-05_1.png' },
+                { id: 3, name: 'Mì Ý Jolly', url: '/menu/pasta', image: 'https://jollibee.com.vn//media/catalog/category/web-06.png' },
+                { id: 4, name: 'Burger', url: '/menu/burger', image: 'https://jollibee.com.vn//media/catalog/category/cat_burger_1.png' },
+                { id: 5, name: 'Món Tráng Miệng', url: '/menu/dessert', image: 'https://jollibee.com.vn//media/catalog/category/trangmieng.png' },
+                { id: 6, name: 'Thức Uống', url: '/menu/drink', image: 'https://jollibee.com.vn//media/catalog/category/thucuong.png' }
+            ]
         };
     },
-    mounted() {
-        window.addEventListener('scroll', this.handleScroll);
-    },
-    beforeDestroy() {
-        window.removeEventListener('scroll', this.handleScroll);
-    },
-    methods: {
-        handleScroll() {
-            const scrollTop = window.scrollY;
-            this.isScrolled = scrollTop > 100; // Thay đổi điều kiện theo yêu cầu
+    computed: {
+        marginTop() {
+            const route = useRoute();
+            // Nếu là trang best-seller thì giữ margin-top 100px, nếu không thì đặt về 0
+            return this.isScrolled || route.path !== '/menu/best-seller' ? '0' : '100px';
         }
     }
 };
@@ -48,7 +49,6 @@ export default {
     position: sticky;
     top: 0;
     z-index: 999;
-    transition: margin-top 0.5s ease;
     margin-top: 100px;
     margin-left: 250px;
     margin-right: 250px;

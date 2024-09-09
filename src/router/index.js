@@ -2,13 +2,14 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import store from "@/store";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
+import MenuLayout from "../layouts/Menu/MenuLayout.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
 import Login from "../views/User/LoginUser/Login.vue";
 import RegisterUser from "../views/User/RegisterUser/Register.vue";
 const routes = [
   {
-    path: "/",
+    path: "/TFood",
     redirect: "/TFood", // Thêm route mặc định này
   },
   {
@@ -37,7 +38,7 @@ const routes = [
     path: "/menu/best-seller",
     component: Menu,
     meta: {
-      layout: LoginLayout,
+      layout: MenuLayout,
     },
   },
 ];

@@ -44,7 +44,7 @@ export default {
 <style scoped>
 .menu-category {
     background-color: #EE4545;
-    padding: 10px 0;
+    padding: 0px 0;
     position: sticky;
     top: 0;
     z-index: 999;
@@ -70,7 +70,7 @@ export default {
 .menu-category .menu-item {
     font-size: 1rem;
     text-align: center;
-    padding: 10px;
+    padding: 8px;
     border-radius: 5px;
     transition: background-color 0.3s, color 0.3s;
 }

@@ -4,30 +4,47 @@
     padding: 60px 0;
 
     .dish-grid {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* Chia thành 3 cột bằng nhau */
+      gap: 20px; /* Khoảng cách giữa các thẻ */
+      margin: 0 100px;
+    }
 
-      .dish-card {
-        flex: 1 1 calc(33.333% - 20px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        overflow: hidden;
-        text-align: center;
+    .dish-card {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      text-align: center;
 
-        img {
-          width: 100%;
-          height: auto;
-          display: block;
-        }
+      img {
+        width: 100%; /* Đảm bảo ảnh chiếm toàn bộ chiều rộng của thẻ */
+        height: 300px; /* Chiều cao cố định cho ảnh */
+        object-fit: cover; /* Giữ tỷ lệ khung hình và cắt ảnh nếu cần */
+        display: block;
+      }
 
-        h3 {
-          margin: 10px 0;
-        }
+      .dish-name {
+        margin: 5px 0;
+        font-family: cursive;
+        font-weight: bold;
+      }
 
-        p {
-          padding: 0 10px;
-        }
+      .dish-price {
+        padding: 0 10px;
+        color: red;
+        font-size: 30px;
+        margin: 0;
+        font-family: cursive;
+        font-weight: bold;
+      }
+
+      .btn-danger {
+        margin-bottom: 10px;
+        font-size: 20px;
+        font-family: cursive;
+        font-weight: bold;
+        height: 50px;
+        width: 130px;
       }
     }
   }
@@ -104,4 +121,15 @@
       }
     }
   }
+}
+
+.best-sell {
+  margin-top: 10px;
+}
+
+.dishes-title {
+  font-weight: bold;
+  font-family: cursive;
+  border-bottom: 2px solid #000000;
+  padding-bottom: 5px;
 }

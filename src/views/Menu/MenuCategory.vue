@@ -2,13 +2,16 @@
     <div :class="['menu-category', isScrolled ? 'scrolled' : '']" :style="{ marginTop: marginTop }">
         <div class="container">
             <div class="menu-item" v-for="category in categories" :key="category.id">
-                <a :href="category.url">{{ category.name }}
-                    <img :src="category.image" class="thumbnail" width="100px" />
+                <!-- Đưa name lên trên phần image -->
+                <a :href="category.url">
+                    <span>{{ category.name }}</span> <!-- Name phía trên -->
+                    <img :src="category.image" class="thumbnail" />
                 </a>
             </div>
         </div>
     </div>
 </template>
+
 
 <script>
 import { useRoute } from 'vue-router';
@@ -23,12 +26,11 @@ export default {
     data() {
         return {
             categories: [
-                { id: 1, name: 'Món Ngon Phải Thử', url: '/menu/best-seller', image: 'https://jollibee.com.vn//media/catalog/category/web-12_1_1.png' },
-                { id: 2, name: 'Gà Giòn Vui Vẻ', url: '/menu/friedchicken', image: 'https://jollibee.com.vn//media/catalog/category/web-05_1.png' },
-                { id: 3, name: 'Mì Ý Jolly', url: '/menu/pasta', image: 'https://jollibee.com.vn//media/catalog/category/web-06.png' },
-                { id: 4, name: 'Burger', url: '/menu/burger', image: 'https://jollibee.com.vn//media/catalog/category/cat_burger_1.png' },
-                { id: 5, name: 'Món Tráng Miệng', url: '/menu/dessert', image: 'https://jollibee.com.vn//media/catalog/category/trangmieng.png' },
-                { id: 6, name: 'Thức Uống', url: '/menu/drink', image: 'https://jollibee.com.vn//media/catalog/category/thucuong.png' }
+                { id: 1, name: 'Món Ngon Phải Thử', url: '/menu/best-seller', image: 'https://i.pinimg.com/564x/50/44/b1/5044b12bdf8f60ce34552b9fec651240.jpg' },
+                { id: 2, name: 'Beef Steak', url: '/menu/friedchicken', image: 'https://i.pinimg.com/736x/a6/23/67/a623676f5796b7b345ef051632a3d147.jpg' },
+                { id: 3, name: 'Mì Ý', url: '/menu/pasta', image: 'https://i.pinimg.com/736x/0b/da/22/0bda2231163c662d1407d0ce9ca84b17.jpg' },
+                { id: 4, name: 'Món Tráng Miệng', url: '/menu/dessert', image: 'https://i.pinimg.com/564x/ac/64/12/ac6412becf871ab6199b395f7372b88f.jpg' },
+                { id: 5, name: 'Thức Uống', url: '/menu/drink', image: 'https://i.pinimg.com/736x/24/03/36/2403362ccef7bccb254f0a7447a41631.jpg' }
             ]
         };
     },
@@ -43,17 +45,27 @@ export default {
 </script>
 
 <style scoped>
+.container {
+    background-color: #330505;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    border-radius: 100px;
+}
+
 .menu-category {
-    background-color: #EE4545;
+    background-color: #330505;
     padding: 0px 0;
     position: sticky;
     top: 0;
     z-index: 999;
     margin-top: 100px;
-    margin-left: 250px;
+    /* margin-left: 250px;
     margin-right: 250px;
     border-bottom-left-radius: 50px;
-    border-bottom-right-radius: 50px;
+    border-bottom-right-radius: 50px; */
 }
 
 .menu-category.scrolled {
@@ -65,6 +77,8 @@ export default {
     justify-content: center;
     gap: 20px;
     overflow-x: auto;
+
+
 }
 
 .menu-category .menu-item {
@@ -73,16 +87,29 @@ export default {
     padding: 8px;
     border-radius: 5px;
     transition: background-color 0.3s, color 0.3s;
+    margin: 0 20px;
 }
 
 .menu-category .menu-item a {
+    display: flex;
+    flex-direction: column;
+    /* Đặt thành cột để name ở trên image */
+    align-items: center;
+    /* Căn giữa cả name và image */
     color: #fff;
     text-decoration: none;
-    display: block;
+}
+
+.menu-category .menu-item a span {
+    margin-bottom: 10px;
+    /* Tạo khoảng cách giữa name và image */
+    font-size: 1rem;
+    /* Điều chỉnh kích thước của name */
+    font-weight: bold;
 }
 
 .menu-category .menu-item:hover {
-    color: #ee4545;
+    color: #330505;
 }
 
 .menu-item {
@@ -98,7 +125,7 @@ export default {
 
     &:hover img {
         transition: transform 0.5s ease, filter 0.5s ease;
-        transform: scale(1.2);
+        transform: scale(1.1);
         filter: brightness(90%);
     }
 }

@@ -7,7 +7,6 @@ const store = createStore({
   state: {
     isLoggedIn: false,
     userInfo: null,
-    editingMode: false,
     users: [],
   },
   mutations: {
@@ -15,8 +14,9 @@ const store = createStore({
       state.userInfo = userInfo;
       state.isLoggedIn = true;
     },
-    SET_LOGIN_STATE(state) {
+    SET_LOGIN_STATE(state, userInfo) {
       state.isLoggedIn = true;
+      state.userInfo = userInfo;
     },
     LOGOUT(state) {
       state.isLoggedIn = false;
@@ -40,13 +40,12 @@ const store = createStore({
           const token = response.data.accessToken;
           localStorage.setItem("accessToken", token);
           commit("SET_LOGIN_STATE");
-
-          dispatch("checkToken"); // Lấy thông tin người dùng sau khi login thành công
+          router.push("/TFood");
+          dispatch("checkToken");
 
           message.success("Đăng nhập thành công!");
         }
       } catch (error) {
-        // message.error("Đăng nhập thất bại!");
         throw error;
       }
     },
@@ -57,37 +56,31 @@ const store = createStore({
       message.success("Đã đăng xuất thành công!");
       router.push("/user/login");
     },
-    async checkToken({ commit }) {
+    async checkToken({ commit, dispatch }) {
       const token = localStorage.getItem("accessToken");
       if (token) {
         try {
-          const response = await axios.get("/users/profile", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          const response = await axios.get("/users/profile");
           if (response.status >= 200 && response.status < 300) {
             const userInfo = response.data;
             commit("SET_USER_INFO", userInfo);
-            console.log("User Info:", userInfo);
-
-            // Redirect based on user role
-            if (
-              userInfo.ROLE.ADMIN ||
-              userInfo.ROLE.BRANCH_MANAGER ||
-              userInfo.ROLE.STAFF
-            ) {
-              router.push("/dashboard");
-            } else {
-              router.push("/TFood");
-            }
+            // const roles = userInfo.ROLE;
+            // if (roles.ADMIN) {
+            //   router.push("/dashboard");
+            // } else if (roles.BRANCH_MANAGER) {
+            //   router.push("/dashboard");
+            // } else if (roles.STAFF) {
+            //   router.push("/dashboard");
+            // } else {
+            //   router.push("/TFood");
+            // }
           } else {
             console.error("Unexpected response status:", response.status);
-            commit("LOGOUT");
+            dispatch("LOGOUT");
           }
         } catch (error) {
           console.error("Error while checking token:", error);
-          commit("LOGOUT");
+          dispatch("LOGOUT");
         }
       } else {
         console.log("No token found in localStorage.");

@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-import store from "@/store";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import MenuLayout from "../layouts/Menu/MenuLayout.vue";
+import store from "../store";
+import BookTable from "../views/BookTable/BookTable.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
 import Login from "../views/User/LoginUser/Login.vue";
@@ -81,6 +82,14 @@ const routes = [
     props: { type: "Drink" },
     meta: { layout: MenuLayout },
   },
+
+  {
+    path: "/table",
+    component: BookTable,
+    meta: {
+      layout: MenuLayout,
+    },
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),
@@ -92,24 +101,31 @@ router.beforeEach((to, from, next) => {
   const userInfo = store.getters.userInfo;
 
   let userRole = "";
-  if (userInfo?.ROLE?.IS_ADMIN) {
+  if (userInfo?.ROLE?.ADMIN) {
     userRole = "admin";
-  } else if (userInfo?.ROLE?.IS_ORGANIZATION) {
-    userRole = "organization";
+  } else if (userInfo?.ROLE?.BRANCH_MANAGER) {
+    userRole = "branch_manager";
+  } else if (userInfo?.ROLE?.STAFF) {
+    userRole = "staff";
   } else {
     userRole = "guest";
   }
 
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (
-      isLoggedIn &&
-      to.matched.some(
-        (record) => record.meta.roles && record.meta.roles.includes(userRole)
-      )
-    ) {
-      next();
+    if (isLoggedIn) {
+      if (userRole === "guest") {
+        next("/TFood");
+      } else if (
+        to.matched.some(
+          (record) => record.meta.roles && record.meta.roles.includes(userRole)
+        )
+      ) {
+        next();
+      } else {
+        next("/TFood");
+      }
     } else {
-      next("/login");
+      next("/user/login");
     }
   } else {
     next();

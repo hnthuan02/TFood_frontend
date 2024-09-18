@@ -1,7 +1,7 @@
 .MenuPage {
-  /* Basic styles for the page */
   .new-dishes {
     padding: 60px 0;
+    background-color: #2b1b17; /* Màu nền đỏ thẳm sang trọng */
 
     .dish-grid {
       display: grid;
@@ -11,10 +11,11 @@
     }
 
     .dish-card {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Đổ bóng mạnh hơn để tạo cảm giác nổi bật */
+      border-radius: 10px;
       overflow: hidden;
       text-align: center;
+      background-color: #3c2f2f; /* Nền của mỗi thẻ */
 
       img {
         width: 100%; /* Đảm bảo ảnh chiếm toàn bộ chiều rộng của thẻ */
@@ -24,48 +25,56 @@
       }
 
       .dish-name {
-        margin: 5px 0;
-        font-family: cursive;
+        margin: 10px 0;
+        font-family: "Playfair Display", serif; /* Font chữ sang trọng */
+        font-size: 24px;
         font-weight: bold;
+        color: #ffd700; /* Màu vàng nhạt sang trọng */
       }
 
       .dish-price {
         padding: 0 10px;
-        color: red;
-        font-size: 30px;
+        color: #e74c3c; /* Màu đỏ thẳm */
+        font-size: 20px;
         margin: 0;
-        font-family: cursive;
+        font-family: "Playfair Display", serif;
         font-weight: bold;
       }
 
       .btn-danger {
-        margin-bottom: 10px;
-        font-size: 20px;
-        font-family: cursive;
+        margin-bottom: 15px;
+        font-size: 18px;
+        font-family: "Playfair Display", serif;
         font-weight: bold;
         height: 50px;
         width: 130px;
+        background-color: #c0392b; /* Màu đỏ thẳm */
+        border: none;
+        border-radius: 25px;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn-danger:hover {
+        background-color: #a93226; /* Màu đỏ thẫm hơn khi hover */
       }
     }
   }
 
-  /* Phần category cố định khi cuộn */
   .sticky-category {
     position: sticky;
     top: 0;
     left: 0;
     right: 0;
-    background-color: none;
-    z-index: 1000;
-    /* Gỡ bỏ các thuộc tính transition */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #2b1b17; /* Nền đỏ thẳm cho phần category */
+    color: #fff; /* Chữ trắng cho phần category */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
   }
 
   .minicart-wrapper {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    z-index: 1000;
 
     .minicart-content-trigger {
       background-color: #f8f9fad8;
@@ -121,15 +130,18 @@
       }
     }
   }
-}
 
-.best-sell {
-  margin-top: 10px;
-}
+  .best-sell {
+    margin-top: 20px;
+  }
 
-.dishes-title {
-  font-weight: bold;
-  font-family: cursive;
-  border-bottom: 2px solid #000000;
-  padding-bottom: 5px;
+  .dishes-title {
+    font-weight: bold;
+    font-family: "Playfair Display", serif;
+    color: #ffd700; /* Màu vàng nhạt */
+    border-bottom: 2px solid #c0392b; /* Đường viền đỏ thẳm */
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
 }

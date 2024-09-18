@@ -5,7 +5,7 @@
         <!-- Banner -->
         <div ref="bannerContainer"
           class="col-md-6 mb-5 mb-md-0 h-100 d-flex justify-content-center align-items-center banner-container">
-          <img src="../../../assets/banner.jpg" alt="" class="img-fluid rounded banner-image">
+          <img src="../../../assets/banner.png" alt="" class="img-fluid rounded banner-image">
         </div>
 
         <!-- Login Form -->

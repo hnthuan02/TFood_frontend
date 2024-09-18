@@ -1,40 +1,37 @@
 <template>
     <div class="MenuPage">
-        <main>
-            <section class="new-dishes">
-                <div class="container">
-                    <h2 v-if="!type" class="dishes-title">Món Mới</h2>
-                    <div class="dish-grid" v-if="!type">
-                        <div class="dish-card" v-for="dish in filteredDishesNew" :key="dish._id">
-                            <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
-                            <h3 class="dish-name">{{ dish.NAME }}</h3>
-                            <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
-                            <button type="submit" class="btn btn-danger rounded-pill btn-block">Đặt ngay</button>
-                        </div>
-                    </div>
-                    <h2 v-if="!type" class="best-sell dishes-title">Món Bán Chạy</h2>
-                    <div class="dish-grid" v-if="!type">
-                        <div class="dish-card" v-for="dish in filteredDishesBest" :key="dish._id">
-                            <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
-                            <h3 class="dish-name">{{ dish.NAME }}</h3>
-                            <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
-                            <button type="submit" class="btn btn-danger rounded-pill btn-block">Đặt ngay</button>
-                        </div>
-                    </div>
-
-                    <!-- Hiển thị món theo TYPE nếu có -->
-                    <h2 v-if="type" class="dishes-title">{{ type }}</h2>
-                    <div class="dish-grid" v-if="type">
-                        <div class="dish-card" v-for="dish in filteredDishesByType" :key="dish._id">
-                            <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
-                            <h3 class="dish-name">{{ dish.NAME }}</h3>
-                            <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
-                            <button type="submit" class="btn btn-danger rounded-pill btn-block">Đặt ngay</button>
-                        </div>
+        <section class="new-dishes">
+            <div class="container">
+                <h2 v-if="!type" class="dishes-title">Món Mới</h2>
+                <div class="dish-grid" v-if="!type">
+                    <div class="dish-card" v-for="dish in filteredDishesNew" :key="dish._id">
+                        <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
+                        <h3 class="dish-name">{{ dish.NAME }}</h3>
+                        <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
+                        <button type="submit" class="btn btn-danger rounded-pill btn-block">Đặt ngay</button>
                     </div>
                 </div>
-            </section>
-        </main>
+                <h2 v-if="!type" class="best-sell dishes-title">Món Bán Chạy</h2>
+                <div class="dish-grid" v-if="!type">
+                    <div class="dish-card" v-for="dish in filteredDishesBest" :key="dish._id">
+                        <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
+                        <h3 class="dish-name">{{ dish.NAME }}</h3>
+                        <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
+                        <button type="submit" class="btn btn-danger rounded-pill btn-block">Đặt ngay</button>
+                    </div>
+                </div>
+                <h2 v-if="type" class="dishes-title">{{ displayType }}</h2>
+
+                <div class="dish-grid" v-if="type">
+                    <div class="dish-card" v-for="dish in filteredDishesByType" :key="dish._id">
+                        <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
+                        <h3 class="dish-name">{{ dish.NAME }}</h3>
+                        <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
+                        <button type="submit" class="btn btn-danger rounded-pill btn-block">Đặt ngay</button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </template>
 
@@ -74,14 +71,22 @@ export default {
         },
         filteredDishesByType() {
             return this.dishes.filter(dish => dish.TYPE === this.type);
+        },
+        displayType() {
+            switch (this.type) {
+                case 'Pasta':
+                    return 'Mỳ Ý';
+                case 'Dessert':
+                    return 'Món Tráng Miệng';
+                case 'Drink':
+                    return 'Thức Uống';
+                default:
+                    return this.type;
+            }
         }
     },
     mounted() {
         this.fetchProducts();
-        window.addEventListener('scroll', this.handleScroll);
-    },
-    beforeDestroy() {
-        window.removeEventListener('scroll', this.handleScroll);
     },
     methods: {
         async fetchProducts() {

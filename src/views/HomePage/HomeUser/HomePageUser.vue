@@ -1,11 +1,9 @@
 <template>
     <div>
-
-
         <!-- Hero Section -->
-        <section class="hero bg-primary text-danger text-center py-5">
+        <section class="hero text-center py-5">
             <div class="container-top">
-                <h1 class="display-4 ">Chào mừng đến với TFOOD</h1>
+                <h1 class="display-4">Chào mừng đến với TFOOD</h1>
                 <p class="lead">Khám phá các món ăn ngon và ưu đãi hấp dẫn của chúng tôi</p>
             </div>
         </section>
@@ -13,30 +11,35 @@
         <!-- Product Carousel -->
         <section class="product-carousel py-5">
             <div class="container">
-                <h2 class="text-center mb-4">Sản phẩm nổi bật</h2>
                 <div id="carouselExampleCaptions" class="carousel slide">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="../../../assets/jolli_saver_banner_web_4142x1713_px-01.jpg" class="d-block w-100"
-                                alt="...">
+                            <img src="https://assets.architecturaldigest.in/photos/632c2468b1c1612420a1690d/3:2/w_1620,h_1080,c_limit/INDR3006.png"
+                                class="d-block w-100" alt="...">
                             <div class="carousel-caption d-none d-md-block">
-                                <h5>Sản phẩm 1</h5>
-                                <p>Đây là mô tả sản phẩm 1.</p>
+                                <h5>Hương vị tinh hoa, đẳng cấp</h5>
+                                <p>Trải nghiệm ẩm thực đỉnh cao với các món ăn chế biến từ nguyên liệu tươi ngon và tinh
+                                    tế.</p>
+
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="../../../assets/jolli_saver_banner_web_4142x1713_px-01.jpg" class="d-block w-100"
-                                alt="...">
+                            <img src="https://images.squarespace-cdn.com/content/v1/60ac14afc57b695813c01b62/1622058935682-K6Q7PP2EK6Z2QSQZ2PLJ/VT+interiors+%2817%29.jpg?format=1500w"
+                                class="d-block w-100" alt="...">
                             <div class="carousel-caption d-none d-md-block">
-                                <h5>Sản phẩm 2</h5>
-                                <p>Đây là mô tả sản phẩm 2.</p>
+                                <h5>Không gian sang trọng, ấm cúng</h5>
+                                <p>Thưởng thức bữa ăn trong không gian đẳng cấp, mang lại cảm giác thoải mái và thư
+                                    giãn.</p>
+
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="https://via.placeholder.com/800x400" class="d-block w-100" alt="...">
+                            <img src="https://www.hoteljob.vn/uploads/images/2023/03/09/64099b11c6a500_88785066_crop_1170_400_100.jpg"
+                                class="d-block w-100" alt="...">
                             <div class="carousel-caption d-none d-md-block">
-                                <h5>Sản phẩm 3</h5>
-                                <p>Đây là mô tả sản phẩm 3.</p>
+                                <h5>Dịch vụ chu đáo, tận tình</h5>
+                                <p>Đội ngũ nhân viên chuyên nghiệp, sẵn sàng phục vụ với nụ cười và sự tận tâm.</p>
+
                             </div>
                         </div>
                     </div>
@@ -51,19 +54,10 @@
                         <span class="visually-hidden">Next</span>
                     </button>
                 </div>
-
             </div>
         </section>
 
         <!-- About Section -->
-        <section class="about py-5 bg-light">
-            <div class="container">
-                <h2 class="text-center mb-4">Về chúng tôi</h2>
-                <p class="text-center">KFC Vietnam cam kết cung cấp các sản phẩm chất lượng cao và dịch vụ tuyệt vời.
-                    Hãy cùng khám phá các món ăn độc đáo và chương trình khuyến mãi của chúng tôi.</p>
-            </div>
-        </section>
-
 
     </div>
 </template>
@@ -77,89 +71,113 @@ export default {
 </script>
 
 <style scoped>
+/* Phong cách sang trọng với tông màu đỏ thẳm */
 .container-top {
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url('../../../assets/bannerBack.png') no-repeat center center;
+    background: linear-gradient(to right, rgba(43, 27, 23, 0.8), rgba(60, 47, 47, 0.8)), url('https://files.oaiusercontent.com/file-eLhnRc0JMs9xrmQHAowLnoAt?se=2024-09-17T07%3A32%3A54Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D8e6043c4-bde1-41fc-bd1c-086a9598bbea.webp&sig=GfKziqP5oTvu2DU419jrnM3TzESN4a3ITjb8q2azKFU%3D') no-repeat center center;
     background-size: cover;
-    padding: 50px;
-    border-radius: 10px;
+    padding: 60px;
     text-align: center;
-    color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    color: #ffd700;
+    /* Màu chữ vàng nhạt */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+h1,
+p,
+.lead,
+h5 {
+    color: #FAE8B2;
 }
 
 .display-4 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     font-weight: 700;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+    text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.7);
+    font-family: 'Playfair Display', serif;
+    /* Font sang trọng */
 }
 
 .lead {
     font-size: 1.5rem;
     margin-bottom: 20px;
+    color: #FAE8B2;
+    /* Màu vàng nhạt */
+    font-family: 'Playfair Display', serif;
+}
+
+.hero {
+    padding: 100px 0;
+    background: linear-gradient(to right, #3c2f2f, #2b1b17);
+    /* Màu nền đỏ thẳm */
+    color: #ffd700;
+}
+
+.hero h1,
+.hero p {
+    margin-bottom: 20px;
 }
 
 .btn-light {
-    background-color: #fff;
-    color: #ed0909;
-    border: 2px solid #d61a1a;
+    background-color: #ffd700;
+    color: #2b1b17;
+    border: 2px solid #ffd700;
     transition: all 0.3s ease;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 30px;
+    border-radius: 30px;
     font-weight: bold;
+    font-family: 'Playfair Display', serif;
 }
 
 .btn-light:hover {
-    background-color: #d00d0d;
+    background-color: #a93226;
     color: #fff;
-    border: 2px solid #fff;
+    border: 2px solid #a93226;
     transform: scale(1.1);
 }
 
-/* Header Styles */
-.header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+.product-carousel {
+    background-color: #3c2f2f;
 }
 
-.navbar {
-    padding: 1rem;
-}
-
-.navbar-brand {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.nav-link {
-    margin-left: 1rem;
-}
-
-/* Hero Section Styles */
-.hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('../../../assets/bannerBack.png') no-repeat center center;
-    background-size: cover;
-    color: white;
-}
-
-
-.hero h1 {
-    font-size: 3rem;
-    font-weight: bold;
-}
-
-.hero p {
-    font-size: 1.25rem;
-}
-
-/* Carousel Styles */
 .product-carousel .carousel-inner img {
     width: 100%;
-    height: auto;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-/* About Section Styles */
+.carousel-caption {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 8px;
+    color: #ffd700;
+    font-family: 'Playfair Display', serif;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(100%);
+}
+
 .about {
-    padding: 2rem 0;
+    padding: 50px 20px;
+    background: #2b1b17;
+    color: #ffd700;
+
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-family: 'Playfair Display', serif;
+}
+
+.about p {
+    font-size: 1.2rem;
+    line-height: 1.6;
 }
 </style>

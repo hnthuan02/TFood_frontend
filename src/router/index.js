@@ -44,10 +44,10 @@ const routes = [
   },
 
   {
-    path: "/menu/friedchicken",
-    name: "FriedChicken",
+    path: "/menu/steak",
+    name: "Steak",
     component: Menu,
-    props: { type: "Fried chicken" },
+    props: { type: "Steak" },
     meta: { layout: MenuLayout },
   },
 
@@ -56,14 +56,6 @@ const routes = [
     name: "Pasta",
     component: Menu,
     props: { type: "Pasta" },
-    meta: { layout: MenuLayout },
-  },
-
-  {
-    path: "/menu/burger",
-    name: "Burger",
-    component: Menu,
-    props: { type: "Burger" },
     meta: { layout: MenuLayout },
   },
 
@@ -87,7 +79,7 @@ const routes = [
     path: "/table",
     component: BookTable,
     meta: {
-      layout: MenuLayout,
+      layout: LoginLayout,
     },
   },
 ];

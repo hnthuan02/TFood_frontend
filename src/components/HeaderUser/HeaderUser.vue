@@ -12,12 +12,13 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto">
             <li class="nav-item"><a class="nav-link active" href="/TFood">Trang Chủ</a></li>
-            <li class="nav-item"><a class="nav-link" href="about-us.html">Giới Thiệu</a></li>
+            <li class="nav-item"><a class="nav-link" href="/table">Đặt Bàn</a></li>
             <li class="nav-item dropdown hover-dropdown">
               <a class="nav-link" href="/menu/best-seller">
                 Thực Đơn
               </a>
             </li>
+
             <li class="nav-item dropdown hover-dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                 aria-expanded="false">
@@ -34,10 +35,10 @@
           <ul class="navbar-nav ms-auto">
             <!-- Hiển thị nút Đăng nhập/Đăng ký khi chưa đăng nhập -->
             <li class="nav-item" v-if="!isLoggedIn">
-              <a class="btn btn-danger" href="/user/login">Đăng nhập</a>
+              <a class="btn" href="/user/login">Đăng nhập</a>
             </li>
             <li class="nav-item ms-2" v-if="!isLoggedIn">
-              <a class="btn btn-danger" href="/user/signup">Đăng ký</a>
+              <a class="btn" href="/user/signup">Đăng ký</a>
             </li>
 
             <!-- Hiển thị thông tin người dùng và nút Đăng xuất khi đã đăng nhập -->
@@ -47,7 +48,7 @@
                   {{ getInitials(userInfo?.FULLNAME) || 'User' }}
                 </div>
                 <span class="username me-3">{{ userInfo?.FULLNAME || 'User' }}</span>
-                <a class="btn btn-warning" href="#" @click="logout">Đăng xuất</a>
+                <a class="btn" href="#" @click="logout">Đăng xuất</a>
               </div>
             </li>
           </ul>
@@ -66,8 +67,9 @@ export default {
   computed: {
     ...mapGetters(['isLoggedIn', 'userInfo']),
     headerClass() {
-      return this.$route.path === '/menu/best-seller' ? 'header absolute' : 'header sticky';
+      return this.$route.path.startsWith('/menu') ? 'header absolute' : 'header sticky';
     }
+
   },
   methods: {
     ...mapActions(['logout']),

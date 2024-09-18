@@ -70,7 +70,7 @@ export default {
 .phone-number {
     font-size: 24px;
     font-weight: bold;
-    color: #ffffff;
+    color: #FAE8B2;
     /* Màu chữ đỏ */
 }
 

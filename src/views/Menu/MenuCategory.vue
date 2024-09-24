@@ -52,7 +52,7 @@ export default {
 }
 
 .menu-category-wrapper {
-    background-color: #2B1B17;
+    background-color: #F8F9FA;
     padding: 0 250px;
     position: sticky;
     top: 0;

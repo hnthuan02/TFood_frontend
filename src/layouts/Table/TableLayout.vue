@@ -1,8 +1,7 @@
 <template>
     <div class="app">
         <div class="d-block w-100">
-            <Header :class="{ 'hidden-header': isMenuPage && isScrolled }" />
-            <MenuCategory />
+            <Header />
             <router-view />
             <Footer />
             <!-- Nút Cart nhỏ -->
@@ -27,7 +26,6 @@ import { ref } from 'vue';
 import Cart from '../../components/Cart/Cart.vue';
 import Footer from '../../components/FooterUser/FooterUser.vue';
 import Header from "../../components/HeaderUser/HeaderUser.vue";
-import MenuCategory from "../../views/Menu/MenuCategory.vue";
 
 // Trạng thái hiển thị giỏ hàng
 const isCartVisible = ref(false);

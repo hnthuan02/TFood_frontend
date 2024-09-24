@@ -1,13 +1,16 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+import Cart from "../components/Cart/Cart.vue";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import MenuLayout from "../layouts/Menu/MenuLayout.vue";
+import TableLayout from "../layouts/Table/TableLayout.vue";
 import store from "../store";
 import BookTable from "../views/BookTable/BookTable.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
 import Login from "../views/User/LoginUser/Login.vue";
 import RegisterUser from "../views/User/RegisterUser/Register.vue";
+
 const routes = [
   {
     path: "/",
@@ -79,9 +82,10 @@ const routes = [
     path: "/table",
     component: BookTable,
     meta: {
-      layout: LoginLayout,
+      layout: TableLayout,
     },
   },
+  { path: "/cart", component: Cart },
 ];
 const router = createRouter({
   history: createWebHistory(),

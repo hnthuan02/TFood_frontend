@@ -1,12 +1,18 @@
 /* Màu nền và các yếu tố tổng thể */
 .my {
-  background-color: #2b1b17; /* Nền đỏ thẳm sang trọng */
+  background-color: #2b1b17; /* Nền đỏ thẫm sang trọng */
+  color: #fae8b2; /* Màu chữ chủ đạo */
 }
 
 .form-banner-row {
   display: flex;
   align-items: stretch;
   height: 100vh;
+}
+
+h2,
+.text-form {
+  color: #fae8b2;
 }
 
 .card-body {
@@ -47,7 +53,7 @@
 
 .form-floating > .form-control {
   border-radius: 0.5rem;
-  border: 1px solid #c0392b; /* Màu đỏ thẳm */
+  border: 1px solid #c0392b; /* Màu đỏ thẫm */
 }
 
 .form-label {
@@ -56,7 +62,7 @@
 
 .form-control:focus {
   box-shadow: none;
-  border-color: #a93226; /* Màu đỏ thẳm khi focus */
+  border-color: #a93226; /* Màu đỏ thẫm khi focus */
 }
 
 .card {
@@ -64,24 +70,34 @@
 }
 
 /* Nút đăng nhập và các nút khác */
-.btn-danger {
-  background-color: #c0392b; /* Màu nút đỏ thẫm */
+.btn-submit {
+  background-color: #7d002e; /* Màu nút đỏ thẫm */
   border: none;
   border-radius: 25px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  color: #fae8b2;
 }
 
-.btn-danger:hover {
+.btn-submit:hover {
   background-color: #a93226; /* Màu nút khi hover */
+  transform: translateY(-2px); /* Hiệu ứng hover */
 }
 
+.btn-submit:active {
+  transform: translateY(1px); /* Hiệu ứng nhấn nút */
+}
+
+/* Nút đăng nhập bằng Google, Facebook, và Apple */
 .btn-google,
 .btn-facebook,
 .btn-apple {
   border-radius: 25px;
-  color: white;
+  color: black;
   font-family: "Playfair Display", serif; /* Font chữ sang trọng */
   padding: 12px 0;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng */
+  margin: 8px 0;
 }
 
 .btn-google {
@@ -93,13 +109,21 @@
 }
 
 .btn-apple {
-  background-color: #333; /* Apple */
+  background-color: #6e6b6b; /* Apple */
 }
 
 .btn-google:hover,
 .btn-facebook:hover,
 .btn-apple:hover {
+  color: white;
   filter: brightness(0.9);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Tăng độ đậm của đổ bóng */
+}
+
+.btn-google:active,
+.btn-facebook:active,
+.btn-apple:active {
+  transform: translateY(1px); /* Hiệu ứng nhấn nút */
 }
 
 .btn i {

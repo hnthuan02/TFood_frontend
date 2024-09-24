@@ -5,37 +5,38 @@
         <!-- Banner -->
         <div ref="bannerContainer"
           class="col-md-6 mb-5 mb-md-0 h-100 d-flex justify-content-center align-items-center banner-container">
-          <img src="../../../assets/banner.png" alt="" class="img-fluid rounded banner-image">
+          <img src="https://res.cloudinary.com/dphhcgg3y/image/upload/v1726816041/logoMail_ax7ndw.png" alt=""
+            class="img-fluid rounded banner-image">
         </div>
 
         <!-- Login Form -->
         <div class="col-md-6 d-flex align-items-center form-container">
           <div ref="formCard" class="card mx-4 mx-md-5 shadow-5-strong bg-body-tertiary form-card">
-            <div class="card-body py-5 px-md-5">
-              <h2 class="fw-bold mb-4 text-danger">Đăng nhập</h2>
+            <div class="card-body py-4 px-md-5">
+              <h2 class="fw-bold mb-4">Đăng nhập</h2>
               <form @submit.prevent="handleSubmit">
                 <!-- Input group -->
                 <div class="form-floating mb-4">
                   <input v-model="identifier" type="text" id="form3Example1"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example1" class="text-danger">Email hoặc SĐT</label>
+                    class="form-control form-control-lg border-submit" placeholder=" " />
+                  <label for="form3Example1" class="text-submit">Email hoặc SĐT</label>
                 </div>
 
                 <div class="form-floating mb-2">
                   <input v-model="password" type="password" id="form3Example2"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example2" class="text-danger">Mật khẩu</label>
+                    class="form-control form-control-lg border-submit" placeholder=" " />
+                  <label for="form3Example2" class="text-submit">Mật khẩu</label>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
-                  <a href="/user/signup" class="btn btn-link text-danger">Chưa có tài khoản?</a>
-                  <a href="#" class="btn btn-link text-danger" data-bs-toggle="modal"
+                  <a href="/user/signup" class="btn btn-link text-form">Chưa có tài khoản?</a>
+                  <a href="#" class="btn btn-link text-form" data-bs-toggle="modal"
                     data-bs-target="#forgotPasswordModal">Quên mật khẩu?</a>
                 </div>
                 <div class="d-grid mb-4">
-                  <button type="submit" class="btn btn-danger rounded-pill btn-block">Đăng nhập</button>
+                  <button type="submit" class="btn btn-submit rounded-pill btn-block">Đăng nhập</button>
                 </div>
                 <div class="text-center mb-4">
-                  <p class="text-muted">hoặc đăng nhập bằng:</p>
+                  <p class="text-form">hoặc đăng nhập bằng:</p>
                   <div class="d-grid mb-4">
                     <button type="button" class="btn btn-google rounded-pill mb-2 btn-block">
                       <i class="fab fa-google"></i> Google
@@ -70,30 +71,30 @@
           <div class="modal-body px-5">
             <form @submit.prevent="handleForgotPassword">
               <div class="form-floating mb-4">
-                <input type="email" v-model="currentEmail" class="form-control border-danger" id="forgotPasswordEmail"
+                <input type="email" v-model="currentEmail" class="form-control border-submit" id="forgotPasswordEmail"
                   placeholder=" " required>
                 <label for="forgotPasswordEmail" class="text-danger">Nhập email của bạn</label>
               </div>
 
               <div v-if="showOtpField" class="form-floating mb-4">
-                <input type="text" v-model="otpResetPass" class="form-control border-danger" id="otpInput"
+                <input type="text" v-model="otpResetPass" class="form-control border-submit" id="otpInput"
                   placeholder=" " required>
                 <label for="otpInput" class="text-danger">Nhập mã OTP</label>
               </div>
 
               <div v-if="showNewPasswordField" class="form-floating mb-4">
-                <input type="password" v-model="newPassword" class="form-control border-danger" id="passwordInput"
+                <input type="password" v-model="newPassword" class="form-control border-submit" id="passwordInput"
                   placeholder=" " required>
                 <label for="newPasswordInput" class="text-danger">Nhập mật khẩu mới</label>
               </div>
               <div v-if="showConfirmNewPasswordField" class="form-floating mb-4">
-                <input type="password" v-model="confirmNewPassword" class="form-control border-danger"
+                <input type="password" v-model="confirmNewPassword" class="form-control border-submit"
                   id="newPasswordInput" placeholder=" " required>
                 <label for="newPasswordInput" class="text-danger">Xác nhận mật khẩu mới</label>
               </div>
 
               <div class="d-grid">
-                <button type="submit" class="btn btn-danger rounded-pill">{{ showOtpField ? 'Xác nhận' : 'Gửi'
+                <button type="submit" class="btn btn-submit rounded-pill">{{ showOtpField ? 'Xác nhận' : 'Gửi'
                   }}</button>
               </div>
             </form>

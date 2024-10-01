@@ -40,7 +40,7 @@ export default {
 
 <style scoped>
 .container {
-    background-color: #330505;
+    background-color: #34495E;
     border-bottom-left-radius: 50px;
     border-bottom-right-radius: 50px;
 }
@@ -103,7 +103,7 @@ export default {
 }
 
 .menu-category .menu-item:hover {
-    color: #330505;
+    color: #34495E;
 }
 
 .menu-item {

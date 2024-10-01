@@ -6,7 +6,7 @@
             <Footer />
             <!-- Nút Cart nhỏ -->
             <button class="cart-button" @click="toggleCart">
-                🛒
+                <font-awesome-icon :icon="['fas', 'cart-shopping']" />
             </button>
 
             <!-- Overlay -->
@@ -40,9 +40,10 @@ const toggleCart = () => {
 .cart-button {
     position: fixed;
     bottom: 20px;
+    /* Đảm bảo nút nằm cách đáy một khoảng */
     right: 20px;
-    background-color: #c0392b;
-    color: #FAE8B2;
+    background-color: #34495E;
+    color: #ffffff;
     border: none;
     border-radius: 50%;
     width: 50px;
@@ -55,10 +56,23 @@ const toggleCart = () => {
     /* Đảm bảo nút hiển thị trên các thành phần khác */
 }
 
+/* Sử dụng thuộc tính này để giữ cho nút luôn nằm trên footer */
+.cart-button.sticky {
+    position: fixed;
+    /* Đảm bảo nút luôn cố định trên màn hình */
+    bottom: 20px;
+    /* Điều chỉnh khoảng cách từ đáy màn hình */
+    right: 20px;
+    /* Điều chỉnh khoảng cách từ cạnh phải màn hình */
+    z-index: 1001;
+    /* Đảm bảo nút ở trên các phần tử khác */
+}
+
 .cart-button:hover {
     background-color: #a93226;
     transform: scale(1.1);
 }
+
 
 /* Overlay bao phủ toàn bộ màn hình khi giỏ hàng xuất hiện */
 .overlay {
@@ -79,10 +93,10 @@ const toggleCart = () => {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 1000px;
+    width: 1300px;
     max-width: 90%;
     max-height: 90vh;
-    background-color: #2b1b17;
+    background-color: #1f2f3e;
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);

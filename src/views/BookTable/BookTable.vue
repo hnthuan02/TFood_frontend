@@ -1,11 +1,11 @@
 <template>
     <div class="booking-container">
         <h1 class="reservation-title">
-            <span class="make-text">Make</span> RESERVATION
+            <span class="make-text">ĐẶT</span> BÀN
         </h1>
         <p class="reservation-subtitle">
-            Reservation Form Powered by OpenTable <br />
-            1.800.456.6743 - contact@grandrestaurant.com
+            Trải nghiệm ẩm thực đỉnh cao trong không gian đẳng cấp, <br />
+            nơi tinh hoa và phong cách hội tụ dành cho bạn.
         </p>
 
         <!-- Phần Reservation -->
@@ -51,14 +51,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="table in translatedTables" :key="table._id">
-                        <td><img :src="table.IMAGES[0]" alt="Table" class="table-image" /></td>
-                        <td>{{ table.translatedType }}</td>
-                        <td>{{ table.PRICE }} VND</td>
-                        <td>{{ table.COUNT }}</td>
-                        <td>{{ table.CAPACITY }}</td>
+                    <tr v-for="(group, index) in translatedTables" :key="index">
+                        <td><img :src="group.tables[0].IMAGES[0]" alt="Table" class="table-image" /></td>
+                        <td>{{ group.tables[0].translatedType }}</td>
+                        <td>{{ group.tables[0].PRICE }} VND</td>
+                        <td>
+                            <!-- Hiển thị các TABLE_NUMBER dưới dạng thẻ -->
+                            <div class="available-tables">
+                                <span v-for="table in group.tables" :key="table._id" class="table-tag"
+                                    @click="showTimePickerPopup(table)">
+                                    {{ table.TABLE_NUMBER }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>{{ group.capacity }}</td>
                         <td class="action-cell">
-                            <button @click="addToCart(table)" class="cart-button">
+                            <button @click="addToCart(group.tables[0])" class="cart-button">
                                 <font-awesome-icon :icon="['fas', 'cart-shopping']" />
                             </button>
                         </td>
@@ -72,7 +80,7 @@
         <!-- Popup chọn giờ -->
         <div v-if="showPopup" class="time-popup">
             <div class="popup-content">
-                <h3>Chọn giờ cho {{ selectedTable.translatedType }}</h3>
+                <h3>Chọn giờ cho {{ selectedTable.translatedType }} {{ selectedTable.TABLE_NUMBER }}</h3>
                 <input type="time" v-model="selectedTime" class="form-control" />
                 <button class="confirm-button" @click="addTableToCart">Xác nhận</button>
                 <button class="close-button" @click="closePopup">Đóng</button>
@@ -103,26 +111,38 @@ export default {
     computed: {
         // Chuyển đổi giá trị TYPE thành tiếng Việt
         translatedTables() {
-            return this.tables.map((table) => {
-                let translatedType = "";
-                switch (table.TYPE) {
-                    case "Normal":
-                        translatedType = "Bàn thường";
-                        break;
-                    case "Room":
-                        translatedType = "Phòng riêng";
-                        break;
-                    default:
-                        translatedType = table.TYPE;
+            const groupedTables = {};
+
+            this.tables.forEach((table) => {
+                // Nhóm các bàn theo Capacity
+                if (!groupedTables[table.CAPACITY]) {
+                    groupedTables[table.CAPACITY] = [];
                 }
-                return {
+                groupedTables[table.CAPACITY].push({
                     ...table,
-                    translatedType: translatedType, // Thêm thuộc tính mới cho table
+                    translatedType: this.translateType(table.TYPE),
+                });
+            });
+
+            return Object.entries(groupedTables).map(([capacity, tables]) => {
+                return {
+                    capacity: parseInt(capacity),
+                    tables,
                 };
             });
         },
     },
     methods: {
+        translateType(type) {
+            switch (type) {
+                case "Normal":
+                    return "Bàn thường";
+                case "Room":
+                    return "Phòng riêng";
+                default:
+                    return type;
+            }
+        },
         async fetchAvailableTables() {
             if (!this.selectedDate || !this.peopleCount) {
                 alert("Vui lòng chọn ngày, giờ và số lượng người!");
@@ -142,31 +162,38 @@ export default {
         },
         showTimePickerPopup(table) {
             this.selectedTable = table;
-            this.showPopup = true; // Hiển thị popup khi người dùng bấm nút thêm vào giỏ hàng
+            this.showPopup = true; // Hiển thị popup khi người dùng bấm vào bàn
         },
         async addTableToCart() {
-            if (!this.selectedTime) {
-                alert("Vui lòng chọn giờ!");
+            if (!this.selectedTime || !this.selectedDate) {
+                alert("Vui lòng chọn ngày và giờ!");
                 return;
             }
+
+            // Kết hợp ngày và giờ thành một biến bookingTime
+            let bookingTime = `${this.selectedDate}T${this.selectedTime}`;
+
+            // Thay thế "T" bằng dấu cách để có định dạng mong muốn
+            bookingTime = bookingTime.replace("T", " ");
+
             try {
                 const payload = {
                     tableId: this.selectedTable._id,
-                    bookingTime: this.selectedTime,
-                    // Bạn có thể thêm các thông tin khác nếu cần thiết
+                    tableNumber: this.selectedTable.TABLE_NUMBER,
+                    bookingTime: bookingTime, // Sử dụng biến bookingTime đã chỉnh sửa
                 };
                 const response = await axiosClient.post("/carts/createCart", payload, {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`, // Giả sử bạn lưu token trong localStorage
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                 });
                 if (response.data.success) {
-                    // Thêm bàn vào giỏ hàng
                     this.cartItems.push({
                         table: this.selectedTable,
-                        bookingTime: this.selectedTime,
+                        tableNumber: this.selectedTable.TABLE_NUMBER,
+                        bookingTime: bookingTime, // Thêm biến bookingTime vào giỏ hàng
                     });
-                    alert(`Đã thêm ${this.selectedTable.translatedType} vào giỏ hàng!`);
+                    alert(`Đã thêm bàn số ${this.selectedTable.TABLE_NUMBER} vào giỏ hàng!`);
                     this.closePopup(); // Đóng popup sau khi thêm vào giỏ hàng
                 } else {
                     alert("Thêm bàn vào giỏ hàng thất bại!");
@@ -176,6 +203,7 @@ export default {
                 alert("Thêm bàn vào giỏ hàng thất bại!");
             }
         },
+
 
         closePopup() {
             this.showPopup = false; // Đóng popup
@@ -190,6 +218,26 @@ export default {
 </script>
 
 <style scoped>
+.available-tables {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.table-tag {
+    background-color: #2c3e50;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.table-tag:hover {
+    background-color: #34495e;
+}
+
 .booking-container {
     max-width: 100%;
     margin: 0 auto;
@@ -359,13 +407,14 @@ tr:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #3c2f2f;
-    color: #FAE8B2;
-    padding: 20px;
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    width: 300px;
+    width: 400px;
+    text-align: center;
 }
 
 .popup-content {
@@ -374,27 +423,57 @@ tr:hover {
     align-items: center;
 }
 
-.confirm-button {
-    background-color: #c0392b;
-    color: #FAE8B2;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
+.popup-content h3 {
+    font-family: "Playfair Display", serif;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #2c3e50;
 }
 
-.confirm-button:hover {
-    background-color: #a93226;
+.popup-content .form-control {
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+    text-align: center;
+    color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.popup-content .form-control:focus {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
+.confirm-button,
+.close-button {
+    background-color: #2c3e50;
+    color: #fff;
+    font-size: 16px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-top: 20px;
+    text-transform: uppercase;
+    font-family: "Playfair Display", serif;
+}
+
+.confirm-button:hover,
+.close-button:hover {
+    background-color: #34495e;
+    transform: translateY(-2px);
 }
 
 .close-button {
-    background-color: #a93226;
-    color: #FAE8B2;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
+    background-color: #e74c3c;
+}
+
+.close-button:hover {
+    background-color: #c0392b;
 }
 </style>

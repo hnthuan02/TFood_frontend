@@ -7,7 +7,7 @@
             <Footer />
             <!-- Nút Cart nhỏ -->
             <button class="cart-button" @click="toggleCart">
-                🛒
+                <font-awesome-icon :icon="['fas', 'cart-shopping']" />
             </button>
 
             <!-- Overlay -->
@@ -43,8 +43,8 @@ const toggleCart = () => {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: #c0392b;
-    color: #FAE8B2;
+    background-color: #34495E;
+    color: #ffffff;
     border: none;
     border-radius: 50%;
     width: 50px;
@@ -81,10 +81,10 @@ const toggleCart = () => {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 1000px;
+    width: 1300px;
     max-width: 90%;
     max-height: 90vh;
-    background-color: #2b1b17;
+    background-color: #1f2f3e;
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);

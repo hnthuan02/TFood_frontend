@@ -44,7 +44,7 @@ export default {
 
 <style scoped>
 .footer {
-    background-color: #330505;
+    background-color: #34495E;
     /* Màu đỏ chủ đạo */
     color: #ffffff;
     padding: 20px 0;

@@ -73,7 +73,7 @@ export default {
 <style scoped>
 /* Phong cách sang trọng với tông màu đỏ thẳm */
 .container-top {
-    background: linear-gradient(to right, rgba(43, 27, 23, 0.8), rgba(60, 47, 47, 0.8)), url('https://files.oaiusercontent.com/file-eLhnRc0JMs9xrmQHAowLnoAt?se=2024-09-17T07%3A32%3A54Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D8e6043c4-bde1-41fc-bd1c-086a9598bbea.webp&sig=GfKziqP5oTvu2DU419jrnM3TzESN4a3ITjb8q2azKFU%3D') no-repeat center center;
+    background: linear-gradient(to right, rgba(43, 27, 23, 0.8), rgba(60, 47, 47, 0.8)), url('../../../assets/backgroundBannner.webp') no-repeat center center;
     background-size: cover;
     padding: 60px;
     text-align: center;
@@ -107,7 +107,7 @@ h5 {
 
 .hero {
     padding: 100px 0;
-    background: linear-gradient(to right, #3c2f2f, #2b1b17);
+    background: linear-gradient(to right, #ffffff, #2b1b17);
     /* Màu nền đỏ thẳm */
     color: #ffd700;
 }
@@ -136,7 +136,7 @@ h5 {
 }
 
 .product-carousel {
-    background-color: #3c2f2f;
+    background-color: #ffffff;
 }
 
 .product-carousel .carousel-inner img {

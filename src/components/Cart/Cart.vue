@@ -1,7 +1,6 @@
 <template>
     <div class="cart-container">
         <h1>Giỏ Hàng Của Bạn</h1>
-
         <div v-if="cart">
             <table class="cart-table">
                 <thead>
@@ -22,43 +21,39 @@
                         <td>
                             <ul>
                                 <li v-for="food in table.LIST_FOOD" :key="food.FOOD_ID">
-                                    {{ food.foodPrice.NAME }} ({{ formatPrice(food.foodPrice.PRICE) }}) x {{
-                                        food.QUANTITY }}
+                                    {{ food.foodPrice.NAME }} ({{ food.foodPrice.PRICE }} VND) x {{ food.QUANTITY }}
                                 </li>
                             </ul>
                         </td>
-                        <td>{{ formatPrice(table.TOTAL_PRICE_FOOD) }}</td>
+                        <td>{{ table.TOTAL_PRICE_FOOD }} VND</td>
                         <td>
                             <ul>
                                 <li v-for="service in table.SERVICES" :key="service.serviceName">
-                                    {{ service.serviceName }} - {{ formatPrice(service.servicePrice) }}
+                                    {{ service.serviceName }} - {{ service.servicePrice }} VND
                                 </li>
                             </ul>
                         </td>
-                        <td>{{ formatPrice(table.TOTAL_PRICE_FOOD + table.TOTAL_SERVICE_PRICE + table.tableInfo.PRICE)
-                            }}</td>
-                        <td>
-                            <button @click="openSelectFoodModal(table)">Chọn món</button>
+                        <td>{{ calculateTotalPrice(table) }} VND</td>
+                        <td class="action-buttons">
+                            <button @click="addFood(table)" class="action-button">Thêm món ăn</button>
+                            <button @click="editFood(table)" class="action-button">Chỉnh sửa món ăn</button>
                             <button @click="removeTable(table.TABLE_ID)">Xóa</button>
                         </td>
                     </tr>
                 </tbody>
-
             </table>
-            <!-- Phần chứa Cần cọc và Tổng cộng -->
             <div class="price-info">
-                <h3 class="deposit">Cần cọc: {{ (cart.TOTAL_PRICES * 0.4).toFixed(0) }} VND</h3>
+                <h3 class="deposit">Cần cọc: {{ calculateDeposit(cart.TOTAL_PRICES) }} VND</h3>
                 <h3 class="total-price">Tổng cộng: {{ cart.TOTAL_PRICES }} VND</h3>
             </div>
         </div>
         <div v-else>
             <p>Giỏ hàng của bạn trống.</p>
         </div>
+        <SelectFoodModal v-if="selectedTable" :tableInfo="selectedTable" :modalMode="modalMode" @close="closeModal"
+            @update-cart="fetchCart" />
     </div>
-    <SelectFoodModal v-if="showSelectFoodModal" :tableInfo="selectedTable" @close="closeSelectFoodModal"
-        @update-cart="updateCart" />
 </template>
-
 
 <script>
 import axiosClient from '../../api/axiosClient';
@@ -70,30 +65,15 @@ export default {
     },
     data() {
         return {
-            cart: null,
-            showSelectFoodModal: false,
-            selectedTable: null, // Chứa dữ liệu giỏ hàng
+            cart: null, // Chứa dữ liệu giỏ hàng
+            selectedTable: null, // Bàn đang được chọn để chỉnh sửa món ăn
+            modalMode: '', // Chế độ của modal: 'edit' hoặc 'add'
         };
     },
     async created() {
-        // Lấy thông tin giỏ hàng khi component được tạo
         await this.fetchCart();
     },
     methods: {
-        formatPrice(price) {
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-        },
-        openSelectFoodModal(table) {
-            this.selectedTable = table;
-            this.showSelectFoodModal = true;
-        },
-        closeSelectFoodModal() {
-            this.showSelectFoodModal = false;
-            this.selectedTable = null;
-        },
-        async updateCart() {
-            await this.fetchCart();
-        },
         async fetchCart() {
             try {
                 const response = await axiosClient.get('/carts/getCartById', {
@@ -108,19 +88,39 @@ export default {
         },
         async removeTable(tableId) {
             try {
-                await axios.post(
-                    'http://localhost:3000/api/removeTableFromCart',
-                    { tableId },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        },
-                    }
-                );
-                await this.fetchCart(); // Tải lại giỏ hàng sau khi xóa bàn
+                // Gửi yêu cầu xóa bàn tới backend
+                await axiosClient.post('/carts/removeTableFromCart', { tableId }, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                // Tải lại giỏ hàng sau khi xóa thành công
+                await this.fetchCart();
+                alert('Đã xóa bàn khỏi giỏ hàng.');
             } catch (error) {
                 console.error('Lỗi khi xóa bàn khỏi giỏ hàng:', error);
+                alert('Xóa bàn khỏi giỏ hàng thất bại. Vui lòng thử lại.');
             }
+        },
+
+        calculateTotalPrice(table) {
+            return table.TOTAL_PRICE_FOOD + table.TOTAL_SERVICE_PRICE + table.tableInfo.PRICE;
+        },
+        calculateDeposit(totalPrice) {
+            return (totalPrice * 0.4).toFixed(0);
+        },
+        editFood(table) {
+            this.selectedTable = table;
+            this.modalMode = 'edit'; // Chế độ chỉnh sửa món ăn
+        },
+        addFood(table) {
+            this.selectedTable = table;
+            this.modalMode = 'add'; // Chế độ thêm món ăn
+        },
+        closeModal() {
+            this.selectedTable = null;
+            this.modalMode = '';
         },
     },
 };
@@ -130,69 +130,124 @@ export default {
 .cart-container {
     max-width: 1200px;
     margin: 20px auto;
-    background: #3C2F2F;
+    background: #ffffff;
+    /* Đổi nền trắng */
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    color: #FAE8B2;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Giảm độ đậm của bóng */
+    color: #333333;
+    /* Màu chữ tối */
+    font-family: 'Playfair Display', serif;
+    /* Đổi font cho đồng bộ */
 }
 
 h1 {
     text-align: center;
     margin-bottom: 20px;
-    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    /* Tăng kích thước chữ */
+    color: #333333;
+    /* Màu chữ tối */
 }
 
 .cart-table {
     width: 100%;
     border-collapse: collapse;
+    background-color: #ffffff;
+    /* Nền trắng cho bảng */
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .cart-table th,
 .cart-table td {
     padding: 12px 15px;
     border: 1px solid #ddd;
+    font-family: 'Roboto', sans-serif;
+    /* Font hiện đại và dễ nhìn */
+    text-align: center;
+    /* Căn giữa */
+}
+
+.cart-table th {
+    background-color: #f4f4f4;
+    /* Nền xám nhạt */
+    font-weight: 600;
+    color: #333333;
+    /* Màu chữ tối */
+}
+
+.cart-table td {
+    background-color: #ffffff;
+    /* Nền trắng */
 }
 
 .price-info {
-    background-color: #7d0f03;
+    background-color: #f4f4f4;
+    /* Đổi nền xám nhạt */
     display: flex;
-    /* Sử dụng flex để căn hai phần ngang hàng */
     justify-content: space-between;
-    /* Căn hai phần ra hai phía */
     align-items: center;
-    /* Căn giữa theo chiều dọc */
     margin-top: 20px;
+    padding: 10px 20px;
+    border-radius: 8px;
 }
 
-.deposit {
-    text-align: left;
-    /* Căn chữ về bên trái */
-    font-family: 'Playfair Display', serif;
-    margin: 0;
-    /* Xóa margin mặc định */
-}
-
+.deposit,
 .total-price {
-    text-align: right;
-    /* Căn chữ về bên phải */
     font-family: 'Playfair Display', serif;
-    margin: 0;
-    /* Xóa margin mặc định */
+    /* Đồng bộ font */
+    color: #333333;
+    /* Màu chữ tối */
 }
 
-button {
-    background-color: #c0392b;
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* Khoảng cách giữa các nút */
+}
+
+.action-button {
+    background-color: #333333;
+    /* Nền đen */
     border: none;
     padding: 8px 12px;
-    color: #FAE8B2;
+    color: #ffffff;
+    /* Màu chữ trắng */
     border-radius: 5px;
     cursor: pointer;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Roboto', sans-serif;
+    /* Font hiện đại */
     transition: background-color 0.3s;
 }
 
-button:hover {
-    background-color: #a93226;
+.action-button:hover {
+    background-color: #444444;
+    /* Màu nền khi hover */
+}
+
+.delete-button {
+    background-color: #e74c3c;
+    /* Màu đỏ cho nút xóa */
+}
+
+.delete-button:hover {
+    background-color: #c0392b;
+    /* Màu đậm hơn khi hover */
+}
+
+.cart-table ul {
+    padding: 0;
+    list-style-type: none;
+    /* Xóa dấu chấm trong danh sách */
+    margin: 0;
+}
+
+.cart-table li {
+    padding: 5px 0;
+    /* Tạo khoảng cách giữa các món */
 }
 </style>

@@ -3,7 +3,7 @@
     <div class="container py-5">
       <div class="row justify-content-center align-items-stretch form-banner-row">
         <div class="col-md-6 mb-5 mb-md-0 h-100 d-flex justify-content-center align-items-center banner-container">
-          <img src="../../../assets/banner.jpg" alt="" class="img-fluid rounded banner-image">
+          <img src="../../../assets/backgroundBannner.webp" alt="" class="img-fluid rounded banner-image">
         </div>
 
         <div class="col-md-6 d-flex align-items-center form-container">
@@ -11,7 +11,7 @@
             <div class="card-body py-4 px-md-5">
 
 
-              <h2 class="fw-bold mb-2 text-danger">Đăng ký</h2>
+              <h2 class="fw-bold mb-2 text-light">Đăng ký</h2>
               <form @submit.prevent="handleSubmit">
                 <div class="form-floating mb-4">
                   <input v-model="FULLNAME" type="text" id="form3Example1"

@@ -43,8 +43,9 @@
                 </tbody>
             </table>
             <div class="price-info">
-                <h3 class="deposit">Cần cọc: {{ calculateDeposit(cart.TOTAL_PRICES) }} VND</h3>
+                <!-- <h3 class="deposit">Cần cọc: {{ calculateDeposit(cart.TOTAL_PRICES) }} VND</h3> -->
                 <h3 class="total-price">Tổng cộng: {{ cart.TOTAL_PRICES }} VND</h3>
+                <a class="payment" href="/payment">Đặt ngay</a>
             </div>
         </div>
         <div v-else>
@@ -249,5 +250,31 @@ h1 {
 .cart-table li {
     padding: 5px 0;
     /* Tạo khoảng cách giữa các món */
+}
+
+.payment {
+    display: inline-block;
+    background-color: #2c3e50;
+    color: #ffffff;
+    text-align: center;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-family: 'Playfair Display', serif;
+    text-transform: uppercase;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payment:hover {
+    background-color: #34495e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.payment:active {
+    background-color: #1c2e40;
+    transform: translateY(0);
 }
 </style>

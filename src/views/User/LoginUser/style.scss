@@ -1,6 +1,6 @@
 /* Màu nền và các yếu tố tổng thể */
 .my {
-  background-color: #2b1b17; /* Nền đỏ thẫm sang trọng */
+  background-color: #fff; /* Nền đỏ thẫm sang trọng */
   color: #fae8b2; /* Màu chữ chủ đạo */
 }
 
@@ -53,7 +53,7 @@ h2,
 
 .form-floating > .form-control {
   border-radius: 0.5rem;
-  border: 1px solid #c0392b; /* Màu đỏ thẫm */
+  border: 1px solid #000000; /* Màu đỏ thẫm */
 }
 
 .form-label {
@@ -71,15 +71,15 @@ h2,
 
 /* Nút đăng nhập và các nút khác */
 .btn-submit {
-  background-color: #7d002e; /* Màu nút đỏ thẫm */
+  background-color: #fae8b2; /* Màu nút đỏ thẫm */
   border: none;
   border-radius: 25px;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  color: #fae8b2;
+  color: #000000;
 }
 
 .btn-submit:hover {
-  background-color: #a93226; /* Màu nút khi hover */
+  background-color: #fae8b2; /* Màu nút khi hover */
   transform: translateY(-2px); /* Hiệu ứng hover */
 }
 

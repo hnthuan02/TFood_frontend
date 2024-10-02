@@ -53,10 +53,9 @@
                 <tbody>
                     <tr v-for="(group, index) in translatedTables" :key="index">
                         <td><img :src="group.tables[0].IMAGES[0]" alt="Table" class="table-image" /></td>
-                        <td>{{ group.tables[0].translatedType }}</td>
+                        <td>{{ group.type }}</td>
                         <td>{{ group.tables[0].PRICE }} VND</td>
                         <td>
-                            <!-- Hiển thị các TABLE_NUMBER dưới dạng thẻ -->
                             <div class="available-tables">
                                 <span v-for="table in group.tables" :key="table._id" class="table-tag"
                                     @click="showTimePickerPopup(table)">
@@ -71,6 +70,7 @@
                             </button>
                         </td>
                     </tr>
+
                 </tbody>
             </table>
         </div>
@@ -114,22 +114,21 @@ export default {
             const groupedTables = {};
 
             this.tables.forEach((table) => {
-                // Nhóm các bàn theo Capacity
-                if (!groupedTables[table.CAPACITY]) {
-                    groupedTables[table.CAPACITY] = [];
+                // Tạo key dựa trên CAPACITY và TYPE
+                const key = `${table.CAPACITY}-${table.TYPE}`;
+
+                if (!groupedTables[key]) {
+                    groupedTables[key] = {
+                        capacity: table.CAPACITY,
+                        type: this.translateType(table.TYPE),
+                        tables: [],
+                    };
                 }
-                groupedTables[table.CAPACITY].push({
-                    ...table,
-                    translatedType: this.translateType(table.TYPE),
-                });
+                groupedTables[key].tables.push(table);
             });
 
-            return Object.entries(groupedTables).map(([capacity, tables]) => {
-                return {
-                    capacity: parseInt(capacity),
-                    tables,
-                };
-            });
+            // Trả về mảng các nhóm
+            return Object.values(groupedTables);
         },
     },
     methods: {
@@ -144,7 +143,7 @@ export default {
             }
         },
         async fetchAvailableTables() {
-            if (!this.selectedDate || !this.peopleCount) {
+            if (!this.selectedDate || !this.selectedTime || !this.peopleCount) {
                 alert("Vui lòng chọn ngày, giờ và số lượng người!");
                 return;
             }
@@ -152,6 +151,7 @@ export default {
                 const response = await axiosClient.get(`tables/allTable`, {
                     params: {
                         date: this.selectedDate,
+
                         people: this.peopleCount,
                     },
                 });

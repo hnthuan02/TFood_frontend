@@ -9,7 +9,7 @@
                         <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
                         <h3 class="dish-name">{{ dish.NAME }}</h3>
                         <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
-                        <button type="submit" class="btn btn-order">Đặt ngay</button>
+                        <button type="submit" class="btn btn-order" @click="onOrderDish(dish)">Đặt ngay</button>
                     </div>
                 </div>
                 <!-- Món bán chạy -->
@@ -19,7 +19,7 @@
                         <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
                         <h3 class="dish-name">{{ dish.NAME }}</h3>
                         <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
-                        <button type="submit" class="btn btn-order">Đặt ngay</button>
+                        <button type="submit" class="btn btn-order" @click="onOrderDish(dish)">Đặt ngay</button>
                     </div>
                 </div>
                 <!-- Món theo loại -->
@@ -29,11 +29,29 @@
                         <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
                         <h3 class="dish-name">{{ dish.NAME }}</h3>
                         <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
-                        <button type="submit" class="btn btn-order">Đặt ngay</button>
+                        <button type="submit" class="btn btn-order" @click="onOrderDish(dish)">Đặt ngay</button>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Modal chọn bàn -->
+        <div v-if="isCartVisible" class="cart-modal">
+            <div class="modal-content">
+                <h3>Chọn bàn</h3>
+                <ul v-if="cartTables.length > 0">
+                    <li v-for="table in cartTables" :key="table.TABLE_ID">
+                        <!-- Hiển thị số bàn từ tableInfo -->
+                        <input type="radio" :value="table.TABLE_ID" v-model="selectedTable" />
+                        Bàn: {{ table.tableInfo.TABLE_NUMBER }} - Thời gian: {{ table.BOOKING_TIME }}
+                    </li>
+                </ul>
+                <p v-else>Không có bàn nào trong giỏ hàng.</p>
+                <button @click="addFoodToSelectedTable">Xác nhận</button>
+                <button @click="toggleCart">Đóng</button>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -56,15 +74,13 @@ export default {
         return {
             dishes: [],
             loading: true,
-            showCategoryOnScroll: false,
-            cartItems: [],
-            isCartVisible: false,
+            cartTables: [], // Chứa thông tin các bàn trong giỏ hàng
+            selectedTable: null, // Bàn được chọn trong modal
+            selectedDish: null, // Món được chọn
+            isCartVisible: false, // Trạng thái hiển thị modal
         };
     },
     computed: {
-        cartCount() {
-            return this.cartItems.reduce((total, item) => total + item.quantity, 0);
-        },
         filteredDishesNew() {
             return this.dishes.filter(dish => dish.NEWEST === true);
         },
@@ -89,6 +105,7 @@ export default {
     },
     mounted() {
         this.fetchProducts();
+        this.fetchCartTables(); // Lấy thông tin các bàn trong giỏ hàng khi trang được tải
     },
     methods: {
         async fetchProducts() {
@@ -101,25 +118,59 @@ export default {
                 this.loading = false;
             }
         },
-        formatPrice(price) {
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        async fetchCartTables() {
+            try {
+                const response = await axiosClient.get("/carts/getCartById");
+                console.log("Cart data:", response.data); // Kiểm tra dữ liệu giỏ hàng trong console
+
+                // Gán đúng giá trị cho cartTables
+                this.cartTables = response.data.data.LIST_TABLES || [];
+                console.log("Cart tables:", this.cartTables); // Kiểm tra cartTables
+
+            } catch (error) {
+                console.error("Error fetching cart tables:", error);
+            }
         },
-        handleScroll() {
-            const scrollPosition = window.scrollY;
-            if (scrollPosition > 250) {
-                this.showCategoryOnScroll = true;
-            } else {
-                this.showCategoryOnScroll = false;
+
+        onOrderDish(dish) {
+            this.selectedDish = dish;
+            this.toggleCart(); // Hiển thị modal để chọn bàn
+        },
+        async addFoodToSelectedTable() {
+            if (!this.selectedTable) {
+                alert("Vui lòng chọn bàn.");
+                return;
+            }
+
+            try {
+                await axiosClient.post("/carts/addFoodToTable", {
+                    tableId: this.selectedTable,
+                    listFood: [
+                        {
+                            FOOD_ID: this.selectedDish._id,
+                            QUANTITY: 1
+                        }
+                    ]
+                });
+                alert("Đã thêm món vào bàn thành công!");
+                this.toggleCart(); // Đóng modal sau khi thêm món thành công
+            } catch (error) {
+                console.error("Error adding food to table:", error);
+                alert("Có lỗi xảy ra khi thêm món ăn.");
             }
         },
         toggleCart() {
             this.isCartVisible = !this.isCartVisible;
+        },
+        formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
         }
     }
 };
 </script>
 
 <style scoped>
+/* Các kiểu giao diện */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 
@@ -127,7 +178,6 @@ export default {
     .new-dishes {
         padding: 60px 0;
         background-color: #f8f9fa;
-        /* Màu nền đồng nhất với phần đặt bàn */
 
         .container {
             max-width: 1200px;
@@ -138,52 +188,40 @@ export default {
         .dish-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            /* Chia thành 3 cột bằng nhau */
             gap: 20px;
-            /* Khoảng cách giữa các thẻ */
         }
 
         .dish-card {
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-            /* Đổ bóng mạnh hơn để tạo cảm giác nổi bật */
             border-radius: 10px;
             overflow: hidden;
             text-align: center;
             background-color: #ffffff;
-            /* Nền trắng tinh tế cho mỗi thẻ */
             transition: transform 0.3s ease;
 
             &:hover {
                 transform: translateY(-5px);
-                /* Hiệu ứng nổi lên khi hover */
             }
 
             img {
                 width: 100%;
-                /* Đảm bảo ảnh chiếm toàn bộ chiều rộng của thẻ */
                 height: 300px;
-                /* Chiều cao cố định cho ảnh */
                 object-fit: cover;
-                /* Giữ tỷ lệ khung hình và cắt ảnh nếu cần */
                 display: block;
                 border-bottom: 1px solid #ddd;
-                /* Đường viền dưới ảnh */
             }
 
             .dish-name {
                 margin: 10px 0;
                 font-family: "Playfair Display", serif;
-                /* Font chữ sang trọng */
                 font-size: 24px;
                 font-weight: bold;
                 color: #2c3e50;
-                /* Màu chữ đồng nhất với phần đặt bàn */
             }
 
             .dish-price {
                 padding: 0 10px;
                 color: #e74c3c;
-                /* Màu đỏ thẳm */
                 font-size: 20px;
                 margin: 0;
                 font-family: "Playfair Display", serif;
@@ -198,7 +236,6 @@ export default {
                 height: 50px;
                 width: 130px;
                 background-color: #2c3e50;
-                /* Màu nền tương đồng với phần đặt bàn */
                 border: none;
                 border-radius: 25px;
                 transition: background-color 0.3s ease;
@@ -207,7 +244,6 @@ export default {
 
             .btn-order:hover {
                 background-color: #34495e;
-                /* Màu nền đậm hơn khi hover */
             }
         }
     }
@@ -218,9 +254,7 @@ export default {
         left: 0;
         right: 0;
         background-color: #2b1b17;
-        /* Nền đỏ thẳm cho phần category */
         color: #fff;
-        /* Chữ trắng cho phần category */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         padding: 10px 20px;
     }
@@ -233,12 +267,30 @@ export default {
         font-weight: bold;
         font-family: "Playfair Display", serif;
         color: #2c3e50;
-        /* Màu chữ đồng nhất với phần đặt bàn */
         border-bottom: 2px solid #34495e;
-        /* Đường viền xám đậm */
         padding-bottom: 5px;
         margin-bottom: 20px;
         text-align: center;
     }
+}
+
+/* Modal chọn bàn */
+.cart-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
 }
 </style>

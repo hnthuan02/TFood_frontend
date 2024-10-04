@@ -11,7 +11,7 @@
 }
 
 h2,
-.text-form {
+.text-formLogin {
   color: #fae8b2;
 }
 
@@ -81,6 +81,7 @@ h2,
 .btn-submit:hover {
   background-color: #fae8b2; /* Màu nút khi hover */
   transform: translateY(-2px); /* Hiệu ứng hover */
+  color: #000000;
 }
 
 .btn-submit:active {

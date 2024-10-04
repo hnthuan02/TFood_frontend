@@ -20,7 +20,6 @@
                                 <h5>Hương vị tinh hoa, đẳng cấp</h5>
                                 <p>Trải nghiệm ẩm thực đỉnh cao với các món ăn chế biến từ nguyên liệu tươi ngon và tinh
                                     tế.</p>
-
                             </div>
                         </div>
                         <div class="carousel-item">
@@ -30,7 +29,6 @@
                                 <h5>Không gian sang trọng, ấm cúng</h5>
                                 <p>Thưởng thức bữa ăn trong không gian đẳng cấp, mang lại cảm giác thoải mái và thư
                                     giãn.</p>
-
                             </div>
                         </div>
                         <div class="carousel-item">
@@ -39,7 +37,6 @@
                             <div class="carousel-caption d-none d-md-block">
                                 <h5>Dịch vụ chu đáo, tận tình</h5>
                                 <p>Đội ngũ nhân viên chuyên nghiệp, sẵn sàng phục vụ với nụ cười và sự tận tâm.</p>
-
                             </div>
                         </div>
                     </div>
@@ -57,10 +54,30 @@
             </div>
         </section>
 
-        <!-- About Section -->
-
+        <!-- Make Reservation Section -->
+        <section class="reservation-section text-center py-5">
+            <h2 class="reservation-title">Make Reservation</h2>
+            <form @submit.prevent="makeReservation" class="reservation-form">
+                <div class="form-group">
+                    <input type="date" v-model="reservationDate" placeholder="mm/dd/yyyy" class="form-control"
+                        required />
+                </div>
+                <div class="form-group">
+                    <input type="time" v-model="reservationTime" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <select v-model="reservationPeople" class="form-control" required>
+                        <option v-for="n in 10" :key="n" :value="n">{{ n }} person</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">FIND A TABLE</button>
+            </form>
+            <p class="contact-info">1.800.456.6743 – contact@grandrestaurant.com</p>
+        </section>
     </div>
 </template>
+
+
 
 <script>
 export default {
@@ -73,6 +90,7 @@ export default {
 <style scoped>
 /* Phong cách sang trọng với tông màu đỏ thẳm */
 .container-top {
+
     background: linear-gradient(to right, rgba(43, 27, 23, 0.8), rgba(60, 47, 47, 0.8)), url('../../../assets/backgroundBannner.webp') no-repeat center center;
     background-size: cover;
     padding: 60px;
@@ -93,21 +111,20 @@ h5 {
     font-size: 3.5rem;
     font-weight: 700;
     text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.7);
-    font-family: 'Playfair Display', serif;
+    font-family: Kristi, "Comic Sans MS", cursive, sans-serif;
     /* Font sang trọng */
 }
 
 .lead {
     font-size: 1.5rem;
     margin-bottom: 20px;
-    color: #FAE8B2;
+    color: #CFA670;
     /* Màu vàng nhạt */
     font-family: 'Playfair Display', serif;
 }
 
 .hero {
     padding: 100px 0;
-    background: linear-gradient(to right, #ffffff, #2b1b17);
     /* Màu nền đỏ thẳm */
     color: #ffd700;
 }
@@ -179,5 +196,45 @@ h2 {
 .about p {
     font-size: 1.2rem;
     line-height: 1.6;
+}
+
+.reservation-section {
+    background-color: #f4f4f4;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.reservation-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.reservation-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-control {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.btn-primary {
+    background-color: #2c3e50;
+    border: none;
+    padding: 12px 30px;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #34495e;
 }
 </style>

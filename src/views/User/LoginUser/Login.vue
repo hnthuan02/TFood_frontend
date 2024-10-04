@@ -27,15 +27,15 @@
                   <label for="form3Example2" class="text-submit">Mật khẩu</label>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
-                  <a href="/user/signup" class="btn btn-link text-form">Chưa có tài khoản?</a>
-                  <a href="#" class="btn btn-link text-form" data-bs-toggle="modal"
+                  <a href="/user/signup" class="btn btn-link text-formLogin">Chưa có tài khoản?</a>
+                  <a href="#" class="btn btn-link text-formLogin" data-bs-toggle="modal"
                     data-bs-target="#forgotPasswordModal">Quên mật khẩu?</a>
                 </div>
                 <div class="d-grid mb-4">
                   <button type="submit" class="btn btn-submit rounded-pill btn-block">Đăng nhập</button>
                 </div>
                 <div class="text-center mb-4">
-                  <p class="text-form">hoặc đăng nhập bằng:</p>
+                  <p class="text-formLogin">hoặc đăng nhập bằng:</p>
                   <div class="d-grid mb-4">
                     <button type="button" class="btn btn-google rounded-pill mb-2 btn-block">
                       <i class="fab fa-google"></i> Google
@@ -72,24 +72,24 @@
               <div class="form-floating mb-4">
                 <input type="email" v-model="currentEmail" class="form-control border-submit" id="forgotPasswordEmail"
                   placeholder=" " required>
-                <label for="forgotPasswordEmail" class="text-danger">Nhập email của bạn</label>
+                <label for="forgotPasswordEmail" class="text-form">Nhập email của bạn</label>
               </div>
 
               <div v-if="showOtpField" class="form-floating mb-4">
                 <input type="text" v-model="otpResetPass" class="form-control border-submit" id="otpInput"
                   placeholder=" " required>
-                <label for="otpInput" class="text-danger">Nhập mã OTP</label>
+                <label for="otpInput" class="text-form">Nhập mã OTP</label>
               </div>
 
               <div v-if="showNewPasswordField" class="form-floating mb-4">
                 <input type="password" v-model="newPassword" class="form-control border-submit" id="passwordInput"
                   placeholder=" " required>
-                <label for="newPasswordInput" class="text-danger">Nhập mật khẩu mới</label>
+                <label for="newPasswordInput" class="text-form">Nhập mật khẩu mới</label>
               </div>
               <div v-if="showConfirmNewPasswordField" class="form-floating mb-4">
                 <input type="password" v-model="confirmNewPassword" class="form-control border-submit"
                   id="newPasswordInput" placeholder=" " required>
-                <label for="newPasswordInput" class="text-danger">Xác nhận mật khẩu mới</label>
+                <label for="newPasswordInput" class="text-form">Xác nhận mật khẩu mới</label>
               </div>
 
               <div class="d-grid">

@@ -13,7 +13,7 @@
                         <h3>Chi tiết đơn hàng</h3>
                         <div class="order-items">
                             <div class="order-item" v-for="(table, index) in cartItems" :key="index">
-                                <h4>Bàn: {{ table.tableInfo.TABLE_NUMBER }} - {{ table.tableInfo.PRICE }} đ
+                                <h4>Bàn: {{ table.tableInfo.TABLE_NUMBER }} - {{ translateType(table.tableInfo.TYPE) }}
                                 </h4>
                                 <p>Thời gian đặt: {{ table.BOOKING_TIME }}</p>
                                 <div v-if="table.LIST_FOOD.length > 0">
@@ -30,9 +30,10 @@
                                     <h5>Dịch vụ:</h5>
                                     <ul>
                                         <li v-for="(service, idx) in table.SERVICES" :key="idx">
-                                            {{ service.serviceName }} - Giá: {{ formatPrice(service.servicePrice) }}
+                                            {{ service.serviceName }} - Giá: {{ service.servicePrice }} VND
                                         </li>
                                     </ul>
+                                    Tổng giá dịch vụ: {{ table.TOTAL_SERVICE_PRICE }} VND
                                 </div>
                             </div>
                         </div>
@@ -101,6 +102,16 @@ export default {
         this.fetchCart();
     },
     methods: {
+        translateType(type) {
+            switch (type) {
+                case "Normal":
+                    return "Bàn thường";
+                case "Room":
+                    return "Phòng riêng";
+                default:
+                    return type;
+            }
+        },
         async fetchCart() {
             try {
                 // Lấy token từ localStorage

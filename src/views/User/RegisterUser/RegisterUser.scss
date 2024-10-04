@@ -30,8 +30,12 @@
   border-radius: 1rem;
 }
 
+.text-form {
+  color: #34495e;
+}
+
 .modal-header {
-  background-color: #dc3545;
+  background-color: #34495e;
   color: #fff;
   border-bottom: none;
   border-top-left-radius: 1rem;
@@ -47,8 +51,9 @@
 }
 
 .btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
+  background-color: #fae8b2;
+  border-color: #fae8b2;
+  color: black;
 }
 
 .form-floating > .form-control:focus ~ label {

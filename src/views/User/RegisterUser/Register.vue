@@ -11,42 +11,42 @@
             <div class="card-body py-4 px-md-5">
 
 
-              <h2 class="fw-bold mb-2 text-light">Đăng ký</h2>
+              <h2 class="fw-bold mb-2 text-formLogin">Đăng ký</h2>
               <form @submit.prevent="handleSubmit">
                 <div class="form-floating mb-4">
                   <input v-model="FULLNAME" type="text" id="form3Example1"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example1" class="text-danger">Họ và tên</label>
+                    class="form-control form-control-lg border-primary" placeholder=" " />
+                  <label for="form3Example1" class="text-form">Họ và tên</label>
                 </div>
 
                 <div class="form-floating mb-4">
                   <input v-model="PHONE_NUMBER" type="text" id="form3Example2"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example2" class="text-danger">Số điện thoại</label>
+                    class="form-control form-control-lg border-primary" placeholder=" " />
+                  <label for="form3Example2" class="text-form">Số điện thoại</label>
                 </div>
 
                 <div class="form-floating mb-4">
                   <input v-model="EMAIL" type="email" id="form3Example3"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example3" class="text-danger">Email</label>
+                    class="form-control form-control-lg border-primary" placeholder=" " />
+                  <label for="form3Example3" class="text-form">Email</label>
                 </div>
 
                 <div class="form-floating mb-4">
                   <input v-model="ADDRESS" type="text" id="form3Example4"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example4" class="text-danger">Địa chỉ</label>
+                    class="form-control form-control-lg border-primary" placeholder=" " />
+                  <label for="form3Example4" class="text-form">Địa chỉ</label>
                 </div>
 
                 <div class="form-floating mb-4">
                   <input v-model="PASSWORD" type="password" id="form3Example5"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example5" class="text-danger">Mật khẩu</label>
+                    class="form-control form-control-lg border-primary" placeholder=" " />
+                  <label for="form3Example5" class="text-form">Mật khẩu</label>
                 </div>
 
                 <div class="form-floating mb-4">
                   <input v-model="confirmPassword" type="password" id="form3Example6"
-                    class="form-control form-control-lg border-danger" placeholder=" " />
-                  <label for="form3Example6" class="text-danger">Xác nhận mật khẩu</label>
+                    class="form-control form-control-lg border-primary" placeholder=" " />
+                  <label for="form3Example6" class="text-form">Xác nhận mật khẩu</label>
                 </div>
 
                 <div class="d-grid">
@@ -55,7 +55,7 @@
                 </div>
 
                 <div class="text-center">
-                  <a href="/user/login" class="btn btn-link text-danger">Đã có tài khoản?</a>
+                  <a href="/user/login" class="btn btn-link text-formLogin">Đã có tài khoản?</a>
                 </div>
               </form>
 

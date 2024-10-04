@@ -8,7 +8,6 @@
                         <th>Bàn</th>
                         <th>Thời gian đặt</th>
                         <th>Món ăn</th>
-                        <th>Giá món ăn</th>
                         <th>Dịch vụ</th>
                         <th>Tổng Giá</th>
                         <th>Hành động</th>
@@ -16,7 +15,10 @@
                 </thead>
                 <tbody>
                     <tr v-for="table in cart.LIST_TABLES" :key="table.TABLE_ID">
-                        <td>{{ table.tableInfo.TABLE_NUMBER }}</td>
+                        <td>
+                            {{ table.tableInfo.TABLE_NUMBER }}<br />
+                            ({{ translateType(table.tableInfo.TYPE) }})
+                        </td>
                         <td>{{ table.BOOKING_TIME }}</td>
                         <td>
                             <ul>
@@ -25,10 +27,9 @@
                                 </li>
                             </ul>
                         </td>
-                        <td>{{ table.TOTAL_PRICE_FOOD }} VND</td>
                         <td>
                             <ul>
-                                <li v-for="service in table.SERVICES" :key="service.serviceName">
+                                <li v-for="service in table.SERVICES" :key="service.SERVICES_ID">
                                     {{ service.serviceName }} - {{ service.servicePrice }} VND
                                 </li>
                             </ul>
@@ -37,13 +38,13 @@
                         <td class="action-buttons">
                             <button @click="addFood(table)" class="action-button">Thêm món ăn</button>
                             <button @click="editFood(table)" class="action-button">Chỉnh sửa món ăn</button>
-                            <button @click="removeTable(table.TABLE_ID)">Xóa</button>
+                            <button @click="selectServices(table)" class="action-button">Chọn dịch vụ</button>
+                            <button @click="removeTable(table)">Xóa</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
             <div class="price-info">
-                <!-- <h3 class="deposit">Cần cọc: {{ calculateDeposit(cart.TOTAL_PRICES) }} VND</h3> -->
                 <h3 class="total-price">Tổng cộng: {{ cart.TOTAL_PRICES }} VND</h3>
                 <a class="payment" href="/payment">Đặt ngay</a>
             </div>
@@ -53,83 +54,104 @@
         </div>
         <SelectFoodModal v-if="selectedTable" :tableInfo="selectedTable" :modalMode="modalMode" @close="closeModal"
             @update-cart="fetchCart" />
+        <SelectServiceModal v-if="selectedServiceTable" :tableInfo="selectedServiceTable" @close="closeServiceModal"
+            @update-cart="fetchCart" />
     </div>
 </template>
 
 <script>
 import axiosClient from '../../api/axiosClient';
 import SelectFoodModal from './SelectFoodModal.vue';
+import SelectServiceModal from './SelectServiceModal.vue'; // Import SelectServiceModal
 
 export default {
     components: {
         SelectFoodModal,
+        SelectServiceModal, // Register SelectServiceModal
     },
     data() {
         return {
-            cart: null, // Chứa dữ liệu giỏ hàng
-            selectedTable: null, // Bàn đang được chọn để chỉnh sửa món ăn
-            modalMode: '', // Chế độ của modal: 'edit' hoặc 'add'
+            cart: null,
+            selectedTable: null,
+            selectedServiceTable: null, // Bàn cho dịch vụ
+            modalMode: '',
         };
     },
     async created() {
         await this.fetchCart();
     },
     methods: {
+        translateType(type) {
+            switch (type) {
+                case "Normal":
+                    return "Bàn thường";
+                case "Room":
+                    return "Phòng riêng";
+                default:
+                    return type;
+            }
+        },
         async fetchCart() {
             try {
                 const response = await axiosClient.get('/carts/getCartById', {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`, // Giả sử bạn lưu token trong localStorage
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                 });
-                this.cart = response.data.data; // Lưu dữ liệu giỏ hàng vào biến cart
+                this.cart = response.data.data;
             } catch (error) {
                 console.error('Lỗi khi lấy giỏ hàng:', error);
             }
         },
-        async removeTable(tableId) {
+        async removeTable(table) {
             try {
-                // Gửi yêu cầu xóa bàn tới backend
-                await axiosClient.post('/carts/removeTableFromCart', { tableId }, {
+                const payload = {
+                    tableId: table.TABLE_ID,
+                    bookingTime: table.BOOKING_TIME,
+                };
+                await axiosClient.post('/carts/removeTableFromCart', payload, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                 });
-
-                // Tải lại giỏ hàng sau khi xóa thành công
                 await this.fetchCart();
                 alert('Đã xóa bàn khỏi giỏ hàng.');
             } catch (error) {
                 console.error('Lỗi khi xóa bàn khỏi giỏ hàng:', error);
-                alert('Xóa bàn khỏi giỏ hàng thất bại. Vui lòng thử lại.');
+                alert('Xóa bàn khỏi giỏ hàng thất bại.');
             }
         },
-
         calculateTotalPrice(table) {
-            return table.TOTAL_PRICE_FOOD + table.TOTAL_SERVICE_PRICE + table.tableInfo.PRICE;
-        },
-        calculateDeposit(totalPrice) {
-            return (totalPrice * 0.4).toFixed(0);
+            return table.TOTAL_PRICE_FOOD + table.TOTAL_SERVICE_PRICE;
         },
         editFood(table) {
             this.selectedTable = table;
-            this.modalMode = 'edit'; // Chế độ chỉnh sửa món ăn
+            this.modalMode = 'edit';
         },
         addFood(table) {
             this.selectedTable = table;
-            this.modalMode = 'add'; // Chế độ thêm món ăn
+            this.modalMode = 'add';
+        },
+        selectServices(table) {
+            this.selectedServiceTable = table; // Lưu bàn được chọn
         },
         closeModal() {
             this.selectedTable = null;
             this.modalMode = '';
         },
+        closeServiceModal() {
+            this.selectedServiceTable = null; // Đóng modal chọn dịch vụ
+        },
     },
 };
 </script>
 
+
+
+
 <style scoped>
 .cart-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 20px auto;
     background: #ffffff;
     /* Đổi nền trắng */

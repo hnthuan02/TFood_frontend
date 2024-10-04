@@ -38,20 +38,27 @@
         <!-- Modal chọn bàn -->
         <div v-if="isCartVisible" class="cart-modal">
             <div class="modal-content">
-                <h3>Chọn bàn</h3>
-                <ul v-if="cartTables.length > 0">
-                    <li v-for="table in cartTables" :key="table.TABLE_ID">
-                        <!-- Hiển thị số bàn từ tableInfo -->
-                        <input type="radio" :value="table.TABLE_ID" v-model="selectedTable" />
-                        Bàn: {{ table.tableInfo.TABLE_NUMBER }} - Thời gian: {{ table.BOOKING_TIME }}
+                <h3>Chọn Bàn</h3>
+
+                <ul v-if="cartTables.length > 0" class="table-list">
+                    <li v-for="table in cartTables" :key="table.TABLE_ID" class="table-item">
+                        <input type="radio" :value="table.TABLE_ID" v-model="selectedTable" class="table-radio" />
+                        <label>
+                            Bàn: {{ table.tableInfo.TABLE_NUMBER }} - Thời gian: {{ table.BOOKING_TIME }}
+                        </label>
+                        <div class="quantity-selector">
+                            <label for="quantity-{{ table.TABLE_ID }}">Số lượng:</label>
+                            <input type="number" v-model.number="quantities[table.TABLE_ID]" min="1"
+                                id="quantity-{{ table.TABLE_ID }}" placeholder="0" class="quantity-input" />
+
+                        </div>
                     </li>
                 </ul>
-                <p v-else>Không có bàn nào trong giỏ hàng.</p>
-                <button @click="addFoodToSelectedTable">Xác nhận</button>
-                <button @click="toggleCart">Đóng</button>
+                <p v-else class="no-tables-message">Không có bàn nào trong giỏ hàng.</p>
+                <button @click="addFoodToSelectedTable" class="confirm-button">Xác Nhận</button>
+                <button @click="toggleCart" class="close-button">Đóng</button>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -78,6 +85,7 @@ export default {
             selectedTable: null, // Bàn được chọn trong modal
             selectedDish: null, // Món được chọn
             isCartVisible: false, // Trạng thái hiển thị modal
+            quantities: {} // Khởi tạo quantities cho mỗi bàn
         };
     },
     computed: {
@@ -121,16 +129,21 @@ export default {
         async fetchCartTables() {
             try {
                 const response = await axiosClient.get("/carts/getCartById");
-                console.log("Cart data:", response.data); // Kiểm tra dữ liệu giỏ hàng trong console
 
                 // Gán đúng giá trị cho cartTables
                 this.cartTables = response.data.data.LIST_TABLES || [];
-                console.log("Cart tables:", this.cartTables); // Kiểm tra cartTables
+
+                // Khởi tạo quantities cho mỗi bàn mà không cần dùng this.$set
+                this.cartTables.forEach(table => {
+                    this.quantities[table.TABLE_ID] = 1; // Khởi tạo số lượng mặc định là 1 (hoặc 0 tùy bạn)
+                });
+
 
             } catch (error) {
                 console.error("Error fetching cart tables:", error);
             }
         },
+
 
         onOrderDish(dish) {
             this.selectedDish = dish;
@@ -142,13 +155,22 @@ export default {
                 return;
             }
 
+            // Lấy số lượng từ trường nhập liệu
+            const quantity = this.quantities[this.selectedTable] || 0;
+
+            // Kiểm tra số lượng hợp lệ
+            if (quantity <= 0) {
+                alert("Vui lòng nhập số lượng món ăn hợp lệ.");
+                return;
+            }
+
             try {
                 await axiosClient.post("/carts/addFoodToTable", {
                     tableId: this.selectedTable,
                     listFood: [
                         {
                             FOOD_ID: this.selectedDish._id,
-                            QUANTITY: 1
+                            QUANTITY: quantity // Sử dụng số lượng từ trường nhập liệu
                         }
                     ]
                 });
@@ -159,6 +181,7 @@ export default {
                 alert("Có lỗi xảy ra khi thêm món ăn.");
             }
         },
+
         toggleCart() {
             this.isCartVisible = !this.isCartVisible;
         },
@@ -281,16 +304,75 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 999;
 }
 
 .modal-content {
     background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     text-align: center;
+    width: 400px;
+}
+
+h3 {
+    font-family: "Playfair Display", serif;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.table-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.table-item {
+    margin: 10px 0;
+}
+
+.table-radio {
+    margin-right: 10px;
+}
+
+.no-tables-message {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.confirm-button,
+.close-button {
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.confirm-button:hover,
+.close-button:hover {
+    background-color: #34495e;
+}
+
+.quantity-selector {
+    margin-top: 10px;
+}
+
+.quantity-input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 16px;
 }
 </style>

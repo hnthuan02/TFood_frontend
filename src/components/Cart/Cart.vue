@@ -5,6 +5,7 @@
             <table class="cart-table">
                 <thead>
                     <tr>
+                        <th>Chọn</th>
                         <th>Bàn</th>
                         <th>Thời gian đặt</th>
                         <th>Món ăn</th>
@@ -15,6 +16,9 @@
                 </thead>
                 <tbody>
                     <tr v-for="table in cart.LIST_TABLES" :key="table.TABLE_ID">
+                        <td>
+                            <input type="checkbox" :value="table.TABLE_ID" v-model="selectedTables" />
+                        </td>
                         <td>
                             {{ table.tableInfo.TABLE_NUMBER }}<br />
                             ({{ translateType(table.tableInfo.TYPE) }})
@@ -46,7 +50,7 @@
             </table>
             <div class="price-info">
                 <h3 class="total-price">Tổng cộng: {{ cart.TOTAL_PRICES }} VND</h3>
-                <a class="payment" href="/payment">Đặt ngay</a>
+                <button @click="goToPayment" class="payment">Đặt ngay</button>
             </div>
         </div>
         <div v-else>
@@ -75,6 +79,7 @@ export default {
             selectedTable: null,
             selectedServiceTable: null, // Bàn cho dịch vụ
             modalMode: '',
+            selectedTables: [],
         };
     },
     async created() {
@@ -141,6 +146,19 @@ export default {
         },
         closeServiceModal() {
             this.selectedServiceTable = null; // Đóng modal chọn dịch vụ
+        },
+        goToPayment() {
+            if (this.selectedTables.length === 0) {
+                alert('Vui lòng chọn ít nhất một bàn để thanh toán');
+                return;
+            }
+            // Lưu danh sách bàn được chọn vào localStorage
+            localStorage.setItem('selectedTables', JSON.stringify(this.selectedTables));
+            // Chuyển hướng đến trang thanh toán
+            this.$router.push('/payment').then(() => {
+                // Reload lại trang sau khi chuyển hướng
+                window.location.reload();
+            });
         },
     },
 };

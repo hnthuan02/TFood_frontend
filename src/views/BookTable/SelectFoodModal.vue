@@ -9,11 +9,13 @@
                     <div class="food-info">
                         <h4>{{ food.NAME }}</h4>
                         <p>{{ formatPrice(food.PRICE) }}</p>
-                        <input type="number" v-model.number="quantities[food._id]" min="0" placeholder="Số lượng" />
+                        <div class="quantity-selector">
+                            <button @click="decreaseQuantity(food._id)" class="quantity-button">-</button>
+                            <span class="quantity-display">{{ quantities[food._id] || 0 }}</span>
+                            <button @click="increaseQuantity(food._id)" class="quantity-button">+</button>
+                        </div>
                         <button v-if="quantities[food._id] > 0 && modalMode === 'edit'" @click="removeFood(food._id)"
-                            class="remove-button">
-                            Xóa
-                        </button>
+                            class="remove-button">Xóa</button>
                     </div>
                 </div>
             </div>
@@ -30,6 +32,7 @@
         </div>
     </div>
 </template>
+
 
 <script>
 import axiosClient from '../../api/axiosClient';
@@ -176,39 +179,6 @@ export default {
                 alert('Cập nhật món ăn thất bại.');
             }
         },
-        async updateFoodsInTable() {
-            const selectedFoods = Object.entries(this.quantities)
-                .filter(([foodId, quantity]) => quantity > 0)
-                .map(([foodId, quantity]) => ({
-                    foodId,
-                    newQuantity: quantity,
-                }));
-
-            try {
-                for (const food of selectedFoods) {
-                    const payload = {
-                        tableId: this.tableInfo.TABLE_ID,
-                        foodId: food.foodId,
-                        newQuantity: food.newQuantity,
-                    };
-                    await axiosClient.put('/carts/updateFoodInTable', payload, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        },
-                    });
-                }
-
-                alert('Đã cập nhật số lượng món ăn.');
-                this.$emit('update-cart');
-
-                if (selectedFoods.length === 0) {
-                    this.close();
-                }
-            } catch (error) {
-                console.error('Lỗi khi cập nhật món ăn:', error);
-                alert('Cập nhật món ăn thất bại.');
-            }
-        },
         async removeFood(foodId) {
             try {
                 const payload = {
@@ -235,9 +205,18 @@ export default {
         close() {
             this.$emit('close');
         },
+        increaseQuantity(foodId) {
+            this.quantities[foodId] = (this.quantities[foodId] || 0) + 1; // Tăng số lượng
+        },
+        decreaseQuantity(foodId) {
+            if (this.quantities[foodId] > 0) {
+                this.quantities[foodId] -= 1; // Giảm số lượng
+            }
+        },
     },
 };
 </script>
+
 
 <style scoped>
 .modal-overlay {
@@ -260,9 +239,7 @@ export default {
     max-height: 80vh;
     overflow-y: auto;
     width: 90%;
-    /* Thay đổi từ 400px thành 90% */
     max-width: 1000px;
-    /* Thêm max-width để giới hạn chiều rộng tối đa */
 }
 
 .food-list {
@@ -273,7 +250,6 @@ export default {
 
 .food-item {
     width: calc(25% - 20px);
-    /* Điều chỉnh để có 4 món trên mỗi hàng */
     margin: 10px;
     border: 1px solid #ddd;
     padding: 10px;
@@ -295,10 +271,45 @@ export default {
     margin: 10px 0;
 }
 
-.food-info input {
-    width: 60px;
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+.quantity-button {
+    background-color: #f9f9f9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    width: 30px;
+    /* Chiều rộng nút */
+    height: 30px;
+    /* Chiều cao nút */
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.quantity-button:hover {
+    background-color: #ecf5ff;
+    /* Đổi màu khi hover */
+}
+
+.quantity-display {
+    margin: 0 10px;
+    /* Khoảng cách giữa nút và số lượng */
+    font-size: 18px;
+    /* Kích thước chữ hiển thị số lượng */
+    color: #333;
+    /* Màu chữ */
+    width: 30px;
+    /* Đảm bảo chiều rộng để căn giữa */
     text-align: center;
-    margin-top: 5px;
+    /* Căn giữa số lượng */
 }
 
 .remove-button {

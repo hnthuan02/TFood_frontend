@@ -1,29 +1,26 @@
 <template>
     <div class="booking-container">
         <h1 class="reservation-title">
-            <span class="make-text">ĐẶT</span> BÀN
+            <span class="make-text">ĐẶT BÀN</span>
         </h1>
         <p class="reservation-subtitle">
             Trải nghiệm ẩm thực đỉnh cao trong không gian đẳng cấp, <br />
             nơi tinh hoa và phong cách hội tụ dành cho bạn.
         </p>
-
         <!-- Phần Reservation -->
         <div class="reservation-form">
             <div class="form-group">
                 <div class="icon-container">
                     <i class="fas fa-calendar-alt"></i>
                 </div>
-                <input type="date" v-model="selectedDate" class="form-control" />
+                <input type="date" v-model="selectedDate" class="form-control" :min="minDate" />
             </div>
-
             <div class="form-group">
                 <div class="icon-container">
                     <i class="fas fa-clock"></i>
                 </div>
-                <input type="time" v-model="selectedTime" class="form-control" />
+                <input type="time" v-model="selectedTime" class="form-control" step="300" required />
             </div>
-
             <div class="form-group">
                 <div class="icon-container">
                     <i class="fas fa-user"></i>
@@ -83,7 +80,6 @@
 
                     <button class="confirm-button" @click="addTableToCart">Xác nhận</button>
                     <button class="close-button" @click="closePopup">Đóng</button>
-
                 </div>
 
                 <div class="popup-right">
@@ -92,8 +88,15 @@
                         <h4>Chọn dịch vụ</h4>
                         <div class="services-list">
                             <div v-for="service in availableServices" :key="service._id" class="service-item">
-                                <input type="checkbox" :id="`service-${service._id}`" :value="service"
-                                    v-model="selectedServices" />
+                                <div class="checkbox-wrapper-31">
+                                    <input type="checkbox" :id="`service-${service._id}`" :value="service"
+                                        v-model="selectedServices" />
+                                    <svg viewBox="0 0 35.6 35.6">
+                                        <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                                        <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                                        <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                                    </svg>
+                                </div>
                                 <label :for="`service-${service._id}`">
                                     {{ service.serviceName }} - {{ service.servicePrice }} VND
                                 </label>
@@ -107,15 +110,13 @@
                             <p>Chưa có món ăn nào được chọn.</p>
                         </div>
                         <div v-else>
-                            <div v-for="food in selectedFoodItems" :key="food._id" class="food-item d-flex ">
+                            <div v-for="food in selectedFoodItems" :key="food._id" class="food-item d-flex">
                                 <h5 class="px-1">{{ food.name }} -</h5> <!-- Hiển thị tên món ăn -->
                                 <p> Số lượng: {{ food.quantity }}</p> <!-- Hiển thị số lượng -->
                             </div>
                         </div>
                         <button class="add-food-button" @click="addFood">Chọn thực đơn</button> <!-- Nút chọn món ăn -->
                     </div>
-
-
                 </div>
             </div>
         </div>
@@ -135,7 +136,6 @@
                                 <span>{{ quantities[food._id] || 0 }}</span>
                                 <button @click="increaseQuantity(food._id)">+</button>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -143,11 +143,6 @@
                 <button @click="closeFoodPopup" class="close-button">Đóng</button>
             </div>
         </div>
-
-
-
-
-
     </div>
 </template>
 
@@ -162,6 +157,7 @@ export default {
     data() {
         return {
             selectedDate: "",
+            minDate: '',
             selectedTime: "",
             peopleCount: 1,
             tables: [],
@@ -175,6 +171,15 @@ export default {
             selectedFoodItems: [],
             quantities: {}, // Danh sách món ăn đã chọn
         };
+    },
+    mounted() {
+        const today = new Date(); // Lấy ngày hiện tại
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+        const year = today.getFullYear();
+
+        this.minDate = `${year}-${month}-${day}`; // Định dạng ngày để sử dụng cho min
+        this.selectedDate = this.minDate; // Thiết lập ngày chọn mặc định là hôm nay
     },
     computed: {
         // Chuyển đổi giá trị TYPE thành tiếng Việt
@@ -290,7 +295,6 @@ export default {
             this.closeFoodPopup(); // Đóng popup chọn món ăn
         },
 
-
         async addTableToCart() {
             if (!this.selectedTime || !this.selectedDate) {
                 alert("Vui lòng chọn ngày và giờ!");
@@ -370,7 +374,10 @@ h5 {
     max-width: 100%;
     margin: 0 auto;
     padding: 30px;
-    background-color: #f8f9fa;
+    background-image: url('https://images.pexels.com/photos/260922/pexels-photo-260922.jpeg?cs=srgb&dl=pexels-pixabay-260922.jpg&fm=jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     text-align: center;
     color: #2c3e50;
@@ -385,14 +392,14 @@ h5 {
 }
 
 .make-text {
-    color: #d4af37;
+    color: #F8F3CE;
     font-size: 40px;
     font-family: "Playfair Display", serif;
 }
 
 .reservation-subtitle {
     font-family: "Playfair Display", serif;
-    color: #777;
+    color: #c9e732;
     font-size: 14px;
     margin-bottom: 30px;
 }
@@ -406,6 +413,7 @@ h5 {
 
 .form-group {
     position: relative;
+    margin-bottom: 20px;
 }
 
 .form-control {
@@ -416,12 +424,14 @@ h5 {
     width: 250px;
     text-align: center;
     color: #333;
+    background-color: #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease, border 0.3s ease;
 }
 
 .form-control:focus {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: #d4af37;
     outline: none;
 }
 
@@ -435,9 +445,10 @@ h5 {
 }
 
 .reservation-button {
-    background-color: #2c3e50;
-    color: #fff;
+    background-color: #F8F3CE;
+    color: #000000;
     font-size: 16px;
+    font-weight: bold;
     padding: 12px 30px;
     border: none;
     border-radius: 25px;
@@ -450,12 +461,13 @@ h5 {
 
 .reservation-button:hover {
     background-color: #34495e;
+    color: #f8f9fa;
     transform: translateY(-2px);
 }
 
 .table-container {
     margin-top: 50px;
-    background-color: #ffffff;
+    background-color: #34495E;
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     padding: 20px;
@@ -525,7 +537,7 @@ tr:hover {
 .no-table-message {
     font-family: "Playfair Display", serif;
     font-size: 18px;
-    color: #e74c3c;
+    color: #ffffff;
     margin-top: 30px;
 }
 
@@ -533,7 +545,6 @@ tr:hover {
 .time-popup {
     display: flex;
     align-items: flex-start;
-    /* Căn giữa theo chiều dọc */
     justify-content: center;
     position: fixed;
     top: 50%;
@@ -545,35 +556,27 @@ tr:hover {
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    width: 600px;
-    /* Chiều rộng popup */
+    width: 660px;
 }
 
 .popup-content {
     display: flex;
-    /* Sử dụng flexbox để bố trí */
     width: 100%;
 }
 
 .popup-left {
     flex: 1;
-    /* Phần bên trái */
     padding-right: 20px;
-    /* Khoảng cách giữa hai phần */
 }
 
 .popup-right {
     flex: 1;
-    /* Phần bên phải */
     text-align: left;
-    /* Căn trái cho nội dung */
 }
 
 .popup-table-image {
     width: 100%;
-    /* Chiều rộng hình ảnh */
     height: auto;
-    /* Chiều cao tự động */
     border-radius: 8px;
     margin-top: 10px;
 }
@@ -682,67 +685,44 @@ tr:hover {
 
 .add-food-button {
     background-color: #2c3e50;
-    /* Màu nền tương tự như các nút khác */
     color: white;
-    /* Màu chữ trắng */
     padding: 10px 15px;
-    /* Khoảng cách nội dung */
     border: none;
-    /* Không có đường viền */
     border-radius: 5px;
-    /* Bo góc */
     cursor: pointer;
-    /* Con trỏ chuột */
     transition: background-color 0.3s ease, transform 0.3s ease;
-    /* Hiệu ứng chuyển động */
     font-size: 16px;
-    /* Kích thước chữ */
     text-transform: uppercase;
-    /* Chữ hoa */
     margin-top: 20px;
-    /* Khoảng cách trên */
 }
 
 .add-food-button:hover {
     background-color: #34495e;
-    /* Màu nền khi hover */
-    transform: translateY(-2px);
-    /* Hiệu ứng đẩy lên */
 }
 
 .food-list {
     display: flex;
     flex-wrap: wrap;
-    /* Cho phép các món ăn xuống hàng khi không đủ chỗ */
     justify-content: center;
-    /* Căn giữa các món ăn */
     gap: 20px;
-    /* Khoảng cách giữa các món ăn */
 }
 
 .food-item {
     flex: 0 0 calc(25% - 20px);
-
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: hidden;
     background-color: #fff;
     text-align: center;
     padding: 10px;
-
 }
 
 .food-item img {
     width: 100%;
-    /* Đảm bảo hình ảnh chiếm toàn bộ chiều rộng của khung chứa */
     height: auto;
-    /* Chiều cao tự động để giữ tỉ lệ khung hình */
     max-height: 100px;
-    /* Giới hạn chiều cao tối đa của hình ảnh */
     object-fit: cover;
-    /* Cắt hình ảnh để phù hợp với khung chứa mà không làm méo */
     border-radius: 8px;
-    /* Bo góc cho hình ảnh */
 }
 
 .quantity-selector {
@@ -750,36 +730,85 @@ tr:hover {
     align-items: center;
     justify-content: center;
     background-color: #2c3e50;
-    /* Màu nền */
     border-radius: 5px;
-    /* Bo góc */
     padding: 10px;
-    /* Khoảng cách bên trong */
 }
 
 .quantity-selector button {
     background-color: transparent;
-    /* Nền trong suốt */
     border: none;
-    /* Không có đường viền */
     color: white;
-    /* Màu chữ trắng */
     font-size: 18px;
-    /* Kích thước chữ */
     padding: 0 15px;
-    /* Khoảng cách trái và phải */
     cursor: pointer;
-    /* Hiệu ứng con trỏ */
 }
 
 .quantity-selector span {
     color: white;
-    /* Màu chữ trắng */
     font-size: 18px;
-    /* Kích thước chữ */
     min-width: 30px;
-    /* Chiều rộng tối thiểu cho span */
     text-align: center;
-    /* Căn giữa chữ */
+}
+
+/* Styles cho checkbox tùy chỉnh */
+.checkbox-wrapper-31 {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.checkbox-wrapper-31 input[type="checkbox"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    margin: 0;
+    opacity: 0;
+    -webkit-appearance: none;
+}
+
+.checkbox-wrapper-31 .background {
+    fill: #ccc;
+    transition: ease all 0.6s;
+}
+
+.checkbox-wrapper-31 .stroke {
+    fill: none;
+    stroke: #fff;
+    stroke-miterlimit: 10;
+    stroke-width: 2px;
+    stroke-dashoffset: 100;
+    stroke-dasharray: 100;
+    transition: ease all 0.6s;
+}
+
+.checkbox-wrapper-31 .check {
+    fill: none;
+    stroke: #fff;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2px;
+    stroke-dashoffset: 22;
+    stroke-dasharray: 22;
+    transition: ease all 0.6s;
+}
+
+.checkbox-wrapper-31 input[type=checkbox]:hover {
+    cursor: pointer;
+}
+
+.checkbox-wrapper-31 input[type=checkbox]:checked+svg .background {
+    fill: #34495E;
+}
+
+.checkbox-wrapper-31 input[type=checkbox]:checked+svg .stroke {
+    stroke-dashoffset: 0;
+}
+
+.checkbox-wrapper-31 input[type=checkbox]:checked+svg .check {
+    stroke-dashoffset: 0;
 }
 </style>

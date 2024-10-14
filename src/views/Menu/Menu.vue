@@ -2,9 +2,14 @@
     <div class="MenuPage">
         <section class="new-dishes">
             <div class="container">
+                <div class="search-box">
+                    <button class="btn-search" @click="searchDishes"><i class="fas fa-search"></i></button>
+                    <input type="text" class="input-search" v-model="searchQuery" placeholder="Tìm kiếm món ăn..."
+                        @keydown.enter="searchDishes" />
+                </div>
                 <!-- Món mới -->
-                <h2 v-if="!type" class="dishes-title">Món Mới</h2>
-                <div class="dish-grid" v-if="!type">
+                <h2 v-if="!type && !searchQuery" class="dishes-title">Món Mới</h2>
+                <div class="dish-grid" v-if="!type && !searchQuery">
                     <div class="dish-card" v-for="dish in filteredDishesNew" :key="dish._id">
                         <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
                         <h3 class="dish-name">{{ dish.NAME }}</h3>
@@ -12,9 +17,20 @@
                         <button type="submit" class="btn btn-order" @click="onOrderDish(dish)">Đặt ngay</button>
                     </div>
                 </div>
+                <!-- Hiển thị kết quả tìm kiếm -->
+                <h2 v-if="searchQuery" class="dishes-title">Kết quả tìm kiếm cho: "{{ searchQuery }}"</h2>
+                <div class="dish-grid" v-if="searchQuery">
+                    <div class="dish-card" v-for="dish in searchedDishes" :key="dish._id">
+                        <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
+                        <h3 class="dish-name">{{ dish.NAME }}</h3>
+                        <p class="dish-price">{{ formatPrice(dish.PRICE) }}</p>
+                        <button type="submit" class="btn btn-order" @click="onOrderDish(dish)">Đặt ngay</button>
+                    </div>
+                </div>
+
                 <!-- Món bán chạy -->
-                <h2 v-if="!type" class="dishes-title best-sell">Món Bán Chạy</h2>
-                <div class="dish-grid" v-if="!type">
+                <h2 v-if="!type && !searchQuery" class="dishes-title best-sell">Món Bán Chạy</h2>
+                <div class="dish-grid" v-if="!type && !searchQuery">
                     <div class="dish-card" v-for="dish in filteredDishesBest" :key="dish._id">
                         <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
                         <h3 class="dish-name">{{ dish.NAME }}</h3>
@@ -22,6 +38,7 @@
                         <button type="submit" class="btn btn-order" @click="onOrderDish(dish)">Đặt ngay</button>
                     </div>
                 </div>
+
                 <!-- Món theo loại -->
                 <h2 v-if="type" class="dishes-title">{{ displayType }}</h2>
                 <div class="dish-grid" v-if="type">
@@ -39,7 +56,6 @@
         <div v-if="isCartVisible" class="cart-modal">
             <div class="modal-content">
                 <h3>Chọn Bàn</h3>
-
                 <ul v-if="cartTables.length > 0" class="table-list">
                     <li v-for="table in cartTables" :key="table.TABLE_ID" class="table-item">
                         <input type="radio" :value="table.TABLE_ID" v-model="selectedTable" class="table-radio" />
@@ -50,7 +66,6 @@
                             <label for="quantity-{{ table.TABLE_ID }}">Số lượng:</label>
                             <input type="number" v-model.number="quantities[table.TABLE_ID]" min="1"
                                 id="quantity-{{ table.TABLE_ID }}" placeholder="0" class="quantity-input" />
-
                         </div>
                     </li>
                 </ul>
@@ -85,7 +100,8 @@ export default {
             selectedTable: null, // Bàn được chọn trong modal
             selectedDish: null, // Món được chọn
             isCartVisible: false, // Trạng thái hiển thị modal
-            quantities: {} // Khởi tạo quantities cho mỗi bàn
+            quantities: {}, // Khởi tạo quantities cho mỗi bàn
+            searchQuery: '',
         };
     },
     computed: {
@@ -109,6 +125,11 @@ export default {
                 default:
                     return this.type;
             }
+        },
+        searchedDishes() {
+            return this.dishes.filter(dish =>
+                dish.NAME.toLowerCase().includes(this.searchQuery.toLowerCase())
+            );
         }
     },
     mounted() {
@@ -137,14 +158,10 @@ export default {
                 this.cartTables.forEach(table => {
                     this.quantities[table.TABLE_ID] = 1; // Khởi tạo số lượng mặc định là 1 (hoặc 0 tùy bạn)
                 });
-
-
             } catch (error) {
                 console.error("Error fetching cart tables:", error);
             }
         },
-
-
         onOrderDish(dish) {
             this.selectedDish = dish;
             this.toggleCart(); // Hiển thị modal để chọn bàn
@@ -155,10 +172,8 @@ export default {
                 return;
             }
 
-            // Lấy số lượng từ trường nhập liệu
             const quantity = this.quantities[this.selectedTable] || 0;
 
-            // Kiểm tra số lượng hợp lệ
             if (quantity <= 0) {
                 alert("Vui lòng nhập số lượng món ăn hợp lệ.");
                 return;
@@ -170,7 +185,7 @@ export default {
                     listFood: [
                         {
                             FOOD_ID: this.selectedDish._id,
-                            QUANTITY: quantity // Sử dụng số lượng từ trường nhập liệu
+                            QUANTITY: quantity
                         }
                     ]
                 });
@@ -181,13 +196,28 @@ export default {
                 alert("Có lỗi xảy ra khi thêm món ăn.");
             }
         },
-
         toggleCart() {
             this.isCartVisible = !this.isCartVisible;
         },
         formatPrice(price) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-        }
+        },
+        async searchDishes() {
+            if (!this.searchQuery) {
+                this.fetchProducts(); // Gọi lại danh sách món ăn gốc nếu cần
+                return;
+            }
+
+            try {
+                const response = await axiosClient.post('http://localhost:3001/foods/search', {
+                    query: this.searchQuery
+                });
+
+                this.dishes = response.data.data; // Gán dữ liệu tìm kiếm vào dishes
+            } catch (error) {
+                console.error('Lỗi khi tìm kiếm món ăn:', error);
+            }
+        },
     }
 };
 </script>
@@ -197,6 +227,67 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 
+.search-box {
+    width: fit-content;
+    height: fit-content;
+    position: relative;
+}
+
+.input-search {
+    height: 50px;
+    width: 50px;
+    border-style: none;
+    padding: 10px;
+    font-size: 18px;
+    letter-spacing: 2px;
+    outline: none;
+    border-radius: 25px;
+    transition: all 0.5s ease-in-out;
+    background-color: #436f9b;
+    padding-right: 40px;
+    color: #000000;
+}
+
+.input-search::placeholder {
+    color: rgba(47, 66, 85);
+    font-size: 18px;
+    letter-spacing: 2px;
+    font-weight: 100;
+}
+
+.btn-search {
+    width: 50px;
+    height: 50px;
+    border-style: none;
+    font-size: 20px;
+    font-weight: bold;
+    outline: none;
+    cursor: pointer;
+    border-radius: 50%;
+    position: absolute;
+    right: 0px;
+    color: #000000;
+    background-color: transparent;
+    pointer-events: painted;
+}
+
+.btn-search:focus~.input-search {
+    width: 300px;
+    border-radius: 0px;
+    background-color: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 500ms cubic-bezier(0, 0.110, 0.35, 2);
+}
+
+.input-search:focus {
+    width: 300px;
+    border-radius: 0px;
+    background-color: transparent;
+    border-bottom: 1px solid rgba(47, 66, 85);
+    transition: all 500ms cubic-bezier(0, 0.110, 0.35, 2);
+}
+
+/* Các kiểu giao diện món ăn */
 .MenuPage {
     .new-dishes {
         padding: 60px 0;
@@ -271,17 +362,6 @@ export default {
         }
     }
 
-    .sticky-category {
-        position: sticky;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: #2b1b17;
-        color: #fff;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        padding: 10px 20px;
-    }
-
     .best-sell {
         margin-top: 20px;
     }
@@ -341,14 +421,14 @@ h3 {
 }
 
 .no-tables-message {
-    color: #e74c3c;
+    color: #000000;
     font-weight: bold;
 }
 
 .confirm-button,
 .close-button {
     background-color: #2c3e50;
-    color: white;
+    color: rgb(255, 255, 255);
     border: none;
     border-radius: 5px;
     padding: 10px 15px;
@@ -370,7 +450,7 @@ h3 {
 .quantity-input {
     width: 60px;
     padding: 5px;
-    border: 1px solid #ddd;
+    border: 1px solid #000000;
     border-radius: 5px;
     text-align: center;
     font-size: 16px;

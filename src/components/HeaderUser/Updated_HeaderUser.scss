@@ -193,3 +193,13 @@ header {
     color: #deb981;
   }
 }
+
+.user-info {
+  display: flex;
+  align-items: center; /* Căn giữa nội dung theo chiều dọc */
+  cursor: pointer; /* Hiện thị con trỏ tay khi di chuột */
+}
+
+.user-info:hover {
+  border-radius: 5px; /* Bo góc cho hiệu ứng hover */
+}

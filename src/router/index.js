@@ -9,6 +9,7 @@ import BookTable from "../views/BookTable/BookTable.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
 import Payment from "../views/Payment/Payment.vue";
+import InforUser from "../views/User/InfoUser/InforUser.vue";
 import Login from "../views/User/LoginUser/Login.vue";
 import RegisterUser from "../views/User/RegisterUser/Register.vue";
 
@@ -92,6 +93,13 @@ const routes = [
     component: Payment,
     meta: {
       layout: TableLayout,
+    },
+  },
+  {
+    path: "/user/info",
+    component: InforUser,
+    meta: {
+      layout: LoginLayout,
     },
   },
 ];

@@ -44,10 +44,12 @@
             <!-- Hiển thị thông tin người dùng và nút Đăng xuất khi đã đăng nhập -->
             <li class="nav-item" v-else>
               <div class="d-flex align-items-center">
-                <div class="avatar me-2">
-                  {{ getInitials(userInfo?.FULLNAME) || 'User' }}
-                </div>
-                <span class="username me-3">{{ userInfo?.FULLNAME || 'User' }}</span>
+                <router-link to="/user/info" class="user-info" style="text-decoration: none; color: inherit;">
+                  <div class="avatar me-2">
+                    {{ getInitials(userInfo?.FULLNAME) || 'User' }}
+                  </div>
+                  <span class="username me-3">{{ userInfo?.FULLNAME || 'User' }}</span>
+                </router-link>
                 <a class="btn" href="#" @click="logout">Đăng xuất</a>
               </div>
             </li>

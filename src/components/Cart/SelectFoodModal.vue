@@ -202,7 +202,10 @@ export default {
 }
 
 .modal-content {
-    background: #fff;
+    background-image: url('https://t4.ftcdn.net/jpg/02/92/20/37/360_F_292203735_CSsyqyS6A4Z9Czd4Msf7qZEhoxjpzZl1.jpg');
+    background-size: cover;
+    /* Đảm bảo ảnh nền bao phủ toàn bộ modal */
+    background-position: center;
     padding: 20px;
     border-radius: 8px;
     max-height: 80vh;
@@ -223,6 +226,7 @@ export default {
     width: calc(25% - 20px);
     /* Điều chỉnh để có 4 món trên mỗi hàng */
     margin: 10px;
+    background-color: rgb(255, 255, 255);
     border: 1px solid #ddd;
     padding: 10px;
     border-radius: 8px;

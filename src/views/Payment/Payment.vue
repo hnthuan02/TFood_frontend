@@ -27,7 +27,7 @@
                                     Tổng giá món ăn: {{ table.TOTAL_PRICE_FOOD }} VND
                                 </div>
                                 <div v-if="table.SERVICES.length > 0">
-                                    <h5>Dịch vụ:</h5>
+                                    <h5 class="service-contain">Dịch vụ:</h5>
                                     <ul>
                                         <li v-for="(service, idx) in table.SERVICES" :key="idx">
                                             {{ service.serviceName }} - Giá: {{ service.servicePrice }} VND
@@ -71,7 +71,7 @@
                             </select>
                         </div>
 
-                        <button @click="confirmPayment" class="btn-payment">Xác nhận thanh toán</button>
+                        <button @click="processPayment" class="btn-payment">Xác nhận thanh toán</button>
                     </div>
                 </div>
 
@@ -95,13 +95,43 @@ export default {
             customerName: '', // Họ tên khách hàng
             customerPhone: '', // Số điện thoại khách hàng
             customerEmail: '', // Email khách hàng
-            paymentMethod: 'cash', // Phương thức thanh toán mặc định
+            paymentMethod: 'vnpay', // Phương thức thanh toán mặc định
         };
     },
     mounted() {
-        this.fetchCart();
+        this.fetchSelectedTables(); // Gọi hàm lấy các bàn đã chọn
     },
     methods: {
+        async fetchSelectedTables() {
+            try {
+                const selectedTables = JSON.parse(localStorage.getItem('selectedTables'));
+                if (!selectedTables || selectedTables.length === 0) {
+                    alert('Không có bàn nào được chọn.');
+                    this.$router.push('/cart'); // Quay lại trang giỏ hàng nếu không có bàn nào
+                    return;
+                }
+
+                const response = await axiosClient.get("/carts/getCartById", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                const cartData = response.data.data;
+
+                // Lọc các bàn đã chọn từ giỏ hàng
+                this.cartItems = cartData.LIST_TABLES.filter(table =>
+                    selectedTables.includes(table.TABLE_ID)
+                );
+
+                // Tính tổng giá
+                this.totalPrice = this.cartItems.reduce((total, table) => {
+                    return total + table.TOTAL_PRICE_FOOD + table.TOTAL_SERVICE_PRICE;
+                }, 0);
+            } catch (error) {
+                console.error("Lỗi khi lấy giỏ hàng:", error);
+            }
+        },
         translateType(type) {
             switch (type) {
                 case "Normal":
@@ -138,34 +168,45 @@ export default {
         formatPrice(price) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
         },
-        async confirmPayment() {
-            // Tạo dữ liệu booking để gửi lên server
-            const bookingData = {
+        async processPayment() {
+            console.log("Customer Name:", this.customerName);
+            console.log("Customer Phone:", this.customerPhone);
+            console.log("Customer Email:", this.customerEmail);
+            const paymentData = {
                 userName: this.customerName,
                 phoneNumber: this.customerPhone,
                 email: this.customerEmail,
+                selectedTables: JSON.parse(localStorage.getItem('selectedTables')),
             };
-
+            console.log(paymentData);
             try {
-                // Gửi yêu cầu tạo booking
-                const response = await axiosClient.post("/booking/createBookingFromCart", bookingData, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`, // Đảm bảo token người dùng được truyền vào
-                    },
-                });
+                // Gọi API đặt phòng
+                const response = await axiosClient.post("/booking/createBookingFromCart", paymentData);
+                console.log(response);
 
                 if (response.data.success) {
-                    alert("Đặt bàn thành công!");
-                    // Điều hướng tới trang thành công nếu cần
-                    // this.$router.push({ name: 'SuccessPage' });
+                    // Sau khi đặt phòng thành công, tạo URL thanh toán VNPAY
+                    const paymentResponse = await axiosClient.post(
+                        "/payments/create_payment_url",
+                        {
+                            id: response.data.data._id,
+                            totalPrice: response.data.data.TOTAL_PRICE,
+                        }
+                    );
+
+                    if (paymentResponse.data && paymentResponse.data.data.url) {
+                        window.open(paymentResponse.data.data.url, "_blank");
+                    } else {
+                        this.$toast.error("Không thể tạo liên kết thanh toán VNPAY.");
+                    }
                 } else {
-                    alert("Đặt bàn thất bại. Vui lòng thử lại.");
+                    this.$toast.error("Đặt bàn thất bại.");
                 }
             } catch (error) {
                 console.error("Lỗi khi đặt bàn:", error);
-                alert("Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.");
+                this.$toast.error("Đặt bàn thất bại. Vui lòng thử lại.");
             }
-        }
+        },
 
     },
 };
@@ -176,6 +217,18 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
 
 .PaymentPage {
+    h5 {
+        margin-bottom: 0;
+    }
+
+    .service-contain {
+        margin-top: 15px;
+    }
+
+    ul {
+        margin-bottom: 0;
+    }
+
     .payment-section {
         padding: 60px 0;
         background-color: #f8f9fa;

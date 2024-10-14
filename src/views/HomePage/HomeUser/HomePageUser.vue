@@ -54,16 +54,17 @@
             </div>
         </section>
 
+
         <!-- Make Reservation Section -->
         <section class="reservation-section text-center py-5">
             <h2 class="reservation-title">Make Reservation</h2>
             <form @submit.prevent="makeReservation" class="reservation-form">
                 <div class="form-group">
-                    <input type="date" v-model="reservationDate" placeholder="mm/dd/yyyy" class="form-control"
+                    <input type="text" v-model="reservationDate" placeholder="mm/dd/yyyy" class="form-control"
                         required />
                 </div>
                 <div class="form-group">
-                    <input type="time" v-model="reservationTime" class="form-control" required />
+                    <input type="text" v-model="reservationTime" placeholder="--:--" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <select v-model="reservationPeople" class="form-control" required>
@@ -77,8 +78,6 @@
     </div>
 </template>
 
-
-
 <script>
 export default {
     mounted() {
@@ -88,15 +87,12 @@ export default {
 </script>
 
 <style scoped>
-/* Phong cách sang trọng với tông màu đỏ thẳm */
 .container-top {
-
     background: linear-gradient(to right, rgba(43, 27, 23, 0.8), rgba(60, 47, 47, 0.8)), url('../../../assets/backgroundBannner.webp') no-repeat center center;
     background-size: cover;
     padding: 60px;
     text-align: center;
     color: #ffd700;
-    /* Màu chữ vàng nhạt */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
@@ -111,45 +107,17 @@ h5 {
     font-size: 3.5rem;
     font-weight: 700;
     text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.7);
-    font-family: Kristi, "Comic Sans MS", cursive, sans-serif;
-    /* Font sang trọng */
 }
 
 .lead {
     font-size: 1.5rem;
     margin-bottom: 20px;
     color: #CFA670;
-    /* Màu vàng nhạt */
     font-family: 'Playfair Display', serif;
 }
 
 .hero {
     padding: 100px 0;
-    /* Màu nền đỏ thẳm */
-    color: #ffd700;
-}
-
-.hero h1,
-.hero p {
-    margin-bottom: 20px;
-}
-
-.btn-light {
-    background-color: #ffd700;
-    color: #2b1b17;
-    border: 2px solid #ffd700;
-    transition: all 0.3s ease;
-    padding: 12px 30px;
-    border-radius: 30px;
-    font-weight: bold;
-    font-family: 'Playfair Display', serif;
-}
-
-.btn-light:hover {
-    background-color: #a93226;
-    color: #fff;
-    border: 2px solid #a93226;
-    transform: scale(1.1);
 }
 
 .product-carousel {
@@ -170,32 +138,6 @@ h5 {
     border-radius: 8px;
     color: #ffd700;
     font-family: 'Playfair Display', serif;
-}
-
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-    filter: invert(100%);
-}
-
-.about {
-    padding: 50px 20px;
-    background: #2b1b17;
-    color: #ffd700;
-
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-h2 {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-    font-family: 'Playfair Display', serif;
-}
-
-.about p {
-    font-size: 1.2rem;
-    line-height: 1.6;
 }
 
 .reservation-section {
@@ -236,5 +178,11 @@ h2 {
 
 .btn-primary:hover {
     background-color: #34495e;
+}
+
+.contact-info {
+    margin-top: 20px;
+    color: #999;
+    font-size: 0.9rem;
 }
 </style>

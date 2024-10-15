@@ -1,14 +1,18 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import Cart from "../components/Cart/Cart.vue";
+import AdminLayout from "../layouts/AdminLayout/AdminLayout.vue";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import MenuLayout from "../layouts/Menu/MenuLayout.vue";
 import TableLayout from "../layouts/Table/TableLayout.vue";
 import store from "../store";
+import HomeAdmin from "../views/Admin/HomeAdmin/HomeAdmin.vue";
+import MenuAdmin from "../views/Admin/MenuAdmin/MenuAdmin.vue";
 import BookTable from "../views/BookTable/BookTable.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
 import Payment from "../views/Payment/Payment.vue";
+import Booked from "../views/User/InfoUser/Booked.vue";
 import InforUser from "../views/User/InfoUser/InforUser.vue";
 import Login from "../views/User/LoginUser/Login.vue";
 import RegisterUser from "../views/User/RegisterUser/Register.vue";
@@ -100,6 +104,28 @@ const routes = [
     component: InforUser,
     meta: {
       layout: LoginLayout,
+    },
+  },
+  {
+    path: "/user/booked",
+    component: Booked,
+    meta: {
+      layout: LoginLayout,
+    },
+  },
+
+  {
+    path: "/dashboard",
+    component: HomeAdmin,
+    meta: {
+      layout: AdminLayout,
+    },
+  },
+  {
+    path: "/dashboard/menu",
+    component: MenuAdmin,
+    meta: {
+      layout: AdminLayout,
     },
   },
 ];

@@ -23,7 +23,11 @@
                             {{ table.tableInfo.TABLE_NUMBER }}<br />
                             ({{ translateType(table.tableInfo.TYPE) }})
                         </td>
-                        <td>{{ table.BOOKING_TIME }}</td>
+                        <td>{{ table.BOOKING_TIME }}
+                            <button @click="openBookingTimeModal(table)" class="action-button">
+                                Chỉnh sửa
+                            </button>
+                        </td>
                         <td>
                             <ul>
                                 <li v-for="food in table.LIST_FOOD" :key="food.FOOD_ID">
@@ -56,12 +60,30 @@
         <div v-else>
             <p>Giỏ hàng của bạn trống.</p>
         </div>
-        <SelectFoodModal v-if="selectedTable" :tableInfo="selectedTable" :modalMode="modalMode" @close="closeModal"
-            @update-cart="fetchCart" />
+
+        <!-- Modal chỉnh sửa Booking Time -->
+        <a-modal v-model:visible="isBookingTimeModalVisible" title="Chọn Ngày và Giờ" @ok="updateBookingTime"
+            @cancel="closeBookingTimeModal">
+            <a-date-picker v-model="newBookingTime.date" :disabled-date="disabledDate" placeholder="Chọn ngày"
+                format="YYYY-MM-DD" value-format="YYYY-MM-DD" @change="onDateChange" />
+            <a-time-picker v-model="newBookingTime.time" format="HH:mm" placeholder="Chọn giờ" value-format="HH:mm"
+                @change="onTimeChange" />
+        </a-modal>
+
+
+
+
+
+        <!-- Modal chọn món ăn, sử dụng biến selectedFoodTable -->
+        <SelectFoodModal v-if="selectedFoodTable" :tableInfo="selectedFoodTable" :modalMode="modalMode"
+            @close="closeModal" @update-cart="fetchCart" />
+
+        <!-- Modal chọn dịch vụ -->
         <SelectServiceModal v-if="selectedServiceTable" :tableInfo="selectedServiceTable" @close="closeServiceModal"
             @update-cart="fetchCart" />
     </div>
 </template>
+
 
 <script>
 import axiosClient from '../../api/axiosClient';
@@ -78,8 +100,14 @@ export default {
             cart: null,
             selectedTable: null,
             selectedServiceTable: null, // Bàn cho dịch vụ
+            selectedFoodTable: null,
             modalMode: '',
             selectedTables: [],
+            isBookingTimeModalVisible: false, // Trạng thái hiển thị modal
+            newBookingTime: {
+                date: null,
+                time: null,
+            },
         };
     },
     async created() {
@@ -126,22 +154,83 @@ export default {
                 alert('Xóa bàn khỏi giỏ hàng thất bại.');
             }
         },
+        openBookingTimeModal(table) {
+            this.selectedTable = table;
+            this.isBookingTimeModalVisible = true;
+            this.newBookingTime.date = null;
+            this.newBookingTime.time = null;
+        },
+        closeBookingTimeModal() {
+            this.isBookingTimeModalVisible = false;
+            this.selectedTable = null;
+        },
+        onDateChange(value) {
+            console.log('Ngày đã chọn:', value);
+            this.newBookingTime.date = value;
+        },
+        onTimeChange(value) {
+            console.log('Giờ đã chọn:', value);
+            this.newBookingTime.time = value;
+        },
+        async updateBookingTime() {
+            try {
+
+
+                if (!this.newBookingTime.date || !this.newBookingTime.time) {
+                    alert('Vui lòng chọn ngày và giờ!');
+                    return;
+                }
+
+                // Nếu newBookingTime.date là một chuỗi, chuyển nó thành đối tượng Date
+                let selectedDate = this.newBookingTime.date instanceof Date
+                    ? this.newBookingTime.date
+                    : new Date(this.newBookingTime.date);
+
+                let selectedTime = this.newBookingTime.time instanceof Date
+                    ? this.newBookingTime.time
+                    : new Date(`1970-01-01T${this.newBookingTime.time}:00`);
+
+                // Chuyển đổi Date object thành định dạng YYYY-MM-DD và HH:mm
+                const formattedDate = selectedDate.toISOString().split('T')[0];
+                const formattedTime = selectedTime.toTimeString().slice(0, 5);
+
+                const newBookingTime = `${formattedDate} ${formattedTime}`;
+
+                const payload = {
+                    tableId: this.selectedTable.TABLE_ID,
+                    newBookingTime: newBookingTime,
+                };
+
+                await axiosClient.put('/carts/updateBookingTime', payload, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                alert('Cập nhật thời gian đặt bàn thành công!');
+                this.closeBookingTimeModal();
+                await this.fetchCart(); // Cập nhật lại giỏ hàng
+            } catch (error) {
+                console.error('Lỗi khi cập nhật thời gian đặt bàn:', error);
+                alert('Cập nhật thời gian đặt bàn thất bại!');
+            }
+        },
         calculateTotalPrice(table) {
             return table.TOTAL_PRICE_FOOD + table.TOTAL_SERVICE_PRICE;
         },
         editFood(table) {
-            this.selectedTable = table;
+            this.selectedFoodTable = table;
             this.modalMode = 'edit';
         },
         addFood(table) {
-            this.selectedTable = table;
+            this.selectedFoodTable = table;
             this.modalMode = 'add';
         },
         selectServices(table) {
             this.selectedServiceTable = table; // Lưu bàn được chọn
         },
         closeModal() {
-            this.selectedTable = null;
+            this.selectedFoodTable = null;
             this.modalMode = '';
         },
         closeServiceModal() {
@@ -159,6 +248,10 @@ export default {
                 // Reload lại trang sau khi chuyển hướng
                 window.location.reload();
             });
+        },
+        disabledDate(current) {
+            // Hàm để không cho phép chọn ngày quá khứ
+            return current && current < new Date();
         },
     },
 };

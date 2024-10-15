@@ -767,7 +767,7 @@ tr:hover {
     top: 0;
     margin: 0;
     opacity: 0;
-    -webkit-appearance: none;
+    /* -webkit-appearance: none; */
 }
 
 .checkbox-wrapper-31 .background {

@@ -39,13 +39,22 @@ const store = createStore({
         if (response.status >= 200 && response.status <= 300) {
           const token = response.data.accessToken;
           localStorage.setItem("accessToken", token);
-          commit("SET_LOGIN_STATE");
-          router.push("/TFood");
-          dispatch("checkToken");
 
-          message.success("Đăng nhập thành công!");
+          const userInfo = await dispatch("checkToken");
+          if (userInfo) {
+            const roles = userInfo.ROLE;
+
+            if (roles.ADMIN) {
+              router.push("/dashboard"); // Điều hướng admin đến Dashboard
+            } else if (roles.STAFF) {
+              router.push("/dashboard"); // Điều hướng nhân viên
+            } else {
+              router.push("/TFood"); // Điều hướng người dùng thông thường
+            }
+          }
         }
       } catch (error) {
+        // message.error("Đăng nhập thất bại!");
         throw error;
       }
     },
@@ -63,17 +72,11 @@ const store = createStore({
           const response = await axios.get("/users/profile");
           if (response.status >= 200 && response.status < 300) {
             const userInfo = response.data;
+
             commit("SET_USER_INFO", userInfo);
             // const roles = userInfo.ROLE;
-            // if (roles.ADMIN) {
-            //   router.push("/dashboard");
-            // } else if (roles.BRANCH_MANAGER) {
-            //   router.push("/dashboard");
-            // } else if (roles.STAFF) {
-            //   router.push("/dashboard");
-            // } else {
-            //   router.push("/TFood");
-            // }
+
+            return userInfo;
           } else {
             console.error("Unexpected response status:", response.status);
             dispatch("LOGOUT");

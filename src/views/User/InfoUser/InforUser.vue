@@ -18,6 +18,46 @@
 
         <div class="button-group">
             <button @click="showEditModal" class="btn-edit">Chỉnh sửa</button>
+            <button @click="showChangePasswordModal" class="btn-change-password">Đổi mật khẩu</button>
+            <button class="btn-history" @click="goToBookingHistory">Lịch sử đặt bàn</button>
+
+        </div>
+
+        <div v-if="isPasswordModalVisible" class="modal-overlay" @click.self="closePasswordModal">
+            <div class="modal-content">
+                <h2>Đổi mật khẩu</h2>
+                <form @submit.prevent="sendForgotPasswordEmail">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" v-model="user.EMAIL" disabled />
+                    </div>
+                    <div class="buttons">
+                        <button type="submit" class="btn-confirm">Gửi OTP</button>
+                        <button type="button" @click="closePasswordModal" class="btn-close">Đóng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Form nhập OTP và mật khẩu mới -->
+        <div v-if="isOTPPasswordVisible" class="modal-overlay" @click.self="closeOTPPasswordModal">
+            <div class="modal-content">
+                <h2>Nhập OTP và mật khẩu mới</h2>
+                <form @submit.prevent="resetPassword">
+                    <div class="form-group">
+                        <label for="otp">OTP:</label>
+                        <input type="text" id="otp" v-model="otpPassword" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Mật khẩu mới:</label>
+                        <input type="password" id="newPassword" v-model="newPassword" required />
+                    </div>
+                    <div class="buttons">
+                        <button type="submit" class="btn-confirm">Xác nhận</button>
+                        <button type="button" @click="closeOTPPasswordModal" class="btn-close">Đóng</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <!-- Modal Chỉnh sửa thông tin người dùng -->
@@ -79,12 +119,19 @@ export default {
             isOTPVisible: false, // Trạng thái hiển thị form OTP
             otp: '', // Giá trị OTP nhập vào
             isEmailChanged: false, // Trạng thái để kiểm tra xem email có thay đổi không
+            isPasswordModalVisible: false, // Hiển thị modal đổi mật khẩu
+            isOTPPasswordVisible: false, // Hiển thị form nhập OTP và mật khẩu mới
+            otpPassword: '', // Giá trị OTP nhập vào
+            newPassword: '', // Mật khẩu mới
         };
     },
     async created() {
         await this.fetchUserProfile();
     },
     methods: {
+        goToBookingHistory() {
+            this.$router.push('/user/booked'); // Chuyển hướng đến trang /user/booked
+        },
         async fetchUserProfile() {
             try {
                 const response = await axiosClient.get('http://localhost:3001/users/profile');
@@ -204,7 +251,57 @@ export default {
         },
         closeOTPModal() {
             this.isOTPVisible = false; // Đóng popup OTP
-        }
+        },
+
+        // Hiển thị modal đổi mật khẩu
+        showChangePasswordModal() {
+            this.isPasswordModalVisible = true;
+        },
+
+        // Đóng modal đổi mật khẩu
+        closePasswordModal() {
+            this.isPasswordModalVisible = false;
+        },
+
+        // Gửi yêu cầu đến API để gửi OTP qua email
+        async sendForgotPasswordEmail() {
+            try {
+                await axiosClient.post('http://localhost:3001/users/forgotPassword', {
+                    email: this.user.EMAIL,
+                });
+                alert('OTP đã được gửi đến email của bạn.');
+                this.isPasswordModalVisible = false;
+                this.isOTPPasswordVisible = true; // Hiển thị form nhập OTP và mật khẩu mới
+            } catch (error) {
+                console.error('Lỗi khi gửi OTP:', error);
+                alert('Không thể gửi OTP. Vui lòng thử lại.');
+            }
+        },
+
+        // Đóng modal nhập OTP và mật khẩu mới
+        closeOTPPasswordModal() {
+            this.isOTPPasswordVisible = false;
+        },
+
+        // Gửi yêu cầu API để cập nhật mật khẩu mới
+        async resetPassword() {
+            try {
+                const response = await axiosClient.post('http://localhost:3001/users/resetPassword', {
+                    email: this.user.EMAIL,
+                    otp: this.otpPassword,
+                    newPassword: this.newPassword,
+                });
+                if (response.data.success) {
+                    alert('Mật khẩu đã được thay đổi thành công.');
+                    this.closeOTPPasswordModal();
+                } else {
+                    alert('OTP không chính xác hoặc hết hạn.');
+                }
+            } catch (error) {
+                console.error('Lỗi khi đổi mật khẩu:', error);
+                alert('Không thể thay đổi mật khẩu. Vui lòng thử lại.');
+            }
+        },
     }
 };
 </script>
@@ -393,7 +490,7 @@ export default {
 }
 
 .btn-confirm:hover {
-    background-color: #27ae60;
+    background-color: #4d6e8e;
 }
 
 .btn-close {
@@ -423,7 +520,7 @@ export default {
 }
 
 .buttons button {
-    --_c: #88C100;
+    --_c: #33485D;
     flex: calc(1.25 + var(--_s, 0));
     min-width: 0;
     font-size: 20px;
@@ -482,5 +579,32 @@ button:active:not(:focus-visible) {
 button:active {
     box-shadow: inset 0 0 0 100vmax var(--_c);
     color: #fff;
+}
+
+/* Thêm nút Đổi mật khẩu */
+.btn-change-password {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #e67e22;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-change-password:hover {
+    background-color: #d35400;
+}
+
+.btn-history {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #06c03a;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-history:hover {
+    background-color: #047260;
 }
 </style>

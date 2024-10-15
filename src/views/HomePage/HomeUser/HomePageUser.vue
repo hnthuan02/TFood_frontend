@@ -55,26 +55,7 @@
         </section>
 
 
-        <!-- Make Reservation Section -->
-        <section class="reservation-section text-center py-5">
-            <h2 class="reservation-title">Make Reservation</h2>
-            <form @submit.prevent="makeReservation" class="reservation-form">
-                <div class="form-group">
-                    <input type="text" v-model="reservationDate" placeholder="mm/dd/yyyy" class="form-control"
-                        required />
-                </div>
-                <div class="form-group">
-                    <input type="text" v-model="reservationTime" placeholder="--:--" class="form-control" required />
-                </div>
-                <div class="form-group">
-                    <select v-model="reservationPeople" class="form-control" required>
-                        <option v-for="n in 10" :key="n" :value="n">{{ n }} person</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">FIND A TABLE</button>
-            </form>
-            <p class="contact-info">1.800.456.6743 – contact@grandrestaurant.com</p>
-        </section>
+
     </div>
 </template>
 

@@ -4,7 +4,6 @@
             <div class="container">
                 <h2 class="section-title">Thanh Toán</h2>
 
-                <!-- Form thông tin người dùng -->
 
 
                 <!-- Hiển thị thông tin giỏ hàng -->
@@ -42,34 +41,30 @@
                     <!-- Thông tin thanh toán -->
                     <div class="payment-info">
                         <div class="user-info">
-                            <div class="form-group">
+                            <div class="form-group floating">
+                                <input v-model="customerName" type="text" id="name" placeholder=" " required />
                                 <label for="name">Họ và tên:</label>
-                                <input v-model="customerName" type="text" id="name"
-                                    placeholder="Nhập họ và tên của bạn" />
                             </div>
-
-                            <div class="form-group">
+                            <div class="form-group floating">
+                                <input v-model="customerPhone" type="text" id="phone" placeholder=" " required />
                                 <label for="phone">Số điện thoại:</label>
-                                <input v-model="customerPhone" type="text" id="phone"
-                                    placeholder="Nhập số điện thoại" />
                             </div>
-
-                            <div class="form-group">
+                            <div class="form-group floating">
+                                <input v-model="customerEmail" type="email" id="email" placeholder=" " required />
                                 <label for="email">Email:</label>
-                                <input v-model="customerEmail" type="email" id="email" placeholder="Nhập email" />
                             </div>
-
-
                         </div>
                         <h3>Tổng cộng: {{ formatPrice(totalPrice) }}</h3>
-                        <div class="form-group">
-                            <label for="paymentMethod">Phương thức thanh toán:</label>
+                        <div class="form-group select-payment-method">
+                            <label for="paymentMethod">Phương thức thanh toán: {{ paymentMethod }}</label>
                             <select v-model="paymentMethod" id="paymentMethod">
-                                <option value="vnpay">Vnpay</option>
-                                <option value="zalopay">Zalopay</option>
-                                <option value="cash">Tiền mặt</option>
+                                <option value="Vnpay">Vnpay</option>
+                                <option value="Zalopay">Zalopay</option>
+                                <option value="Tiền mặt">Tiền mặt</option>
                             </select>
                         </div>
+
+
 
                         <button @click="processPayment" class="btn-payment">Xác nhận thanh toán</button>
                     </div>
@@ -95,13 +90,14 @@ export default {
             customerName: '', // Họ tên khách hàng
             customerPhone: '', // Số điện thoại khách hàng
             customerEmail: '', // Email khách hàng
-            paymentMethod: 'vnpay', // Phương thức thanh toán mặc định
+            paymentMethod: 'Vnpay', // Phương thức thanh toán mặc định
         };
     },
     mounted() {
         this.fetchSelectedTables(); // Gọi hàm lấy các bàn đã chọn
     },
     methods: {
+
         async fetchSelectedTables() {
             try {
                 const selectedTables = JSON.parse(localStorage.getItem('selectedTables'));
@@ -249,10 +245,18 @@ export default {
 
         .user-info {
             margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            /* Sắp xếp các phần tử từ trên xuống dưới */
+            gap: 20px;
+            /* Khoảng cách giữa các input */
         }
 
         .form-group {
-            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            /* Xếp các phần tử trong group theo chiều dọc */
+            width: 100%;
         }
 
         .form-group label {
@@ -268,7 +272,14 @@ export default {
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            color: #333;
+            /* Đảm bảo màu văn bản không bị ẩn */
+            background-color: white;
+            /* Đảm bảo nền trắng để văn bản dễ đọc */
+            appearance: auto;
+            /* Đảm bảo hiển thị mặc định cho trình duyệt */
         }
+
 
         .payment-details {
             display: flex;
@@ -345,5 +356,101 @@ export default {
             }
         }
     }
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s ease;
+    background: none;
+}
+
+.form-group input:focus {
+    border-color: #3498db;
+    /* Đổi màu viền khi focus */
+}
+
+.form-group label {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-size: 16px;
+    color: #999;
+    background-color: #fff;
+    padding: 0 5px;
+    transition: 0.3s;
+    pointer-events: none;
+}
+
+/* Khi input có focus hoặc có giá trị, label sẽ di chuyển lên và thu nhỏ */
+.form-group input:focus+label,
+.form-group input:not(:placeholder-shown)+label {
+    top: -12px;
+    left: 10px;
+    font-size: 12px;
+    color: #3498db;
+    /* Đổi màu nhãn khi input được chọn */
+}
+
+/* Đảm bảo rằng placeholder không hiển thị */
+.form-group input::placeholder {
+    opacity: 0;
+}
+
+/* Styling riêng cho phần chọn phương thức thanh toán */
+.select-payment-method {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.select-payment-method select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    outline: none;
+    background-color: #f8f9fa;
+    /* Màu nền nhạt hơn */
+    color: #333;
+    /* Màu chữ */
+    appearance: none;
+    /* Tắt giao diện mặc định của trình duyệt */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+.select-payment-method select:focus {
+    border-color: #3498db;
+    background-color: #ffffff;
+    /* Đổi màu nền khi focus */
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    /* Đổ bóng khi focus */
+}
+
+.select-payment-method label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    color: #2c3e50;
+}
+
+.select-payment-method select option {
+    color: #333;
+    background-color: #fff;
 }
 </style>

@@ -60,7 +60,7 @@
     </div>
 
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel"
-      aria-hidden="true">
+      aria-hidden="false" role="dialog">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-5-strong bg-body-tertiary">
           <div class="modal-header border-0">

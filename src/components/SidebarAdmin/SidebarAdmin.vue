@@ -15,7 +15,10 @@
                 <i class="fas fa-utensils"></i> Thực đơn
             </li>
             <li :class="{ active: activeTab === 'booking' }" @click="setActiveTab('booking')">
-                <i class="fas fa-calendar-check"></i> Đặt bàn
+                <i class="fas fa-file-invoice"></i> Đơn đặt
+            </li>
+            <li :class="{ active: activeTab === 'booking' }" @click="setActiveTab('booking')">
+                <i class="fas fa-calendar-check"></i> Bàn ăn
             </li>
             <li :class="{ active: activeTab === 'users' }" @click="setActiveTab('users')">
                 <i class="fas fa-users"></i> Người dùng
@@ -96,5 +99,6 @@ export default {
 
 .sidebar ul li.active {
     background-color: #2c3e50;
+    color: blanchedalmond;
 }
 </style>

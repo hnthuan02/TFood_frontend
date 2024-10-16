@@ -1,7 +1,7 @@
 <template>
     <header class="header-admin">
         <div class="header-left">
-            <input type="text" class="search-input" placeholder="Tìm kiếm..." />
+            <h2 style="margin-bottom: 0;">Quản Lý Nhà Hàng</h2>
         </div>
         <div class="header-right">
             <div class="user-info">

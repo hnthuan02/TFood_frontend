@@ -1,7 +1,7 @@
 <template>
     <div class="food-list">
         <div class="header-section">
-            <h2>Danh sách món ăn</h2>
+            <h2 style="color: black;">Danh sách món ăn</h2>
 
             <!-- Dropdown chọn loại món ăn -->
             <div class="filter-section">
@@ -13,8 +13,49 @@
                         </option>
                     </select>
                 </div>
+                <button @click="openAddFoodModal" class="add-food-button">Thêm món ăn</button>
             </div>
         </div>
+
+        <div v-if="showModal" class="modal-foodAdmin">
+            <div class="modal-content">
+                <h3>{{ isEditing ? 'Sửa món ăn' : 'Thêm món ăn mới' }}</h3>
+                <form @submit.prevent="isEditing ? updateFood() : createFood()">
+                    <div class="form-group">
+                        <label for="food-name">Tên món ăn:</label>
+                        <input v-model="newFood.NAME" id="food-name" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="food-type">Loại món ăn:</label>
+                        <select v-model="newFood.TYPE" class="modal-select" required>
+                            <option value="" disabled>Chọn loại món ăn</option>
+                            <option value="Steak">Steak</option>
+                            <option value="Pasta">Pasta</option>
+                            <option value="Dessert">Dessert</option>
+                            <option value="Drink">Drink</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="food-price">Giá:</label>
+                        <input v-model="newFood.PRICE" id="food-price" type="number" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="food-description">Mô tả:</label>
+                        <textarea v-model="newFood.DESCRIPTION" id="food-description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="food-image">Hình ảnh (URL):</label>
+                        <input v-model="newFood.IMAGES[0]" id="food-image" required />
+                    </div>
+                    <div class="form-group buttons">
+                        <button type="submit" class="save-button">{{ isEditing ? 'Cập nhật' : 'Lưu' }}</button>
+                        <button type="button" @click="closeModal" class="cancel-button">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
 
         <div v-if="filteredFoods.length > 0" class="food-grid">
             <div v-for="food in filteredFoods" :key="food._id" class="food-item">
@@ -24,6 +65,11 @@
                     <p>Loại: {{ food.TYPE }}</p>
                     <p>Giá: {{ formatCurrency(food.PRICE) }}</p>
                     <p>{{ food.DESCRIPTION }}</p>
+                </div>
+                <!-- Nút Sửa và Xóa xuất hiện khi hover -->
+                <div class="action-buttons">
+                    <button class="edit-button" @click="openEditFoodModal(food)">Sửa</button>
+                    <button class="delete-button" @click="deleteFood(food._id)">Xóa</button>
                 </div>
             </div>
         </div>
@@ -43,6 +89,16 @@ export default {
             foods: [], // Dữ liệu món ăn
             selectedType: "", // Loại món ăn được chọn
             foodTypes: [], // Danh sách các loại món ăn
+            showModal: false, // Trạng thái hiển thị modal
+            isEditing: false, // Trạng thái chỉnh sửa hay thêm mới
+            editFoodId: null, // ID của món ăn đang được chỉnh sửa
+            newFood: {
+                NAME: "",
+                TYPE: "",
+                PRICE: null,
+                DESCRIPTION: "",
+                IMAGES: [""], // URL hình ảnh
+            }, // Thông tin món ăn mới hoặc đang chỉnh sửa
         };
     },
     computed: {
@@ -69,6 +125,70 @@ export default {
                 console.error("Lỗi khi lấy danh sách món ăn:", error);
             }
         },
+        // Mở modal thêm món ăn mới
+        openAddFoodModal() {
+            this.isEditing = false;
+            this.resetNewFood();
+            this.showModal = true;
+        },
+        // Mở modal để chỉnh sửa món ăn
+        openEditFoodModal(food) {
+            this.isEditing = true;
+            this.editFoodId = food._id;
+            this.newFood = { ...food }; // Sao chép thông tin món ăn cần sửa vào form
+            this.showModal = true;
+        },
+        // Đóng modal
+        closeModal() {
+            this.showModal = false;
+        },
+        // Reset thông tin món ăn mới
+        resetNewFood() {
+            this.newFood = {
+                NAME: "",
+                TYPE: "",
+                PRICE: null,
+                DESCRIPTION: "",
+                IMAGES: [""],
+            };
+        },
+        // Tạo món ăn mới
+        async createFood() {
+            try {
+                const response = await axiosClient.post("/foods/createFood", this.newFood);
+                if (response.status === 201 || response.status === 200) {
+                    this.showModal = false;
+                    this.fetchFoods(); // Làm mới danh sách món ăn
+                } else {
+                    console.error("Lỗi khi thêm món ăn:", response.data);
+                }
+            } catch (error) {
+                console.error("Lỗi khi thêm món ăn:", error);
+            }
+        },
+        // Cập nhật món ăn
+        async updateFood() {
+            try {
+                const response = await axiosClient.put(`/foods/updateFood/${this.editFoodId}`, this.newFood);
+                if (response.status === 200) {
+                    this.showModal = false;
+                    this.fetchFoods(); // Làm mới danh sách món ăn
+                } else {
+                    console.error("Lỗi khi cập nhật món ăn:", response.data);
+                }
+            } catch (error) {
+                console.error("Lỗi khi cập nhật món ăn:", error);
+            }
+        },
+        // Xóa món ăn
+        async deleteFood(foodId) {
+            try {
+                await axiosClient.delete(`/foods/deleteFood/${foodId}`);
+                this.fetchFoods(); // Làm mới danh sách món ăn sau khi xoá thành công
+            } catch (error) {
+                console.error("Lỗi khi xóa món ăn:", error);
+            }
+        },
         filterFoods() {
             // Hàm lọc món ăn sẽ được gọi khi thay đổi loại món ăn
             // Không cần làm gì ở đây vì đã xử lý qua computed property
@@ -80,140 +200,6 @@ export default {
 };
 </script>
 
-<style scoped>
-h2 {
-    color: black;
-}
-
-/* CSS mà bạn cung cấp */
-:root {
-    --background-gradient: linear-gradient(178deg, #ffff33 10%, #3333ff);
-    --gray: #34495e;
-    --darkgray: #2c3e50;
-}
-
-select {
-    appearance: none;
-    outline: none;
-    border: 0;
-    box-shadow: none;
-    flex: 1;
-    padding: 0 1em;
-    color: #ffffff;
-    background-color: #2c3e50;
-    background-image: none;
-    cursor: pointer;
-}
-
-/* Remove IE arrow */
-select::-ms-expand {
-    display: none;
-}
-
-/* Custom Select wrapper */
-.select {
-    position: relative;
-    display: flex;
-    width: 20em;
-    height: 3em;
-    border-radius: 0.25em;
-    overflow: hidden;
-}
-
-/* Arrow */
-.select::after {
-    content: '\25BC';
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 1em;
-    background-color: #34495e;
-    transition: 0.25s all ease;
-    pointer-events: none;
-}
-
-/* Transition */
-.select:hover::after {
-    color: #f39c12;
-}
-
-body {
-    color: #fff;
-    background: var(--background-gradient);
-}
-
-a {
-    font-weight: bold;
-    color: var(--gray);
-    text-decoration: drop-shadow;
-    padding: 0.25em;
-    border-radius: 0.50em;
-    background: pink;
-}
-
-.container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.down_note {
-    display: flex;
-    justify-content: center;
-}
-
-/* Các style khác */
-.food-list {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* Đặt phần tiêu đề và bộ lọc theo loại món ăn nằm ngang */
-.header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.filter-section {
-    display: flex;
-    align-items: center;
-}
-
-.food-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    /* Mỗi hàng hiển thị 2 thẻ */
-    gap: 20px;
-}
-
-.food-item {
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-}
-
-.food-image {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-right: 20px;
-}
-
-.food-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-h3 {
-    margin: 10px 0;
-}
+<style lang="scss">
+@import "./MenuAdmin.scss";
 </style>

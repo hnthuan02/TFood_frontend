@@ -9,7 +9,7 @@
                         }}</span></p>
             </div>
             <div class="hotel-info" v-for="(table, tableIndex) in booking.LIST_TABLES" :key="tableIndex">
-                <h3>{{ table.TABLE_ID.TABLE_NUMBER }} - {{ table.TABLE_ID.DESCRIPTION }}</h3>
+                <h3>{{ table.TABLE_ID.TABLE_NUMBER }}</h3>
                 <div class="table-details">
                     <img :src="table.TABLE_ID.IMAGES[0]" alt="Hình ảnh bàn" class="table-image" />
                     <div class="table-info">
@@ -19,7 +19,7 @@
                 </div>
             </div>
             <div class="total-price">
-                <strong>Tổng giá:</strong> {{ booking.TOTAL_PRICE }} VND
+                <strong>Tổng giá:</strong> {{ formatPrice(booking.TOTAL_PRICE) }}
             </div>
         </div>
     </div>
@@ -121,7 +121,7 @@ export default {
 }
 
 .status-pending {
-    color: #e74c3c;
+    color: #007eeb;
     font-weight: bold;
 }
 

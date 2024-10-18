@@ -14,7 +14,7 @@
             <li :class="{ active: activeTab === 'menu' }" @click="setActiveTab('menu')">
                 <i class="fas fa-utensils"></i> Thực đơn
             </li>
-            <li :class="{ active: activeTab === 'booking' }" @click="setActiveTab('booking')">
+            <li :class="{ active: activeTab === 'bill' }" @click="setActiveTab('bill')">
                 <i class="fas fa-file-invoice"></i> Đơn đặt
             </li>
             <li :class="{ active: activeTab === 'booking' }" @click="setActiveTab('booking')">

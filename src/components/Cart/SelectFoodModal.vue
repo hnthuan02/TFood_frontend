@@ -3,18 +3,32 @@
         <div class="modal-content">
             <h2>{{ modalMode === 'edit' ? 'Chỉnh sửa' : 'Thêm' }} món cho bàn {{ tableInfo.tableInfo.TABLE_NUMBER }}
             </h2>
+
+            <!-- Dropdown để lọc món ăn theo loại -->
+            <div class="filter-section">
+                <label for="food-type" style="color: aliceblue;">Lọc theo loại:</label>
+                <select id="food-type" v-model="selectedType" @change="filterFoods">
+                    <option value="">Tất cả</option>
+                    <option value="Steak">Bít tết</option>
+                    <option value="Pasta">Mỳ Ý</option>
+                    <option value="Dessert">Tráng miệng</option>
+                    <option value="Drink">Đồ uống</option>
+                </select>
+            </div>
+
             <div class="food-list">
                 <div v-for="food in displayedFoods" :key="food._id" class="food-item">
-                    <img :src="food.IMAGES[0]" :alt="food.NAME" />
+                    <img :src="food.IMAGES[0]" :alt="food.NAME" class="food-image" />
                     <div class="food-info">
                         <h4>{{ food.NAME }}</h4>
                         <p>{{ formatPrice(food.PRICE) }}</p>
-                        <input type="number" v-model.number="quantities[food._id]" min="0" placeholder="Số lượng" />
-                        <button v-if="quantities[food._id] > 0 && modalMode === 'edit'" @click="removeFood(food._id)"
-                            class="remove-button">
-                            Xóa
-                        </button>
                     </div>
+                    <input type="number" v-model.number="quantities[food._id]" min="0" placeholder="Số lượng"
+                        class="quantity-input" />
+                    <button v-if="quantities[food._id] > 0 && modalMode === 'edit'" @click="removeFood(food._id)"
+                        class="remove-button">
+                        Xóa
+                    </button>
                 </div>
             </div>
             <button @click="saveChanges">{{ modalMode === 'edit' ? 'Lưu thay đổi' : 'Thêm món' }}</button>
@@ -22,6 +36,8 @@
         </div>
     </div>
 </template>
+
+
 
 <script>
 import axiosClient from '../../api/axiosClient';
@@ -41,6 +57,7 @@ export default {
         return {
             foods: [],
             quantities: {},
+            selectedType: '',
         };
     },
     async created() {
@@ -49,11 +66,18 @@ export default {
     },
     computed: {
         displayedFoods() {
+            // Lọc món ăn theo loại nếu có
+            let filteredFoods = this.foods;
+
+            if (this.selectedType) {
+                filteredFoods = filteredFoods.filter(food => food.TYPE === this.selectedType);
+            }
+
             if (this.modalMode === 'edit') {
                 const foodIdsInCart = this.tableInfo.LIST_FOOD.map(f => f.FOOD_ID);
-                return this.foods.filter(food => foodIdsInCart.includes(food._id));
+                return filteredFoods.filter(food => foodIdsInCart.includes(food._id));
             } else {
-                return this.foods;
+                return filteredFoods;
             }
         },
     },
@@ -83,6 +107,10 @@ export default {
                     this.quantities[food._id] = 0;
                 });
             }
+        },
+        filterFoods() {
+            // Hàm này sẽ tự động được gọi khi người dùng thay đổi loại món ăn
+            this.selectedType = this.selectedType;
         },
         async saveChanges() {
             if (this.modalMode === 'edit') {
@@ -204,53 +232,59 @@ export default {
 .modal-content {
     background-image: url('https://t4.ftcdn.net/jpg/02/92/20/37/360_F_292203735_CSsyqyS6A4Z9Czd4Msf7qZEhoxjpzZl1.jpg');
     background-size: cover;
-    /* Đảm bảo ảnh nền bao phủ toàn bộ modal */
     background-position: center;
     padding: 20px;
     border-radius: 8px;
     max-height: 80vh;
     overflow-y: auto;
-    width: 90%;
-    /* Thay đổi từ 400px thành 90% */
+    width: 50%;
     max-width: 1000px;
-    /* Thêm max-width để giới hạn chiều rộng tối đa */
 }
 
 .food-list {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    /* Chuyển thành cột để mỗi món ăn là 1 hàng */
+    margin-top: 20px;
 }
 
 .food-item {
-    width: calc(25% - 20px);
-    /* Điều chỉnh để có 4 món trên mỗi hàng */
-    margin: 10px;
-    background-color: rgb(255, 255, 255);
-    border: 1px solid #ddd;
+    display: flex;
+    /* Sử dụng flexbox để sắp xếp các thuộc tính theo chiều ngang */
+    align-items: center;
+    /* Căn giữa theo chiều dọc */
     padding: 10px;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    text-align: center;
+    margin-bottom: 10px;
+    /* Khoảng cách giữa các món ăn */
+    background-color: rgb(255, 255, 255);
 }
 
-.food-item img {
-    width: 100%;
+.food-image {
+    width: 100px;
+    /* Đặt kích thước hình ảnh */
     height: 100px;
     object-fit: cover;
+    border-radius: 8px;
+    margin-right: 20px;
+    /* Khoảng cách giữa hình ảnh và thông tin món ăn */
 }
 
 .food-info {
-    margin-top: 10px;
+    flex: 1;
+    /* Để phần thông tin chiếm hết không gian còn lại */
+    margin-right: 20px;
+    /* Khoảng cách giữa thông tin và ô nhập số lượng */
 }
 
-.food-info h4 {
-    margin: 10px 0;
-}
-
-.food-info input {
+.quantity-input {
     width: 60px;
+    /* Đặt kích thước cho ô nhập số lượng */
     text-align: center;
-    margin-top: 5px;
+    /* Căn giữa nội dung */
+    margin-right: 10px;
+    /* Khoảng cách giữa ô nhập số lượng và nút xóa */
 }
 
 .remove-button {
@@ -258,7 +292,6 @@ export default {
     color: #fff;
     border: none;
     padding: 6px 10px;
-    margin-top: 5px;
     border-radius: 5px;
     cursor: pointer;
 }
@@ -279,5 +312,17 @@ button {
 
 button:hover {
     background-color: #2980b9;
+}
+
+.filter-section {
+    margin-bottom: 20px;
+    margin-left: auto;
+}
+
+.filter-section select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-left: 10px;
 }
 </style>

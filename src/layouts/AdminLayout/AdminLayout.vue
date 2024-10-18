@@ -32,6 +32,8 @@ export default {
                 this.$router.push("/dashboard");
             } else if (tab === "menu") {
                 this.$router.push("/dashboard/menu");
+            } else if (tab === "bill") {
+                this.$router.push("/dashboard/bill");
             } else if (tab === "booking") {
                 this.$router.push("/dashboard/booking");
             } else if (tab === "users") {

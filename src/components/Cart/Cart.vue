@@ -24,29 +24,28 @@
                             ({{ translateType(table.tableInfo.TYPE) }})
                         </td>
                         <td>{{ table.BOOKING_TIME }}
-                            <button @click="openBookingTimeModal(table)" class="action-button">
-                                Chỉnh sửa
-                            </button>
+
                         </td>
                         <td>
                             <ul>
                                 <li v-for="food in table.LIST_FOOD" :key="food.FOOD_ID">
-                                    {{ food.foodPrice.NAME }} ({{ food.foodPrice.PRICE }} VND) x {{ food.QUANTITY }}
+                                    {{ food.foodPrice.NAME }} {{ food.QUANTITY }}
                                 </li>
                             </ul>
                         </td>
                         <td>
                             <ul>
                                 <li v-for="service in table.SERVICES" :key="service.SERVICES_ID">
-                                    {{ service.serviceName }} - {{ service.servicePrice }} VND
+                                    {{ service.serviceName }}
                                 </li>
                             </ul>
                         </td>
                         <td>{{ calculateTotalPrice(table) }} VND</td>
-                        <td class="action-buttons">
+                        <td class="action-buttons-cart">
                             <button @click="addFood(table)" class="action-button">Thêm món ăn</button>
                             <button @click="editFood(table)" class="action-button">Chỉnh sửa món ăn</button>
                             <button @click="selectServices(table)" class="action-button">Chọn dịch vụ</button>
+                            <button @click="openBookingTimeModal(table)" class="action-button">Chọn lại giờ</button>
                             <button @click="removeTable(table)">Xóa</button>
                         </td>
                     </tr>
@@ -62,7 +61,7 @@
         </div>
 
         <!-- Modal chỉnh sửa Booking Time -->
-        <a-modal v-model:visible="isBookingTimeModalVisible" title="Chọn Ngày và Giờ" @ok="updateBookingTime"
+        <a-modal v-model:open="isBookingTimeModalVisible" title="Chọn Ngày và Giờ" @ok="updateBookingTime"
             @cancel="closeBookingTimeModal">
             <a-date-picker v-model="newBookingTime.date" :disabled-date="disabledDate" placeholder="Chọn ngày"
                 format="YYYY-MM-DD" value-format="YYYY-MM-DD" @change="onDateChange" />
@@ -70,11 +69,7 @@
                 @change="onTimeChange" />
         </a-modal>
 
-
-
-
-
-        <!-- Modal chọn món ăn, sử dụng biến selectedFoodTable -->
+        <!-- Modal chọn món ăn -->
         <SelectFoodModal v-if="selectedFoodTable" :tableInfo="selectedFoodTable" :modalMode="modalMode"
             @close="closeModal" @update-cart="fetchCart" />
 
@@ -84,26 +79,25 @@
     </div>
 </template>
 
-
 <script>
 import axiosClient from '../../api/axiosClient';
 import SelectFoodModal from './SelectFoodModal.vue';
-import SelectServiceModal from './SelectServiceModal.vue'; // Import SelectServiceModal
+import SelectServiceModal from './SelectServiceModal.vue';
 
 export default {
     components: {
         SelectFoodModal,
-        SelectServiceModal, // Register SelectServiceModal
+        SelectServiceModal,
     },
     data() {
         return {
             cart: null,
             selectedTable: null,
-            selectedServiceTable: null, // Bàn cho dịch vụ
+            selectedServiceTable: null,
             selectedFoodTable: null,
             modalMode: '',
             selectedTables: [],
-            isBookingTimeModalVisible: false, // Trạng thái hiển thị modal
+            isBookingTimeModalVisible: false,
             newBookingTime: {
                 date: null,
                 time: null,
@@ -165,23 +159,18 @@ export default {
             this.selectedTable = null;
         },
         onDateChange(value) {
-            console.log('Ngày đã chọn:', value);
             this.newBookingTime.date = value;
         },
         onTimeChange(value) {
-            console.log('Giờ đã chọn:', value);
             this.newBookingTime.time = value;
         },
         async updateBookingTime() {
             try {
-
-
                 if (!this.newBookingTime.date || !this.newBookingTime.time) {
                     alert('Vui lòng chọn ngày và giờ!');
                     return;
                 }
 
-                // Nếu newBookingTime.date là một chuỗi, chuyển nó thành đối tượng Date
                 let selectedDate = this.newBookingTime.date instanceof Date
                     ? this.newBookingTime.date
                     : new Date(this.newBookingTime.date);
@@ -190,7 +179,6 @@ export default {
                     ? this.newBookingTime.time
                     : new Date(`1970-01-01T${this.newBookingTime.time}:00`);
 
-                // Chuyển đổi Date object thành định dạng YYYY-MM-DD và HH:mm
                 const formattedDate = selectedDate.toISOString().split('T')[0];
                 const formattedTime = selectedTime.toTimeString().slice(0, 5);
 
@@ -209,7 +197,7 @@ export default {
 
                 alert('Cập nhật thời gian đặt bàn thành công!');
                 this.closeBookingTimeModal();
-                await this.fetchCart(); // Cập nhật lại giỏ hàng
+                await this.fetchCart();
             } catch (error) {
                 console.error('Lỗi khi cập nhật thời gian đặt bàn:', error);
                 alert('Cập nhật thời gian đặt bàn thất bại!');
@@ -227,69 +215,55 @@ export default {
             this.modalMode = 'add';
         },
         selectServices(table) {
-            this.selectedServiceTable = table; // Lưu bàn được chọn
+            this.selectedServiceTable = table;
         },
         closeModal() {
             this.selectedFoodTable = null;
             this.modalMode = '';
         },
         closeServiceModal() {
-            this.selectedServiceTable = null; // Đóng modal chọn dịch vụ
+            this.selectedServiceTable = null;
         },
         goToPayment() {
             if (this.selectedTables.length === 0) {
                 alert('Vui lòng chọn ít nhất một bàn để thanh toán');
                 return;
             }
-            // Lưu danh sách bàn được chọn vào localStorage
             localStorage.setItem('selectedTables', JSON.stringify(this.selectedTables));
-            // Chuyển hướng đến trang thanh toán
             this.$router.push('/payment').then(() => {
-                // Reload lại trang sau khi chuyển hướng
                 window.location.reload();
             });
         },
         disabledDate(current) {
-            // Hàm để không cho phép chọn ngày quá khứ
             return current && current < new Date();
         },
     },
 };
 </script>
 
-
-
-
 <style scoped>
 .cart-container {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 20px auto;
     background: #ffffff;
-    /* Đổi nền trắng */
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    /* Giảm độ đậm của bóng */
     color: #333333;
-    /* Màu chữ tối */
     font-family: 'Playfair Display', serif;
-    /* Đổi font cho đồng bộ */
 }
 
 h1 {
     text-align: center;
     margin-bottom: 20px;
     font-size: 24px;
-    /* Tăng kích thước chữ */
     color: #333333;
-    /* Màu chữ tối */
 }
 
 .cart-table {
     width: 100%;
     border-collapse: collapse;
     background-color: #ffffff;
-    /* Nền trắng cho bảng */
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -300,27 +274,21 @@ h1 {
     padding: 12px 15px;
     border: 1px solid #ddd;
     font-family: 'Roboto', sans-serif;
-    /* Font hiện đại và dễ nhìn */
     text-align: center;
-    /* Căn giữa */
 }
 
 .cart-table th {
     background-color: #f4f4f4;
-    /* Nền xám nhạt */
     font-weight: 600;
     color: #333333;
-    /* Màu chữ tối */
 }
 
 .cart-table td {
     background-color: #ffffff;
-    /* Nền trắng */
 }
 
 .price-info {
     background-color: #f4f4f4;
-    /* Đổi nền xám nhạt */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -329,60 +297,48 @@ h1 {
     border-radius: 8px;
 }
 
-.deposit,
 .total-price {
     font-family: 'Playfair Display', serif;
-    /* Đồng bộ font */
     color: #333333;
-    /* Màu chữ tối */
 }
 
-.action-buttons {
+.action-buttons-cart {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    /* Khoảng cách giữa các nút */
 }
 
 .action-button {
     background-color: #333333;
-    /* Nền đen */
     border: none;
     padding: 8px 12px;
     color: #ffffff;
-    /* Màu chữ trắng */
     border-radius: 5px;
     cursor: pointer;
     font-family: 'Roboto', sans-serif;
-    /* Font hiện đại */
     transition: background-color 0.3s;
 }
 
 .action-button:hover {
     background-color: #444444;
-    /* Màu nền khi hover */
 }
 
 .delete-button {
     background-color: #e74c3c;
-    /* Màu đỏ cho nút xóa */
 }
 
 .delete-button:hover {
     background-color: #c0392b;
-    /* Màu đậm hơn khi hover */
 }
 
 .cart-table ul {
     padding: 0;
     list-style-type: none;
-    /* Xóa dấu chấm trong danh sách */
     margin: 0;
 }
 
 .cart-table li {
     padding: 5px 0;
-    /* Tạo khoảng cách giữa các món */
 }
 
 .payment {

@@ -9,7 +9,7 @@
                     <select id="food-type" v-model="selectedType" @change="filterFoods">
                         <option value="">Tất cả</option>
                         <option v-for="type in foodTypes" :key="type" :value="type">
-                            {{ type }}
+                            {{ translateType(type) }}
                         </option>
                     </select>
                 </div>
@@ -29,10 +29,10 @@
                         <label for="food-type">Loại món ăn:</label>
                         <select v-model="newFood.TYPE" class="modal-select" required>
                             <option value="" disabled>Chọn loại món ăn</option>
-                            <option value="Steak">Steak</option>
-                            <option value="Pasta">Pasta</option>
-                            <option value="Dessert">Dessert</option>
-                            <option value="Drink">Drink</option>
+                            <option value="Steak">Bít tết</option>
+                            <option value="Pasta">Mỳ Ý</option>
+                            <option value="Dessert">Tráng miệng</option>
+                            <option value="Drink">Đồ uống</option>
                         </select>
                     </div>
 
@@ -44,10 +44,25 @@
                         <label for="food-description">Mô tả:</label>
                         <textarea v-model="newFood.DESCRIPTION" id="food-description" required></textarea>
                     </div>
+
                     <div class="form-group">
-                        <label for="food-image">Hình ảnh (URL):</label>
-                        <input v-model="newFood.IMAGES[0]" id="food-image" required />
+                        <label for="image-input-type">Chọn cách nhập hình ảnh:</label>
+                        <select v-model="imageInputType" id="image-input-type" @change="resetImageFields" required>
+                            <option value="file">Chọn file</option>
+                            <option value="url">Nhập URL</option>
+                        </select>
                     </div>
+
+                    <div class="form-group" v-if="imageInputType === 'file'">
+                        <label for="food-image">Hình ảnh:</label>
+                        <input type="file" @change="handleFileUpload" id="food-image" accept="image/*" required />
+                    </div>
+
+                    <div class="form-group" v-if="imageInputType === 'url'">
+                        <label for="food-image-url">Hình ảnh (URL):</label>
+                        <input v-model="newFood.IMAGES[0]" id="food-image-url" required />
+                    </div>
+
                     <div class="form-group buttons">
                         <button type="submit" class="save-button">{{ isEditing ? 'Cập nhật' : 'Lưu' }}</button>
                         <button type="button" @click="closeModal" class="cancel-button">Hủy</button>
@@ -56,17 +71,15 @@
             </div>
         </div>
 
-
         <div v-if="filteredFoods.length > 0" class="food-grid">
             <div v-for="food in filteredFoods" :key="food._id" class="food-item">
                 <img :src="food.IMAGES[0]" alt="Food Image" class="food-image" />
                 <div class="food-info">
                     <h3>{{ food.NAME }}</h3>
-                    <p>Loại: {{ food.TYPE }}</p>
+                    <p>Loại: {{ translateType(food.TYPE) }}</p>
                     <p>Giá: {{ formatCurrency(food.PRICE) }}</p>
                     <p>{{ food.DESCRIPTION }}</p>
                 </div>
-                <!-- Nút Sửa và Xóa xuất hiện khi hover -->
                 <div class="action-buttons">
                     <button class="edit-button" @click="openEditFoodModal(food)">Sửa</button>
                     <button class="delete-button" @click="deleteFood(food._id)">Xóa</button>
@@ -79,6 +92,7 @@
         </div>
     </div>
 </template>
+
 
 <script>
 import axiosClient from "../../../api/axiosClient"; // Đảm bảo axiosClient đúng đường dẫn
@@ -99,6 +113,8 @@ export default {
                 DESCRIPTION: "",
                 IMAGES: [""], // URL hình ảnh
             }, // Thông tin món ăn mới hoặc đang chỉnh sửa
+            imagePreview: "",
+            imageInputType: 'file',
         };
     },
     computed: {
@@ -114,6 +130,46 @@ export default {
         this.fetchFoods(); // Gọi hàm lấy danh sách món ăn khi component được mount
     },
     methods: {
+        translateType(type) {
+            switch (type) {
+                case "Steak":
+                    return "Bít tết";
+                case "Pasta":
+                    return "Mỳ Ý";
+                case "Dessert":
+                    return "Tráng miệng";
+                case "Drink":
+                    return "Đồ uống";
+                default:
+                    return type;
+            }
+        },
+        resetImageFields() {
+            // Reset hình ảnh mỗi khi người dùng thay đổi kiểu nhập hình ảnh
+            if (this.imageInputType === 'file') {
+                this.newFood.IMAGES = [""];
+                this.imagePreview = "";
+            } else if (this.imageInputType === 'url') {
+                this.imagePreview = ""; // Xóa preview nếu nhập bằng URL
+            }
+        },
+        handleFileUpload(event) {
+            const files = event.target.files; // Lấy tất cả tệp đã chọn
+            this.newFood.IMAGES = []; // Đặt lại mảng IMAGES
+
+            for (let i = 0; i < files.length; i++) {
+                this.newFood.IMAGES.push(files[i]); // Thêm từng tệp vào mảng IMAGES
+            }
+
+            if (files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.imagePreview = e.target.result; // Hiển thị hình ảnh xem trước
+                };
+                reader.readAsDataURL(files[0]); // Hiển thị hình ảnh xem trước cho tệp đầu tiên
+            }
+        },
+
         async fetchFoods() {
             try {
                 const response = await axiosClient.get("/foods/allFood");
@@ -155,7 +211,23 @@ export default {
         // Tạo món ăn mới
         async createFood() {
             try {
-                const response = await axiosClient.post("/foods/createFood", this.newFood);
+                const formData = new FormData();
+                formData.append("NAME", this.newFood.NAME);
+                formData.append("TYPE", this.newFood.TYPE);
+                formData.append("PRICE", this.newFood.PRICE);
+                formData.append("DESCRIPTION", this.newFood.DESCRIPTION);
+
+                // Thêm ảnh vào FormData
+                this.newFood.IMAGES.forEach((image) => {
+                    formData.append("IMAGES[]", image); // Sử dụng IMAGES[] để khớp với cấu hình Multer
+                });
+
+                const response = await axiosClient.post("/foods/createFood", formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data' // Thiết lập loại nội dung
+                    }
+                });
+
                 if (response.status === 201 || response.status === 200) {
                     this.showModal = false;
                     this.fetchFoods(); // Làm mới danh sách món ăn
@@ -166,10 +238,29 @@ export default {
                 console.error("Lỗi khi thêm món ăn:", error);
             }
         },
+
         // Cập nhật món ăn
         async updateFood() {
             try {
-                const response = await axiosClient.put(`/foods/updateFood/${this.editFoodId}`, this.newFood);
+                const formData = new FormData();
+                formData.append("NAME", this.newFood.NAME);
+                formData.append("TYPE", this.newFood.TYPE);
+                formData.append("PRICE", this.newFood.PRICE);
+                formData.append("DESCRIPTION", this.newFood.DESCRIPTION);
+
+                // Nếu có hình ảnh mới, thêm vào FormData
+                if (this.newFood.IMAGES.length > 0) {
+                    this.newFood.IMAGES.forEach((image) => {
+                        formData.append("IMAGES[]", image); // Sử dụng IMAGES[] để khớp với cấu hình Multer
+                    });
+                }
+                console.log(formData);
+                const response = await axiosClient.put(`/foods/updateFood/${this.editFoodId}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data' // Thiết lập loại nội dung
+                    }
+                });
+
                 if (response.status === 200) {
                     this.showModal = false;
                     this.fetchFoods(); // Làm mới danh sách món ăn
@@ -180,6 +271,7 @@ export default {
                 console.error("Lỗi khi cập nhật món ăn:", error);
             }
         },
+
         // Xóa món ăn
         async deleteFood(foodId) {
             try {

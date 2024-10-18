@@ -6,8 +6,10 @@ import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import MenuLayout from "../layouts/Menu/MenuLayout.vue";
 import TableLayout from "../layouts/Table/TableLayout.vue";
 import store from "../store";
+import BillAdmin from "../views/Admin/BillAdmin/BillAdmin.vue";
 import HomeAdmin from "../views/Admin/HomeAdmin/HomeAdmin.vue";
 import MenuAdmin from "../views/Admin/MenuAdmin/MenuAdmin.vue";
+import TableAdmin from "../views/Admin/TableAdmin/TableAdmin.vue";
 import BookTable from "../views/BookTable/BookTable.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
@@ -124,6 +126,20 @@ const routes = [
   {
     path: "/dashboard/menu",
     component: MenuAdmin,
+    meta: {
+      layout: AdminLayout,
+    },
+  },
+  {
+    path: "/dashboard/bill",
+    component: BillAdmin,
+    meta: {
+      layout: AdminLayout,
+    },
+  },
+  {
+    path: "/dashboard/booking",
+    component: TableAdmin,
     meta: {
       layout: AdminLayout,
     },

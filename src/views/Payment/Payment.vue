@@ -102,7 +102,7 @@ export default {
             try {
                 const selectedTables = JSON.parse(localStorage.getItem('selectedTables'));
                 if (!selectedTables || selectedTables.length === 0) {
-                    alert('Không có bàn nào được chọn.');
+                    this.$message.error('Không có bàn nào được chọn.');
                     this.$router.push('/cart'); // Quay lại trang giỏ hàng nếu không có bàn nào
                     return;
                 }

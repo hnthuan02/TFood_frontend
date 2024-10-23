@@ -8,22 +8,22 @@
 
         <!-- Các mục của sidebar -->
         <ul>
-            <li :class="{ active: activeTab === 'dashboard' }" @click="setActiveTab('dashboard')">
+            <li :class="{ active: currentTab === 'dashboard' }" @click="setActiveTab('dashboard')">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </li>
-            <li :class="{ active: activeTab === 'menu' }" @click="setActiveTab('menu')">
+            <li :class="{ active: currentTab === 'menu' }" @click="setActiveTab('menu')">
                 <i class="fas fa-utensils"></i> Thực đơn
             </li>
-            <li :class="{ active: activeTab === 'bill' }" @click="setActiveTab('bill')">
+            <li :class="{ active: currentTab === 'bill' }" @click="setActiveTab('bill')">
                 <i class="fas fa-file-invoice"></i> Đơn đặt
             </li>
-            <li :class="{ active: activeTab === 'booking' }" @click="setActiveTab('booking')">
+            <li :class="{ active: currentTab === 'booking' }" @click="setActiveTab('booking')">
                 <i class="fas fa-calendar-check"></i> Bàn ăn
             </li>
-            <li :class="{ active: activeTab === 'users' }" @click="setActiveTab('users')">
+            <li :class="{ active: currentTab === 'users' }" @click="setActiveTab('users')">
                 <i class="fas fa-users"></i> Người dùng
             </li>
-            <li :class="{ active: activeTab === 'promotions' }" @click="setActiveTab('promotions')">
+            <li :class="{ active: currentTab === 'promotions' }" @click="setActiveTab('promotions')">
                 <i class="fas fa-tags"></i> Khuyến mãi
             </li>
         </ul>
@@ -32,15 +32,33 @@
 
 <script>
 export default {
-    props: {
-        activeTab: {
-            type: String,
-            required: true,
+    data() {
+        return {
+            currentTab: '', // Tab hiện tại
+        };
+    },
+    watch: {
+        // Theo dõi thay đổi của route
+        $route(to) {
+            this.updateActiveTab(to.path); // Cập nhật tab hoạt động khi route thay đổi
         },
+    },
+    created() {
+        this.updateActiveTab(this.$route.path); // Thiết lập tab khi component được khởi tạo
     },
     methods: {
         setActiveTab(tab) {
-            this.$emit('update-tab', tab); // Truyền sự kiện 'update-tab' để cập nhật tab đang hoạt động
+            if (tab === 'dashboard') {
+                this.$router.push('/dashboard'); // Điều hướng đến /dashboard
+            } else {
+                this.$router.push(`/dashboard/${tab}`); // Điều hướng đến các trang khác
+            }
+        },
+        updateActiveTab(path) {
+            // Lấy phần cuối của đường dẫn để thiết lập tab
+            const lastSegment = path.split('/').pop();
+            // Kiểm tra nếu đường dẫn là /dashboard (tab chính)
+            this.currentTab = lastSegment === 'dashboard' ? 'dashboard' : lastSegment;
         },
     },
 };
@@ -54,7 +72,6 @@ export default {
     color: white;
 }
 
-/* Phần header chứa logo và tên trang web */
 .sidebar-header {
     display: flex;
     align-items: center;
@@ -63,11 +80,8 @@ export default {
 
 .logo {
     width: auto;
-    /* Để logo tự động lấy kích thước phù hợp */
     height: 40px;
-    /* Chiều cao cố định, logo sẽ co dãn theo tỉ lệ */
     object-fit: contain;
-    /* Giữ tỉ lệ của logo mà không bị cắt hoặc biến dạng */
     margin-right: 10px;
 }
 
@@ -77,7 +91,6 @@ export default {
     color: white;
 }
 
-/* Danh sách các mục */
 .sidebar ul {
     list-style-type: none;
     padding: 0;

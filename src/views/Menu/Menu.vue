@@ -106,8 +106,11 @@ export default {
     },
     computed: {
         filteredDishesNew() {
-            return this.dishes.filter(dish => dish.NEWEST === true);
+            return this.dishes
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sắp xếp theo createdAt giảm dần
+                .slice(0, 3);
         },
+
         filteredDishesBest() {
             return this.dishes.filter(dish => dish.BEST === true);
         },
@@ -168,14 +171,14 @@ export default {
         },
         async addFoodToSelectedTable() {
             if (!this.selectedTable) {
-                alert("Vui lòng chọn bàn.");
+                this.$message.error("Vui lòng chọn bàn.");
                 return;
             }
 
             const quantity = this.quantities[this.selectedTable] || 0;
 
             if (quantity <= 0) {
-                alert("Vui lòng nhập số lượng món ăn hợp lệ.");
+                this.$message.error("Vui lòng nhập số lượng món ăn hợp lệ.");
                 return;
             }
 
@@ -189,11 +192,11 @@ export default {
                         }
                     ]
                 });
-                alert("Đã thêm món vào bàn thành công!");
+                this.$message.success("Đã thêm món vào bàn thành công!");
                 this.toggleCart(); // Đóng modal sau khi thêm món thành công
             } catch (error) {
                 console.error("Error adding food to table:", error);
-                alert("Có lỗi xảy ra khi thêm món ăn.");
+                this.$message.error("Có lỗi xảy ra khi thêm món ăn.");
             }
         },
         toggleCart() {

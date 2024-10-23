@@ -53,17 +53,30 @@
                                     <td>{{ order.STATUS === 'Booked' ? 'Đã thanh toán' : 'Đang xử lí' }}</td>
                                     <td>{{ formatDate(order.createdAt) }}</td>
                                 </tr>
-                                <!-- Hàng chi tiết (tables) - dropdown -->
-                                <tr :class="['collapse', isOrderOpen(index) ? 'show' : '']"
-                                    :id="'table-details-' + index">
+                                <tr :ref="'table-details-' + index" class="dropdown-row">
                                     <td colspan="5" class="dropdown-content">
-                                        <div v-for="table in orderTables[index]" :key="table.TABLE_ID">
-                                            Bàn số: {{ table.TABLE_NUMBER }} - Thời gian đặt: {{ table.BOOKING_TIME }} -
-                                            Trạng thái hiện tại: {{ table.STATUS === 'Completed' ? 'Hoàn thành' :
-                                                'Đang chờ' }}
+                                        <div v-for="table in orderTables[index]" :key="table.TABLE_ID"
+                                            class="table-row">
+                                            <div class="table-info">
+                                                Bàn số: {{ table.TABLE_NUMBER }} - Thời gian đặt: {{ table.BOOKING_TIME
+                                                }} -
+                                                Trạng thái hiện tại: {{ table.STATUS === 'Completed' ? 'Hoàn thành' :
+                                                    'Đang chờ' }}
+                                            </div>
+
+                                            <!-- Nút cập nhật trạng thái -->
+                                            <button @click="updateBookingTimeStatus(table.TABLE_ID, table.BOOKING_TIME)"
+                                                :disabled="table.STATUS === 'Completed'" class="update-button">
+                                                Xác nhận trả bàn
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
+
+
+
+
+
                             </template>
                         </tbody>
                     </table>
@@ -132,6 +145,21 @@ export default {
         },
     },
     methods: {
+        async updateBookingTimeStatus(orderId, startTime) {
+            try {
+                const response = await axiosClient.post('tables/booking-times/status', {
+                    tableId: orderId,
+                    startTime: startTime
+                });
+                if (response.data && response.data.message) {
+                    this.$message.success("Cập nhật trạng thái thành công.");
+                    this.getBookedOrders();
+                }
+            } catch (error) {
+                console.error("Lỗi khi cập nhật trạng thái", error);
+                this.$message.error("Lỗi khi cập nhật trạng thái.");
+            }
+        },
         async getRevenue() {
             try {
                 const response = await axiosClient.get("booking/total-price");
@@ -148,22 +176,62 @@ export default {
                 console.error("Lỗi khi lấy danh sách đơn hàng đã đặt", error);
             }
         },
-        async toggleOrderDetails(index) {
-            this.openedOrderIndex = this.isOrderOpen(index) ? null : index; // Toggle dropdown
 
-            // Nếu chưa tải thông tin các bàn cho đơn hàng, gọi API để lấy thông tin
-            if (this.openedOrderIndex !== null && !this.orderTables[index]) {
-                const order = this.bookedOrders[index];
-                const response = await axiosClient.get(`/booking/${order._id}/tables`);
-                this.orderTables = {
-                    ...this.orderTables, // Giữ nguyên các phần tử cũ
-                    [index]: response.data.data // Thêm mới phần tử tại index
-                };
+        async toggleOrderDetails(index) {
+            if (this.openedOrderIndex === index) {
+                this.closeDropdown(index); // Đóng dropdown hiện tại
+                this.openedOrderIndex = null;
+            } else {
+                if (this.openedOrderIndex !== null) {
+                    this.closeDropdown(this.openedOrderIndex); // Đóng dropdown trước đó
+                }
+                this.openedOrderIndex = index;
+                this.openDropdown(index); // Mở dropdown mới
+
+                // Nếu chưa tải thông tin các bàn cho đơn hàng, gọi API để lấy thông tin
+                if (!this.orderTables[index]) {
+                    try {
+                        const order = this.bookedOrders[index];
+                        const response = await axiosClient.get(`/booking/${order._id}/tables`);
+                        // Cập nhật trực tiếp orderTables
+                        this.orderTables = {
+                            ...this.orderTables,
+                            [index]: response.data.data
+                        };
+                    } catch (error) {
+                        console.error("Lỗi khi lấy thông tin các bàn", error);
+                    }
+                }
             }
+        },
+        openDropdown(index) {
+            const dropdown = this.$refs[`table-details-${index}`][0];
+            dropdown.style.display = "table-row"; // Hiển thị dòng dropdown
+            dropdown.style.maxHeight = "0"; // Đặt maxHeight ban đầu là 0
+            dropdown.style.opacity = "0"; // Đặt opacity ban đầu là 0
+
+            // Đặt transition trước khi mở
+            setTimeout(() => {
+                dropdown.style.transition = "max-height 0.3s ease, opacity 0.3s ease";
+                dropdown.style.maxHeight = "500px"; // Đặt chiều cao tối đa
+                dropdown.style.opacity = "1"; // Đặt opacity tối đa
+            }, 10);
+        },
+        closeDropdown(index) {
+            const dropdown = this.$refs[`table-details-${index}`][0];
+            dropdown.style.transition = "max-height 0.3s ease, opacity 0.3s ease";
+            dropdown.style.maxHeight = "0"; // Đặt maxHeight về 0 để đóng
+            dropdown.style.opacity = "0"; // Đặt opacity về 0 để đóng
+
+            // Ẩn hoàn toàn sau khi hoàn thành hiệu ứng
+            setTimeout(() => {
+                dropdown.style.display = "none";
+            }, 1);
         },
         isOrderOpen(index) {
             return this.openedOrderIndex === index;
         },
+
         formatDate(date) {
             const formattedDate = new Date(date);
             const year = formattedDate.getFullYear();
@@ -278,22 +346,66 @@ export default {
     overflow-y: auto;
 }
 
-/* CSS cho hiệu ứng trượt */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-    transition: max-height 0.5s ease, opacity 0.5s ease;
+/* Hiệu ứng trượt và làm mờ */
+/* Hiệu ứng trượt và làm mờ */
+.slide-fade-enter-active {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
-.slide-fade-enter,
-.slide-fade-leave-to {
+.slide-fade-enter {
     max-height: 0;
-    /* Khi đóng, chiều cao là 0 */
     opacity: 0;
-    /* Khi đóng, opacity là 0 */
+}
+
+.slide-fade-enter-to {
+    max-height: 500px;
+    /* Tùy chỉnh chiều cao tối đa */
+    opacity: 1;
+}
+
+.dropdown-row {
+    overflow: hidden;
+    display: none;
+    /* Ẩn ban đầu */
 }
 
 .dropdown-content {
-    background-color: #4b4b4b;
-    color: #ecf0f1;
+    color: #ffffff;
+    background-color: #7c9fc8;
+}
+
+/* Đặt phần chứa thông tin bàn và nút thành flex container */
+.table-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.table-info {
+    flex: 1;
+    /* Chiếm toàn bộ chiều rộng trừ nút */
+}
+
+/* Điều chỉnh nút cập nhật trạng thái */
+.update-button {
+    margin-left: auto;
+    /* Đẩy nút sang phải */
+    padding: 5px 10px;
+    background-color: #1ec666;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.update-button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+.update-button:hover:not(:disabled) {
+    background-color: #4bff8a;
 }
 </style>

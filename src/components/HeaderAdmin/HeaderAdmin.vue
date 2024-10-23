@@ -4,10 +4,13 @@
             <h2 style="margin-bottom: 0;">Quản Lý Nhà Hàng</h2>
         </div>
         <div class="header-right">
-            <div class="user-info">
-                <span class="user-name">{{ userInfo?.FULLNAME }} </span>
-                <font-awesome-icon :icon="['fas', 'user']" />
-            </div>
+            <router-link to="/user/info" class="user-info" style="text-decoration: none; color: inherit;">
+
+                <div class="user-info">
+                    <span class="user-name">{{ userInfo?.FULLNAME }} </span>
+                    <font-awesome-icon :icon="['fas', 'user']" />
+                </div>
+            </router-link>
             <button @click="logout" class="logout-button">Đăng xuất</button>
         </div>
     </header>

@@ -74,12 +74,12 @@ export default {
                     },
                 });
 
-                alert('Đã cập nhật dịch vụ cho bàn.');
+                this.$message.success('Đã cập nhật dịch vụ cho bàn.');
                 this.$emit('update-cart');
                 this.close();
             } catch (error) {
                 console.error('Lỗi khi thêm dịch vụ vào bàn:', error);
-                alert('Cập nhật dịch vụ thất bại.');
+                this.$message.error('Cập nhật dịch vụ thất bại.');
             }
         },
         formatPrice(price) {

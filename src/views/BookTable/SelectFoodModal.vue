@@ -3,6 +3,8 @@
         <div class="modal-content">
             <h2>{{ modalMode === 'edit' ? 'Chỉnh sửa' : 'Thêm' }} món cho bàn {{ tableInfo.tableInfo.TABLE_NUMBER }}
             </h2>
+
+            <!-- Danh sách món ăn -->
             <div class="food-list">
                 <div v-for="food in displayedFoods" :key="food._id" class="food-item">
                     <img :src="food.IMAGES[0]" :alt="food.NAME" />
@@ -19,6 +21,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Phần chọn dịch vụ -->
             <h3>Chọn dịch vụ</h3>
             <div class="service-list">
@@ -27,12 +30,13 @@
                     <label>{{ service.serviceName }} - {{ formatPrice(service.servicePrice) }}</label>
                 </div>
             </div>
+
+            <!-- Nút lưu thay đổi -->
             <button @click="saveChanges">{{ modalMode === 'edit' ? 'Lưu thay đổi' : 'Thêm món' }}</button>
             <button @click="close">Đóng</button>
         </div>
     </div>
 </template>
-
 
 <script>
 import axiosClient from '../../api/axiosClient';
@@ -122,7 +126,7 @@ export default {
                 }));
 
             if (selectedFoods.length === 0) {
-                alert('Vui lòng chọn ít nhất một món ăn.');
+                this.$message.error('Vui lòng chọn ít nhất một món ăn.');
                 return;
             }
 
@@ -138,12 +142,12 @@ export default {
                     },
                 });
 
-                alert('Đã thêm món ăn vào bàn.');
+                this.$message.success('Đã thêm món ăn vào bàn.');
                 this.$emit('update-cart');
                 this.close();
             } catch (error) {
                 console.error('Lỗi khi thêm món ăn vào bàn:', error);
-                alert('Thêm món ăn vào bàn thất bại.');
+                this.$message.error('Thêm món ăn vào bàn thất bại.');
             }
         },
         async updateFoodsInTable() {
@@ -168,15 +172,12 @@ export default {
                     });
                 }
 
-                alert('Đã cập nhật số lượng món ăn.');
+                this.$message.success('Đã cập nhật số lượng món ăn.');
                 this.$emit('update-cart');
-
-                if (selectedFoods.length === 0) {
-                    this.close();
-                }
+                this.close();
             } catch (error) {
                 console.error('Lỗi khi cập nhật món ăn:', error);
-                alert('Cập nhật món ăn thất bại.');
+                this.$message.error('Cập nhật món ăn thất bại.');
             }
         },
         async removeFood(foodId) {
@@ -191,12 +192,12 @@ export default {
                     },
                 });
 
-                alert('Đã xóa món ăn khỏi bàn.');
+                this.$message.success('Đã xóa món ăn khỏi bàn.');
                 this.quantities[foodId] = 0;
                 this.$emit('update-cart');
             } catch (error) {
                 console.error('Lỗi khi xóa món ăn khỏi bàn:', error);
-                alert('Xóa món ăn khỏi bàn thất bại.');
+                this.$message.error('Xóa món ăn khỏi bàn thất bại.');
             }
         },
         formatPrice(price) {
@@ -216,7 +217,6 @@ export default {
     },
 };
 </script>
-
 
 <style scoped>
 .modal-overlay {
@@ -244,72 +244,61 @@ export default {
 
 .food-list {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    /* Hiển thị theo hàng dọc */
+    gap: 10px;
 }
 
 .food-item {
-    width: calc(25% - 20px);
-    margin: 10px;
+    display: flex;
+    align-items: center;
     border: 1px solid #ddd;
     padding: 10px;
     border-radius: 8px;
-    text-align: center;
 }
 
 .food-item img {
-    width: 100%;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
+    border-radius: 5px;
+    margin-right: 10px;
 }
 
 .food-info {
-    margin-top: 10px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .food-info h4 {
-    margin: 10px 0;
+    margin: 0;
 }
 
 .quantity-selector {
+    margin-top: 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: #f4f4f4;
-    border-radius: 5px;
-    padding: 5px 10px;
 }
 
 .quantity-button {
+    width: 30px;
+    height: 30px;
     background-color: #f9f9f9;
-    color: white;
+    color: black;
     border: none;
     border-radius: 5px;
-    width: 30px;
-    /* Chiều rộng nút */
-    height: 30px;
-    /* Chiều cao nút */
     cursor: pointer;
     font-size: 20px;
     transition: background-color 0.3s ease;
 }
 
-.quantity-button:hover {
-    background-color: #ecf5ff;
-    /* Đổi màu khi hover */
-}
-
 .quantity-display {
     margin: 0 10px;
-    /* Khoảng cách giữa nút và số lượng */
     font-size: 18px;
-    /* Kích thước chữ hiển thị số lượng */
-    color: #333;
-    /* Màu chữ */
     width: 30px;
-    /* Đảm bảo chiều rộng để căn giữa */
     text-align: center;
-    /* Căn giữa số lượng */
 }
 
 .remove-button {
@@ -322,10 +311,6 @@ export default {
     cursor: pointer;
 }
 
-.remove-button:hover {
-    background-color: #c0392b;
-}
-
 button {
     margin: 10px 5px 0 5px;
     padding: 8px 12px;
@@ -334,9 +319,5 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-}
-
-button:hover {
-    background-color: #2980b9;
 }
 </style>

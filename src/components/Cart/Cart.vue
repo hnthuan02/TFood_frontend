@@ -127,7 +127,7 @@ export default {
                 });
                 this.cart = response.data.data;
             } catch (error) {
-                console.error('Lỗi khi lấy giỏ hàng:', error);
+                this.$message.error('Lỗi khi lấy giỏ hàng:', error);
             }
         },
         async removeTable(table) {
@@ -142,10 +142,10 @@ export default {
                     },
                 });
                 await this.fetchCart();
-                alert('Đã xóa bàn khỏi giỏ hàng.');
+                this.$message.success('Đã xóa bàn khỏi giỏ hàng.');
             } catch (error) {
                 console.error('Lỗi khi xóa bàn khỏi giỏ hàng:', error);
-                alert('Xóa bàn khỏi giỏ hàng thất bại.');
+                this.$message.error('Xóa bàn khỏi giỏ hàng thất bại.');
             }
         },
         openBookingTimeModal(table) {
@@ -167,7 +167,7 @@ export default {
         async updateBookingTime() {
             try {
                 if (!this.newBookingTime.date || !this.newBookingTime.time) {
-                    alert('Vui lòng chọn ngày và giờ!');
+                    this.$message.error('Vui lòng chọn ngày và giờ!');
                     return;
                 }
 
@@ -195,12 +195,12 @@ export default {
                     },
                 });
 
-                alert('Cập nhật thời gian đặt bàn thành công!');
+                this.$message.success('Cập nhật thời gian đặt bàn thành công!');
                 this.closeBookingTimeModal();
                 await this.fetchCart();
             } catch (error) {
                 console.error('Lỗi khi cập nhật thời gian đặt bàn:', error);
-                alert('Cập nhật thời gian đặt bàn thất bại!');
+                this.$message.error('Cập nhật thời gian đặt bàn thất bại!');
             }
         },
         calculateTotalPrice(table) {
@@ -226,7 +226,7 @@ export default {
         },
         goToPayment() {
             if (this.selectedTables.length === 0) {
-                alert('Vui lòng chọn ít nhất một bàn để thanh toán');
+                this.$message.error('Vui lòng chọn ít nhất một bàn để thanh toán');
                 return;
             }
             localStorage.setItem('selectedTables', JSON.stringify(this.selectedTables));

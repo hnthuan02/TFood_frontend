@@ -19,7 +19,8 @@
                 <div class="icon-container">
                     <i class="fas fa-clock"></i>
                 </div>
-                <input type="time" v-model="selectedTime" class="form-control" step="300" required />
+                <input type="time" v-model="selectedTime" class="form-control" step="300" min="10:00" max="23:00"
+                    @input="validateTime" required />
             </div>
             <div class="form-group">
                 <div class="icon-container">
@@ -143,6 +144,7 @@
                 <button @click="closeFoodPopup" class="close-button">Đóng</button>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -203,6 +205,16 @@ export default {
         },
     },
     methods: {
+        validateTime() {
+            const minTime = "10:00";
+            const maxTime = "23:00";
+
+            if (this.selectedTime < minTime) {
+                this.selectedTime = minTime;
+            } else if (this.selectedTime > maxTime) {
+                this.selectedTime = maxTime;
+            }
+        },
         increaseQuantity(foodId) {
             this.quantities[foodId] = (this.quantities[foodId] || 0) + 1; // Tăng số lượng
         },
@@ -238,7 +250,7 @@ export default {
         },
         async fetchAvailableTables() {
             if (!this.selectedDate || !this.selectedTime || !this.peopleCount) {
-                alert("Vui lòng chọn ngày, giờ và số lượng người!");
+                this.$message.error("Vui lòng chọn ngày, giờ và số lượng người!");
                 return;
             }
 
@@ -297,7 +309,7 @@ export default {
 
         async addTableToCart() {
             if (!this.selectedTime || !this.selectedDate) {
-                alert("Vui lòng chọn ngày và giờ!");
+                this.$message.error("Vui lòng chọn ngày và giờ!");
                 return;
             }
 
@@ -320,14 +332,14 @@ export default {
                         tableNumber: this.selectedTable.TABLE_NUMBER,
                         bookingTime: bookingTime,
                     });
-                    alert(`Đã thêm bàn số ${this.selectedTable.TABLE_NUMBER} vào giỏ hàng!`);
+                    this.$message.success(`Đã thêm bàn số ${this.selectedTable.TABLE_NUMBER} vào giỏ hàng!`);
                     this.closePopup();
                 } else {
-                    alert("Thêm bàn vào giỏ hàng thất bại!");
+                    this.$message.error("Thêm bàn vào giỏ hàng thất bại!");
                 }
             } catch (error) {
                 console.error("Lỗi khi thêm bàn vào giỏ hàng:", error);
-                alert("Thêm bàn vào giỏ hàng thất bại!");
+                this.$message.error("Thêm bàn vào giỏ hàng thất bại!");
             }
         },
         closePopup() {
@@ -702,53 +714,69 @@ tr:hover {
 
 .food-list {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
+    flex-direction: column;
+    /* Hiển thị các món ăn theo hàng dọc */
+    gap: 10px;
+    /* Khoảng cách giữa các món ăn */
 }
 
 .food-item {
-    flex: 0 0 calc(25% - 20px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #fff;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
     padding: 10px;
+    border-radius: 8px;
+    text-align: left;
 }
 
 .food-item img {
-    width: 100%;
-    height: auto;
-    max-height: 100px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.food-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.food-info h4 {
+    margin: 0;
 }
 
 .quantity-selector {
+    margin-top: 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: #2c3e50;
-    border-radius: 5px;
-    padding: 10px;
 }
 
 .quantity-selector button {
-    background-color: transparent;
-    border: none;
+    width: 30px;
+    height: 30px;
+    background-color: #2c3e50;
     color: white;
-    font-size: 18px;
-    padding: 0 15px;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.quantity-selector button:hover {
+    background-color: #34495e;
 }
 
 .quantity-selector span {
-    color: white;
+    margin: 0 10px;
     font-size: 18px;
-    min-width: 30px;
+    width: 30px;
     text-align: center;
 }
+
 
 /* Styles cho checkbox tùy chỉnh */
 .checkbox-wrapper-31 {

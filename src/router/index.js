@@ -1,15 +1,17 @@
 import { createRouter, createWebHistory } from "vue-router";
+import store from "../store";
 
+// Import các component
 import Cart from "../components/Cart/Cart.vue";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout.vue";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import MenuLayout from "../layouts/Menu/MenuLayout.vue";
 import TableLayout from "../layouts/Table/TableLayout.vue";
-import store from "../store";
 import BillAdmin from "../views/Admin/BillAdmin/BillAdmin.vue";
 import HomeAdmin from "../views/Admin/HomeAdmin/HomeAdmin.vue";
 import MenuAdmin from "../views/Admin/MenuAdmin/MenuAdmin.vue";
 import TableAdmin from "../views/Admin/TableAdmin/TableAdmin.vue";
+import UserAdmin from "../views/Admin/UserAdmin/UserAdmin.vue";
 import BookTable from "../views/BookTable/BookTable.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
@@ -22,38 +24,28 @@ import RegisterUser from "../views/User/RegisterUser/Register.vue";
 const routes = [
   {
     path: "/",
-    redirect: "/TFood", // Thêm route mặc định này
+    redirect: "/TFood",
   },
   {
     path: "/user/signup",
     component: RegisterUser,
-    meta: {
-      layout: LoginLayout,
-    },
+    meta: { layout: LoginLayout },
   },
   {
     path: "/user/login",
     component: Login,
-    meta: {
-      layout: LoginLayout,
-    },
+    meta: { layout: LoginLayout },
   },
   {
     path: "/TFood",
     component: HomePageUser,
-    meta: {
-      layout: LoginLayout,
-    },
+    meta: { layout: LoginLayout },
   },
-
   {
     path: "/menu/best-seller",
     component: Menu,
-    meta: {
-      layout: MenuLayout,
-    },
+    meta: { layout: MenuLayout },
   },
-
   {
     path: "/menu/steak",
     name: "Steak",
@@ -61,7 +53,6 @@ const routes = [
     props: { type: "Steak" },
     meta: { layout: MenuLayout },
   },
-
   {
     path: "/menu/pasta",
     name: "Pasta",
@@ -69,7 +60,6 @@ const routes = [
     props: { type: "Pasta" },
     meta: { layout: MenuLayout },
   },
-
   {
     path: "/menu/dessert",
     name: "Dessert",
@@ -77,7 +67,6 @@ const routes = [
     props: { type: "Dessert" },
     meta: { layout: MenuLayout },
   },
-
   {
     path: "/menu/drink",
     name: "Drink",
@@ -85,42 +74,34 @@ const routes = [
     props: { type: "Drink" },
     meta: { layout: MenuLayout },
   },
-
   {
     path: "/table",
     component: BookTable,
-    meta: {
-      layout: TableLayout,
-    },
+    meta: { layout: TableLayout },
   },
   { path: "/cart", component: Cart },
   {
     path: "/payment",
     component: Payment,
-    meta: {
-      layout: TableLayout,
-    },
+    meta: { layout: TableLayout },
   },
   {
     path: "/user/info",
     component: InforUser,
-    meta: {
-      layout: LoginLayout,
-    },
+    meta: { layout: LoginLayout },
   },
   {
     path: "/user/booked",
     component: Booked,
-    meta: {
-      layout: LoginLayout,
-    },
+    meta: { layout: LoginLayout },
   },
-
   {
     path: "/dashboard",
     component: HomeAdmin,
     meta: {
       layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true, // Yêu cầu ít nhất một role là true
     },
   },
   {
@@ -128,6 +109,8 @@ const routes = [
     component: MenuAdmin,
     meta: {
       layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
     },
   },
   {
@@ -135,6 +118,8 @@ const routes = [
     component: BillAdmin,
     meta: {
       layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
     },
   },
   {
@@ -142,48 +127,71 @@ const routes = [
     component: TableAdmin,
     meta: {
       layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
+    },
+  },
+  {
+    path: "/dashboard/users",
+    component: UserAdmin,
+    meta: {
+      layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
     },
   },
 ];
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const isLoggedIn = store.getters.isLoggedIn;
-  const userInfo = store.getters.userInfo;
+// Middleware kiểm tra quyền truy cập
+router.beforeEach(async (to, from, next) => {
+  const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
+  let userInfo = store.getters.userInfo;
 
-  let userRole = "";
-  if (userInfo?.ROLE?.ADMIN) {
-    userRole = "admin";
-  } else if (userInfo?.ROLE?.BRANCH_MANAGER) {
-    userRole = "branch_manager";
-  } else if (userInfo?.ROLE?.STAFF) {
-    userRole = "staff";
-  } else {
-    userRole = "guest";
+  // Kiểm tra nếu userInfo là null, gọi checkToken để lấy thông tin người dùng
+  if (!userInfo) {
+    userInfo = await store.dispatch("checkToken");
   }
 
+  const roles = userInfo?.ROLE || {};
+  const hasRole = Object.values(roles).some((role) => role === true);
+  // Kiểm tra đường dẫn đến "/user/info" để thay đổi layout dựa trên role
+  if (to.path === "/user/info") {
+    if (hasRole) {
+      to.meta.layout = AdminLayout; // Có role, sử dụng AdminLayout
+    } else {
+      to.meta.layout = LoginLayout; // Không có role, sử dụng LoginLayout
+    }
+  }
+
+  if (to.path === "/user/booked") {
+    if (hasRole) {
+      to.meta.layout = AdminLayout; // Có role, sử dụng AdminLayout
+    } else {
+      to.meta.layout = LoginLayout; // Không có role, sử dụng LoginLayout
+    }
+  }
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (isLoggedIn) {
-      if (userRole === "guest") {
-        next("/TFood");
-      } else if (
-        to.matched.some(
-          (record) => record.meta.roles && record.meta.roles.includes(userRole)
-        )
-      ) {
-        next();
+    if (!isLoggedIn) {
+      return next("/user/login");
+    }
+
+    if (to.matched.some((record) => record.meta.requiresRole)) {
+      if (hasRole) {
+        return next(); // Có quyền, cho phép truy cập
       } else {
-        next("/TFood");
+        return next("/TFood"); // Không có quyền, chuyển hướng đến trang người dùng
       }
     } else {
-      next("/user/login");
+      return next(); // Các đường dẫn khác không yêu cầu quyền, cho phép truy cập
     }
-  } else {
-    next();
   }
+
+  next(); // Không yêu cầu xác thực, cho phép truy cập
 });
 
 export default router;

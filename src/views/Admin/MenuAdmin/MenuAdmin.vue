@@ -17,6 +17,10 @@
             </div>
         </div>
 
+        <div v-if="loading" class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+
         <div v-if="showModal" class="modal-foodAdmin">
             <div class="modal-content">
                 <h3>{{ isEditing ? 'Sửa món ăn' : 'Thêm món ăn mới' }}</h3>
@@ -93,7 +97,6 @@
     </div>
 </template>
 
-
 <script>
 import axiosClient from "../../../api/axiosClient"; // Đảm bảo axiosClient đúng đường dẫn
 
@@ -114,7 +117,8 @@ export default {
                 IMAGES: [""], // URL hình ảnh
             }, // Thông tin món ăn mới hoặc đang chỉnh sửa
             imagePreview: "",
-            imageInputType: 'file',
+            imageInputType: 'url',
+            loading: false, // Trạng thái loading
         };
     },
     computed: {
@@ -210,6 +214,7 @@ export default {
         },
         // Tạo món ăn mới
         async createFood() {
+            this.loading = true; // Bắt đầu trạng thái loading
             try {
                 const formData = new FormData();
                 formData.append("NAME", this.newFood.NAME);
@@ -236,11 +241,14 @@ export default {
                 }
             } catch (error) {
                 console.error("Lỗi khi thêm món ăn:", error);
+            } finally {
+                this.loading = false; // Kết thúc trạng thái loading
             }
         },
 
         // Cập nhật món ăn
         async updateFood() {
+            this.loading = true; // Bắt đầu trạng thái loading
             try {
                 const formData = new FormData();
                 formData.append("NAME", this.newFood.NAME);
@@ -254,7 +262,7 @@ export default {
                         formData.append("IMAGES[]", image); // Sử dụng IMAGES[] để khớp với cấu hình Multer
                     });
                 }
-                console.log(formData);
+
                 const response = await axiosClient.put(`/foods/updateFood/${this.editFoodId}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data' // Thiết lập loại nội dung
@@ -269,6 +277,8 @@ export default {
                 }
             } catch (error) {
                 console.error("Lỗi khi cập nhật món ăn:", error);
+            } finally {
+                this.loading = false; // Kết thúc trạng thái loading
             }
         },
 

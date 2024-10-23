@@ -17,7 +17,7 @@
 
         <div v-if="filteredTables.length > 0" class="table-grid">
             <div v-for="table in filteredTables" :key="table._id" class="table-item"
-                @click="fetchTableDetails(table._id)">
+                @mouseenter="hoveredTable = table._id" @mouseleave="hoveredTable = null">
                 <img :src="table.IMAGES[0]" alt="Table Image" class="table-image" />
                 <div class="table-info">
                     <h3>{{ table.TYPE == 'Normal' ? 'Bàn' : 'Phòng' }} {{ table.TABLE_NUMBER }}</h3>
@@ -25,6 +25,12 @@
                     <p>Mô tả: {{ table.DESCRIPTION }}</p>
                     <p>Sức chứa: {{ table.CAPACITY }} người</p>
                     <p>Trạng thái: {{ table.IS_DELETED ? 'Đã xóa' : 'Còn hoạt động' }}</p>
+                </div>
+
+                <!-- Nút Xóa và Sửa -->
+                <div class="action-buttons" v-if="hoveredTable === table._id">
+                    <button @click.stop="deleteTable(table._id)" class="delete-button">Xóa</button>
+                    <button @click.stop="openEditTableModal(table)" class="edit-button">Sửa</button>
                 </div>
             </div>
         </div>
@@ -36,8 +42,8 @@
         <!-- Modal thêm bàn -->
         <div v-if="showModalAdd" class="modal-tableAdmin">
             <div class="modal-content">
-                <h3>Thêm bàn mới</h3>
-                <form @submit.prevent="createTable">
+                <h3>{{ isEditing ? 'Sửa' : 'Thêm' }} bàn mới</h3>
+                <form @submit.prevent="isEditing ? updateTable() : createTable()">
                     <div class="form-group">
                         <label for="table-type">Loại bàn:</label>
                         <select v-model="newTable.TYPE" id="table-type" required>
@@ -63,30 +69,15 @@
                         <input v-model="newTable.IMAGES[0]" id="table-image" placeholder="URL hình ảnh" required />
                     </div>
                     <div class="form-group buttons">
-                        <button type="submit" class="save-button">Lưu</button>
+                        <button type="submit" class="save-button">{{ isEditing ? 'Cập nhật' : 'Lưu' }}</button>
                         <button type="button" @click="closeModalAdd" class="cancel-button">Hủy</button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <!-- Modal hiển thị thời gian đặt -->
-        <div v-if="showModal" class="modal-overlay" @click="closeModal">
-            <div class="modal-content" @click.stop>
-                <h3>Thời gian đặt của {{ selectedTable?.TYPE == 'Normal' ? 'Bàn' : 'Phòng' }} {{
-                    selectedTable?.TABLE_NUMBER }}</h3>
-                <ul v-if="selectedTable && selectedTable.BOOKING_TIMES.length > 0">
-                    <li v-for="bookingTime in selectedTable.BOOKING_TIMES" :key="bookingTime.START_TIME">
-                        Bắt đầu: {{ bookingTime.START_TIME }} - Trạng thái: {{ bookingTime.STATUS == 'Completed' ?
-                            'Hoàn thành' : 'Đã đặt' }}
-                    </li>
-                </ul>
-                <p v-else>Không có thời gian đặt.</p>
-                <button @click="closeModal" class="close-button">Đóng</button>
-            </div>
-        </div>
     </div>
 </template>
+
 
 
 <script>
@@ -100,6 +91,8 @@ export default {
             tablesTypes: [],
             showModal: false, // Trạng thái hiển thị modal
             showModalAdd: false, // Tr
+            hoveredTable: null,
+            isEditing: false,
             selectedTable: null, // Bàn được chọn để hiển thị chi tiết
             newTable: {
                 TYPE: "Normal", // Mặc định là bàn thường
@@ -150,8 +143,14 @@ export default {
             }
         },
         openAddTableModal() {
-            this.showModalAdd = true; // Mở modal để thêm bàn mới
-            this.resetNewTable(); // Reset thông tin bàn mới
+            this.isEditing = false;
+            this.showModalAdd = true;
+            this.resetNewTable();
+        },
+        openEditTableModal(table) {
+            this.isEditing = true;
+            this.newTable = { ...table };
+            this.showModalAdd = true;
         },
         closeModal() {
             this.showModal = false; // Đóng modal
@@ -189,6 +188,31 @@ export default {
                 console.error("Lỗi khi lấy danh sách bàn:", error);
             }
         },
+        async updateTable() {
+            try {
+                const response = await axiosClient.post(`/tables/updateTable/${this.newTable._id}`, this.newTable);
+                if (response.status === 200) {
+                    this.showModalAdd = false;
+                    this.fetchTables();
+                } else {
+                    console.error("Lỗi khi cập nhật bàn:", response.data);
+                }
+            } catch (error) {
+                console.error("Lỗi khi cập nhật bàn:", error);
+            }
+        },
+        async deleteTable(tableId) {
+            try {
+                const response = await axiosClient.delete(`/tables/deleteTable/${tableId}`);
+                if (response.status === 200) {
+                    this.fetchTables();
+                } else {
+                    console.error("Lỗi khi xóa bàn:", response.data);
+                }
+            } catch (error) {
+                console.error("Lỗi khi xóa bàn:", error);
+            }
+        }
     },
 };
 </script>
@@ -251,6 +275,42 @@ export default {
     background-color: #fff;
     display: flex;
     align-items: center;
+    position: relative;
+    transition: box-shadow 0.3s ease;
+}
+
+.table-item:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.action-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.delete-button,
+.edit-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-button {
+    background-color: #3498db;
+}
+
+.delete-button:hover {
+    background-color: #c0392b;
+}
+
+.edit-button:hover {
+    background-color: #2980b9;
 }
 
 .table-image {

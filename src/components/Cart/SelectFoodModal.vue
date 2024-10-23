@@ -128,7 +128,7 @@ export default {
                 }));
 
             if (selectedFoods.length === 0) {
-                alert('Vui lòng chọn ít nhất một món ăn.');
+                this.$message.error('Vui lòng chọn ít nhất một món ăn.');
                 return;
             }
 
@@ -144,12 +144,12 @@ export default {
                     },
                 });
 
-                alert('Đã thêm món ăn vào bàn.');
+                this.$message.success('Đã thêm món ăn vào bàn.');
                 this.$emit('update-cart');
                 this.close();
             } catch (error) {
                 console.error('Lỗi khi thêm món ăn vào bàn:', error);
-                alert('Thêm món ăn vào bàn thất bại.');
+                this.$message.error('Thêm món ăn vào bàn thất bại.');
             }
         },
         async updateFoodsInTable() {
@@ -174,7 +174,7 @@ export default {
                     });
                 }
 
-                alert('Đã cập nhật số lượng món ăn.');
+                this.$message.success('Đã cập nhật số lượng món ăn.');
                 this.$emit('update-cart');
 
                 if (selectedFoods.length === 0) {
@@ -182,7 +182,7 @@ export default {
                 }
             } catch (error) {
                 console.error('Lỗi khi cập nhật món ăn:', error);
-                alert('Cập nhật món ăn thất bại.');
+                this.$message.error('Cập nhật món ăn thất bại.');
             }
         },
         async removeFood(foodId) {
@@ -197,12 +197,12 @@ export default {
                     },
                 });
 
-                alert('Đã xóa món ăn khỏi bàn.');
+                this.$message.success('Đã xóa món ăn khỏi bàn.');
                 this.quantities[foodId] = 0;
                 this.$emit('update-cart');
             } catch (error) {
                 console.error('Lỗi khi xóa món ăn khỏi bàn:', error);
-                alert('Xóa món ăn khỏi bàn thất bại.');
+                this.$message.error('Xóa món ăn khỏi bàn thất bại.');
             }
         },
         formatPrice(price) {

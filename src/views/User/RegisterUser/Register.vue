@@ -130,7 +130,7 @@ export default {
         });
 
         if (response.data.success) {
-          alert("Đăng ký người dùng thành công!");
+          this.$message.success("Đăng ký người dùng thành công!");
           const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
           otpModal.show();
         } else if (response.data.errors) {
@@ -141,7 +141,7 @@ export default {
           this.errors = error.response.data.errors;
         } else {
           console.error("Error registering user:", error);
-          alert("Đã xảy ra lỗi khi đăng ký!");
+          this.$message.error("Đã xảy ra lỗi khi đăng ký!");
         }
       }
     },
@@ -170,7 +170,7 @@ export default {
           this.otpErrors = error.response.data.errors;
         } else {
           console.error("Error verifying OTP:", error);
-          alert("Đã xảy ra lỗi khi xác thực mã OTP!");
+          this.$message.error("Đã xảy ra lỗi khi xác thực mã OTP!");
         }
       }
     },

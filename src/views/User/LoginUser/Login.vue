@@ -155,7 +155,7 @@ export default {
           email: this.currentEmail,
         });
         if (response.data.success) {
-          alert("Vui lòng kiểm tra Email!");
+          this.$message.success("Vui lòng kiểm tra Email!");
           this.showOtpField = true;
           this.showNewPasswordField = true;
           this.showConfirmNewPasswordField = true;
@@ -168,7 +168,7 @@ export default {
           this.errors = error.response.data.errors;
         } else {
           console.error("Error registering user:", error);
-          alert("Đã xảy ra lỗi khi gửi mail!");
+          this.$message.error("Đã xảy ra lỗi khi gửi mail!");
         }
       }
 

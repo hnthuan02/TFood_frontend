@@ -159,7 +159,7 @@ export default {
 
             // Kiểm tra nếu mật khẩu chưa được nhập
             if (this.isEmailChanged && !this.passwordConfirm) {
-                alert("Bạn cần nhập mật khẩu trước khi thay đổi email.");
+                this.$message.error("Bạn cần nhập mật khẩu trước khi thay đổi email.");
                 return;
             }
 
@@ -182,14 +182,14 @@ export default {
                 });
 
                 if (response.data.success) {
-                    alert('OTP xác thực thành công!');
+                    this.$message.success('OTP xác thực thành công!');
                     location.reload();
                 } else {
-                    alert('Mã OTP không hợp lệ!');
+                    this.$message.error('Mã OTP không hợp lệ!');
                 }
             } catch (error) {
                 console.error('Lỗi khi xác thực OTP:', error);
-                alert('Xác thực OTP thất bại!');
+                this.$message.error('Xác thực OTP thất bại!');
             }
         },
         async updateEmail() {
@@ -207,14 +207,14 @@ export default {
                 this.showOtpForm();
             } catch (error) {
                 console.error('Lỗi khi cập nhật thông tin người dùng:', error);
-                alert('Cập nhật Email thất bại!');
+                this.$message.error('Cập nhật Email thất bại!');
             }
         },
         async updateUserInfo() {
             try {
                 // Kiểm tra mật khẩu xác nhận
                 if (!this.passwordConfirm) {
-                    alert('Vui lòng nhập mật khẩu xác nhận.');
+                    this.$message.error('Vui lòng nhập mật khẩu xác nhận.');
                     return;
                 }
 
@@ -229,7 +229,7 @@ export default {
 
                 // Nếu không có trường nào thay đổi, không gửi yêu cầu
                 if (Object.keys(payload).length === 0) {
-                    alert('Không có thay đổi nào để cập nhật.');
+                    this.$message.error('Không có thay đổi nào để cập nhật.');
                     return;
                 }
 
@@ -241,12 +241,12 @@ export default {
                     },
                 });
 
-                alert('Cập nhật thông tin thành công!');
+                this.$message.success('Cập nhật thông tin thành công!');
                 this.closeEditModal();
                 await this.fetchUserProfile(); // Cập nhật lại thông tin người dùng
             } catch (error) {
                 console.error('Lỗi khi cập nhật thông tin người dùng:', error);
-                alert('Cập nhật thông tin thất bại!');
+                this.$message.error('Cập nhật thông tin thất bại!');
             }
         },
         closeOTPModal() {
@@ -269,12 +269,12 @@ export default {
                 await axiosClient.post('http://localhost:3001/users/forgotPassword', {
                     email: this.user.EMAIL,
                 });
-                alert('OTP đã được gửi đến email của bạn.');
+                this.$message.success('OTP đã được gửi đến email của bạn.');
                 this.isPasswordModalVisible = false;
                 this.isOTPPasswordVisible = true; // Hiển thị form nhập OTP và mật khẩu mới
             } catch (error) {
                 console.error('Lỗi khi gửi OTP:', error);
-                alert('Không thể gửi OTP. Vui lòng thử lại.');
+                this.$message.error('Không thể gửi OTP. Vui lòng thử lại.');
             }
         },
 
@@ -292,14 +292,14 @@ export default {
                     newPassword: this.newPassword,
                 });
                 if (response.data.success) {
-                    alert('Mật khẩu đã được thay đổi thành công.');
+                    this.$message.error('Mật khẩu đã được thay đổi thành công.');
                     this.closeOTPPasswordModal();
                 } else {
-                    alert('OTP không chính xác hoặc hết hạn.');
+                    this.$message.error('OTP không chính xác hoặc hết hạn.');
                 }
             } catch (error) {
                 console.error('Lỗi khi đổi mật khẩu:', error);
-                alert('Không thể thay đổi mật khẩu. Vui lòng thử lại.');
+                this.$message.error('Không thể thay đổi mật khẩu. Vui lòng thử lại.');
             }
         },
     }

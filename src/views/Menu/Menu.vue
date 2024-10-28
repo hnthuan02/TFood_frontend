@@ -30,7 +30,7 @@
 
                 <!-- Món bán chạy -->
                 <h2 v-if="!type && !searchQuery" class="dishes-title best-sell">Món Bán Chạy</h2>
-                <div class="dish-grid" v-if="!type && !searchQuery">
+                <div class="dish-grid" v-if="!type && !searchQuery && filteredDishesBest.length > 0">
                     <div class="dish-card" v-for="dish in filteredDishesBest" :key="dish._id">
                         <img :src="dish.IMAGES[0]" :alt="dish.NAME" />
                         <h3 class="dish-name">{{ dish.NAME }}</h3>
@@ -38,6 +38,8 @@
                         <button type="submit" class="btn btn-order" @click="onOrderDish(dish)">Đặt ngay</button>
                     </div>
                 </div>
+
+
 
                 <!-- Món theo loại -->
                 <h2 v-if="type" class="dishes-title">{{ displayType }}</h2>
@@ -102,6 +104,7 @@ export default {
             isCartVisible: false, // Trạng thái hiển thị modal
             quantities: {}, // Khởi tạo quantities cho mỗi bàn
             searchQuery: '',
+            filteredDishesBest: [],
         };
     },
     computed: {
@@ -111,9 +114,6 @@ export default {
                 .slice(0, 3);
         },
 
-        filteredDishesBest() {
-            return this.dishes.filter(dish => dish.BEST === true);
-        },
         filteredDishesByType() {
             return this.dishes.filter(dish => dish.TYPE === this.type);
         },
@@ -142,9 +142,33 @@ export default {
     methods: {
         async fetchProducts() {
             try {
+                // Gọi API để lấy danh sách món ăn
                 const response = await axiosClient.get("/foods/allFood");
                 this.dishes = response.data;
+
+                // Gọi API để lấy tổng số lần đặt của từng món ăn
+                const totalQuantityResponse = await axiosClient.get("/booking/total-food-quantity");
+                const totalQuantityData = totalQuantityResponse.data.data;
+
+                // Kết hợp thông tin totalQuantity vào từng món ăn
+                this.dishes = this.dishes.map(dish => {
+                    const matchingDish = totalQuantityData.find(item => item._id === dish._id);
+                    return {
+                        ...dish,
+                        totalQuantity: matchingDish ? matchingDish.totalQuantity : 0 // Mặc định là 0 nếu không tìm thấy
+                    };
+                });
+
+                // Lấy 3 món bán chạy nhất (sắp xếp giảm dần theo totalQuantity)
+                this.filteredDishesBest = this.dishes
+                    .sort((a, b) => b.totalQuantity - a.totalQuantity) // Sắp xếp giảm dần
+                    .slice(0, 3); // Lấy 3 món đầu tiên
+
                 this.loading = false;
+                console.log("Danh sách món ăn:", this.dishes);
+                console.log("Danh sách tổng số lượng bán:", totalQuantityData);
+                console.log("Món bán chạy nhất:", this.filteredDishesBest);
+
             } catch (error) {
                 console.error("Error fetching products:", error);
                 this.loading = false;

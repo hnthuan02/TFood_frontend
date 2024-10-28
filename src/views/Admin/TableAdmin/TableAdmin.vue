@@ -11,10 +11,17 @@
                         </option>
                     </select>
                 </div>
+                <!-- Thêm dropdown cho sắp xếp -->
+                <div class="select">
+                    <select v-model="sortOption" @change="sortTables">
+                        <option value="">Sắp xếp</option>
+                        <option value="asc">Số lần đặt ít nhất</option>
+                        <option value="desc">Số lần đặt nhiều nhất</option>
+                    </select>
+                </div>
                 <button @click="openAddTableModal" class="add-table-button">Thêm bàn</button>
             </div>
         </div>
-
         <div v-if="filteredTables.length > 0" class="table-grid">
             <div v-for="table in filteredTables" :key="table._id" class="table-item"
                 @mouseenter="hoveredTable = table._id" @mouseleave="hoveredTable = null">
@@ -24,12 +31,13 @@
                     <p>Loại: {{ translateType(table.TYPE) }}</p>
                     <p>Mô tả: {{ table.DESCRIPTION }}</p>
                     <p>Sức chứa: {{ table.CAPACITY }} người</p>
+                    <p><strong>Tổng số lần đặt:</strong> {{ table.TOTAL_START_TIME }}</p>
+                    <!-- Hiển thị TOTAL_START_TIME -->
                     <!-- Phần CURRENT với màu nền -->
                     <p class="table-status" :style="getTableStatusStyle(table.CURRENT)">
                         {{ table.CURRENT }}
                     </p>
                 </div>
-
                 <!-- Nút Xóa và Sửa -->
                 <div class="action-buttons" v-if="hoveredTable === table._id">
                     <button @click.stop="deleteTable(table._id)" class="delete-button">Xóa</button>
@@ -37,13 +45,9 @@
                 </div>
             </div>
         </div>
-
-
-
         <div v-else>
             <p>Không có bàn nào được tìm thấy.</p>
         </div>
-
         <!-- Modal thêm bàn -->
         <div v-if="showModalAdd" class="modal-tableAdmin">
             <div class="modal-content">
@@ -95,6 +99,8 @@ export default {
             selectedType: "",
             tablesTypes: [],
             showModal: false, // Trạng thái hiển thị modal
+            sortOption: "", // Tùy chọn sắp xếp
+            showModal: false,
             showModalAdd: false, // Tr
             hoveredTable: null,
             isEditing: false,
@@ -109,17 +115,30 @@ export default {
     },
     computed: {
         filteredTables() {
-            // Lọc danh sách món ăn dựa trên loại món ăn được chọn
+            let result = this.tables;
+
+            // Lọc danh sách theo loại bàn
             if (this.selectedType) {
-                return this.tables.filter(table => table.TYPE === this.selectedType);
+                result = result.filter(table => table.TYPE === this.selectedType);
             }
-            return this.tables; // Hiển thị tất cả nếu không chọn loại
+
+            // Sắp xếp danh sách theo số lần đặt
+            if (this.sortOption === "asc") {
+                result.sort((a, b) => a.TOTAL_START_TIME - b.TOTAL_START_TIME);
+            } else if (this.sortOption === "desc") {
+                result.sort((a, b) => b.TOTAL_START_TIME - a.TOTAL_START_TIME);
+            }
+
+            return result;
         }
     },
     mounted() {
         this.fetchTables(); // Gọi hàm lấy danh sách bàn khi component được mount
     },
     methods: {
+        sortTables() {
+
+        },
         async fetchTableDetails(tableId) {
             try {
                 const response = await axiosClient.get(`/tables/oneTable/${tableId}`);
@@ -186,13 +205,30 @@ export default {
         },
         async fetchTables() {
             try {
+                // Gọi API để lấy thông tin các bàn
                 const response = await axiosClient.get("/tables/all-tables-with-status");
                 this.tables = response.data.data; // Gán dữ liệu bàn
+
+                // Gọi API để lấy tổng số lần đặt bàn (TOTAL_START_TIME)
+                const totalStartTimesResponse = await axiosClient.get("/tables/total-start-times");
+                const totalStartTimes = totalStartTimesResponse.data.data;
+
+                // Kết hợp thông tin TOTAL_START_TIME vào từng bàn
+                this.tables = this.tables.map(table => {
+                    const matchingTable = totalStartTimes.find(t => t.TABLE_ID === table._id);
+                    return {
+                        ...table,
+                        TOTAL_START_TIME: matchingTable ? matchingTable.TOTAL_START_TIME : 0 // Mặc định là 0 nếu không tìm thấy
+                    };
+                });
+
+                // Lọc các loại bàn (Normal, Room)
                 this.tablesTypes = [...new Set(this.tables.map(table => table.TYPE))];
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách bàn:", error);
             }
         },
+
         async updateTable() {
             try {
                 const response = await axiosClient.post(`/tables/updateTable/${this.newTable._id}`, this.newTable);
@@ -399,5 +435,14 @@ h3 {
 
     display: flex;
     justify-content: space-between;
+}
+
+.table-info p strong {
+    font-weight: bold;
+    color: #34495e;
+}
+
+.select {
+    margin-right: 10px;
 }
 </style>

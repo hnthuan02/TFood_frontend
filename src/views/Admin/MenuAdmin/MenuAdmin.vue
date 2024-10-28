@@ -13,8 +13,19 @@
                         </option>
                     </select>
                 </div>
+
+                <!-- Dropdown sắp xếp theo số lượng đặt hàng -->
+                <div class="select">
+                    <select v-model="sortOption" @change="sortFoods">
+                        <option value="">Sắp xếp</option>
+                        <option value="most-ordered">Bán chạy nhất</option>
+                        <option value="least-ordered">Bán ít nhất</option>
+                    </select>
+                </div>
+
                 <button @click="openAddFoodModal" class="add-food-button">Thêm món ăn</button>
             </div>
+
         </div>
 
         <div v-if="loading" class="spinner-overlay">
@@ -83,6 +94,7 @@
                     <p>Loại: {{ translateType(food.TYPE) }}</p>
                     <p>Giá: {{ formatCurrency(food.PRICE) }}</p>
                     <p>{{ food.DESCRIPTION }}</p>
+                    <p><strong>Số lần đặt:</strong> {{ food.totalQuantity }}</p>
                 </div>
                 <div class="action-buttons">
                     <button class="edit-button" @click="openEditFoodModal(food)">Sửa</button>
@@ -106,6 +118,7 @@ export default {
             foods: [], // Dữ liệu món ăn
             selectedType: "", // Loại món ăn được chọn
             foodTypes: [], // Danh sách các loại món ăn
+            sortOption: "",
             showModal: false, // Trạng thái hiển thị modal
             isEditing: false, // Trạng thái chỉnh sửa hay thêm mới
             editFoodId: null, // ID của món ăn đang được chỉnh sửa
@@ -124,16 +137,28 @@ export default {
     computed: {
         filteredFoods() {
             // Lọc danh sách món ăn dựa trên loại món ăn được chọn
+            let filtered = this.foods;
             if (this.selectedType) {
-                return this.foods.filter(food => food.TYPE === this.selectedType);
+                filtered = filtered.filter(food => food.TYPE === this.selectedType);
             }
-            return this.foods; // Hiển thị tất cả nếu không chọn loại
+
+            // Sắp xếp danh sách món ăn theo lựa chọn
+            if (this.sortOption === "most-ordered") {
+                filtered.sort((a, b) => b.totalQuantity - a.totalQuantity);
+            } else if (this.sortOption === "least-ordered") {
+                filtered.sort((a, b) => a.totalQuantity - b.totalQuantity);
+            }
+
+            return filtered;
         }
     },
     mounted() {
         this.fetchFoods(); // Gọi hàm lấy danh sách món ăn khi component được mount
     },
     methods: {
+        sortFoods() {
+            this.filteredFoods();
+        },
         translateType(type) {
             switch (type) {
                 case "Steak":
@@ -176,8 +201,22 @@ export default {
 
         async fetchFoods() {
             try {
-                const response = await axiosClient.get("/foods/allFood");
-                this.foods = response.data; // Gán dữ liệu món ăn
+                // Gọi API để lấy danh sách món ăn
+                const foodsResponse = await axiosClient.get("/foods/allFood");
+                const foodsData = foodsResponse.data;
+
+                // Gọi API để lấy tổng số lần đặt của từng món ăn
+                const totalQuantityResponse = await axiosClient.get("/booking/total-food-quantity");
+                const totalQuantityData = totalQuantityResponse.data.data;
+
+                // Kết hợp thông tin totalQuantity vào từng món ăn
+                this.foods = foodsData.map(food => {
+                    const matchingFood = totalQuantityData.find(f => f._id === food._id);
+                    return {
+                        ...food,
+                        totalQuantity: matchingFood ? matchingFood.totalQuantity : 0 // Mặc định là 0 nếu không tìm thấy
+                    };
+                });
 
                 // Lấy danh sách các loại món ăn không trùng lặp
                 this.foodTypes = [...new Set(this.foods.map(food => food.TYPE))];
@@ -185,6 +224,7 @@ export default {
                 console.error("Lỗi khi lấy danh sách món ăn:", error);
             }
         },
+
         // Mở modal thêm món ăn mới
         openAddFoodModal() {
             this.isEditing = false;

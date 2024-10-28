@@ -1,93 +1,90 @@
 <template>
-    <div class="dashboard">
-        <div class="content">
-            <!-- Thêm các ô màu cho thông tin -->
-            <div class="info-cards">
-                <div class="info-card revenue">
-                    <h3>Doanh thu tháng {{ currentMonth }}</h3>
-                    <font-awesome-icon :icon="['fas', 'money-bill']" />
-                    <h4>{{ formatCurrency(revenue) }}</h4>
-                </div>
-                <div class="info-card employees">
-                    <h3>Nhân viên</h3>
-                    <font-awesome-icon :icon="['fas', 'user-tie']" />
-                    <h4>{{ employees }}</h4>
-                </div>
-                <div class="info-card customers">
-                    <h3>Khách hàng</h3>
-                    <font-awesome-icon :icon="['fas', 'user-group']" />
-                    <h4>{{ customers }}</h4>
-                </div>
-                <div class="info-card orders">
-                    <h3>Đơn đang đặt</h3>
-                    <font-awesome-icon :icon="['fas', 'bell-concierge']" />
-                    <h4>{{ orders }}</h4>
-                </div>
+    <div class="content">
+        <!-- Thêm các ô màu cho thông tin -->
+        <div class="info-cards">
+            <div class="info-card revenue">
+                <h3>Doanh thu tháng {{ currentMonth }}</h3>
+                <font-awesome-icon :icon="['fas', 'money-bill']" />
+                <h4>{{ formatCurrency(revenue) }}</h4>
             </div>
-
-            <!-- Hiển thị danh sách đơn hàng có STATUS là Booked -->
-            <div class="order-list">
-                <h3>Danh sách đơn đặt bàn</h3>
-
-                <!-- Thêm thanh tìm kiếm -->
-                <input type="text" v-model="searchQuery" placeholder="Tìm kiếm theo tên, số điện thoại hoặc email" />
-
-                <div v-if="bookedOrders.length > 0" class="order-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tên khách hàng</th>
-                                <th>Số điện thoại</th>
-                                <th>Email</th>
-                                <th>Trạng thái</th>
-                                <th>Ngày đặt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-for="(order, index) in filteredBookedOrders" :key="order._id">
-                                <!-- Hàng chính (order) -->
-                                <tr @click="toggleOrderDetails(index)">
-                                    <td>{{ order.USER_NAME }}</td>
-                                    <td>{{ order.PHONE_NUMBER }}</td>
-                                    <td>{{ order.EMAIL }}</td>
-                                    <td>{{ order.STATUS === 'Booked' ? 'Đã thanh toán' : 'Đang xử lí' }}</td>
-                                    <td>{{ formatDate(order.createdAt) }}</td>
-                                </tr>
-                                <tr :ref="'table-details-' + index" class="dropdown-row">
-                                    <td colspan="5" class="dropdown-content">
-                                        <div v-for="table in orderTables[index]" :key="table.TABLE_ID"
-                                            class="table-row">
-                                            <div class="table-info">
-                                                Bàn số: {{ table.TABLE_NUMBER }} - Thời gian đặt: {{ table.BOOKING_TIME
-                                                }} -
-                                                Trạng thái hiện tại: {{ table.STATUS === 'Completed' ? 'Hoàn thành' :
-                                                    'Đang chờ' }}
-                                            </div>
-
-                                            <!-- Nút cập nhật trạng thái -->
-                                            <button @click="updateBookingTimeStatus(table.TABLE_ID, table.BOOKING_TIME)"
-                                                :disabled="table.STATUS === 'Completed'" class="update-button">
-                                                Xác nhận trả bàn
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-
-
-
-
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-                <p v-else>Không có đơn hàng nào đã đặt.</p>
+            <div class="info-card employees">
+                <h3>Nhân viên</h3>
+                <font-awesome-icon :icon="['fas', 'user-tie']" />
+                <h4>{{ employees }}</h4>
             </div>
-
-
-            <!-- Hiển thị component nội dung tương ứng -->
-            <component :is="currentTabComponent" />
+            <div class="info-card customers">
+                <h3>Khách hàng</h3>
+                <font-awesome-icon :icon="['fas', 'user-group']" />
+                <h4>{{ customers }}</h4>
+            </div>
+            <div class="info-card orders">
+                <h3>Đơn đang đặt</h3>
+                <font-awesome-icon :icon="['fas', 'bell-concierge']" />
+                <h4>{{ orders }}</h4>
+            </div>
         </div>
+
+        <!-- Hiển thị danh sách đơn hàng có STATUS là Booked -->
+        <div class="order-list">
+            <h3>Danh sách đơn đặt bàn</h3>
+
+            <!-- Thêm thanh tìm kiếm -->
+            <input type="text" v-model="searchQuery" placeholder="Tìm kiếm theo tên, số điện thoại hoặc email" />
+
+            <div v-if="bookedOrders.length > 0" class="order-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="(order, index) in filteredBookedOrders" :key="order._id">
+                            <!-- Hàng chính (order) -->
+                            <tr @click="toggleOrderDetails(index)">
+                                <td>{{ order.USER_NAME }}</td>
+                                <td>{{ order.PHONE_NUMBER }}</td>
+                                <td>{{ order.EMAIL }}</td>
+                                <td>{{ order.STATUS === 'Booked' ? 'Đã thanh toán' : 'Đang xử lí' }}</td>
+                                <td>{{ formatDate(order.createdAt) }}</td>
+                            </tr>
+                            <tr :ref="'table-details-' + index" class="dropdown-row">
+                                <td colspan="5" class="dropdown-content">
+                                    <div v-for="table in orderTables[index]" :key="table.TABLE_ID" class="table-row">
+                                        <div class="table-info">
+                                            Bàn số: {{ table.TABLE_NUMBER }} - Thời gian đặt: {{ table.BOOKING_TIME
+                                            }} -
+                                            Trạng thái hiện tại: {{ table.STATUS === 'Completed' ? 'Hoàn thành' :
+                                                'Đang chờ' }}
+                                        </div>
+
+                                        <!-- Nút cập nhật trạng thái -->
+                                        <button @click="updateBookingTimeStatus(table.TABLE_ID, table.BOOKING_TIME)"
+                                            :disabled="table.STATUS === 'Completed'" class="update-button">
+                                            Xác nhận trả bàn
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+
+
+
+
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <p v-else>Không có đơn hàng nào đã đặt.</p>
+        </div>
+
+
+        <!-- Hiển thị component nội dung tương ứng -->
+        <component :is="currentTabComponent" />
     </div>
 </template>
 

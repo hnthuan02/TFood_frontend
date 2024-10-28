@@ -3,6 +3,7 @@ import store from "../store";
 
 // Import các component
 import Cart from "../components/Cart/Cart.vue";
+import Chat from "../components/Chat/Chat.vue";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout.vue";
 import LoginLayout from "../layouts/Login/LoginLayout.vue";
 import MenuLayout from "../layouts/Menu/MenuLayout.vue";
@@ -138,6 +139,13 @@ const routes = [
       layout: AdminLayout,
       requiresAuth: true,
       requiresRole: true,
+    },
+  },
+  {
+    path: "/chat",
+    component: Chat,
+    meta: {
+      layout: LoginLayout,
     },
   },
 ];

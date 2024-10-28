@@ -105,9 +105,7 @@ export default {
                 this.users = response.data.data.filter(user => (!user.ROLE.STAFF && !user.ROLE.ADMIN));
                 this.staff = response.data.data.filter(user => (user.ROLE.STAFF));
                 // Gán tên khách sạn cho nhân viên
-                this.staff.forEach(user => {
-                    user.HOTEL_NAME = user.HOTEL_ID ? user.hotel.NAME.split("ETHEREAL ")[1] || 'N/A' : 'N/A';
-                });
+
                 this.totalPages = response.data.totalPages;
             } catch (error) {
                 console.error("Lỗi khi lấy người dùng:", error);

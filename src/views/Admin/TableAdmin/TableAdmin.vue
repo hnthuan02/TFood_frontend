@@ -24,7 +24,10 @@
                     <p>Loại: {{ translateType(table.TYPE) }}</p>
                     <p>Mô tả: {{ table.DESCRIPTION }}</p>
                     <p>Sức chứa: {{ table.CAPACITY }} người</p>
-                    <p>Trạng thái: {{ table.IS_DELETED ? 'Đã xóa' : 'Còn hoạt động' }}</p>
+                    <!-- Phần CURRENT với màu nền -->
+                    <p class="table-status" :style="getTableStatusStyle(table.CURRENT)">
+                        {{ table.CURRENT }}
+                    </p>
                 </div>
 
                 <!-- Nút Xóa và Sửa -->
@@ -34,6 +37,8 @@
                 </div>
             </div>
         </div>
+
+
 
         <div v-else>
             <p>Không có bàn nào được tìm thấy.</p>
@@ -181,8 +186,8 @@ export default {
         },
         async fetchTables() {
             try {
-                const response = await axiosClient.get("/tables/tables");
-                this.tables = response.data; // Gán dữ liệu bàn
+                const response = await axiosClient.get("/tables/all-tables-with-status");
+                this.tables = response.data.data; // Gán dữ liệu bàn
                 this.tablesTypes = [...new Set(this.tables.map(table => table.TYPE))];
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách bàn:", error);
@@ -212,7 +217,16 @@ export default {
             } catch (error) {
                 console.error("Lỗi khi xóa bàn:", error);
             }
-        }
+        },
+        getTableStatusStyle(current) {
+            if (current === "Đang có khách") {
+                return { backgroundColor: "#f44336", color: "white" }; // Nền đỏ
+            } else if (current === "Sắp có khách") {
+                return { backgroundColor: "#ff9800", color: "white" }; // Nền vàng
+            } else {
+                return { backgroundColor: "#4caf50", color: "white" }; // Nền xanh
+            }
+        },
     },
 };
 </script>
@@ -276,8 +290,9 @@ export default {
     display: flex;
     align-items: center;
     position: relative;
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
 }
+
 
 .table-item:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -345,6 +360,15 @@ h3 {
     cursor: pointer;
     margin-left: 20px;
 }
+
+.table-status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
 
 .modal-tableAdmin {
     position: fixed;

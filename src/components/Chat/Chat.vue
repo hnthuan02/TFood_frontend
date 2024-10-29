@@ -1,9 +1,10 @@
 <template>
     <div class="chat-container">
-        <!-- Danh sách người dùng -->
-        <div class="users-list">
+        <!-- Danh sách người dùng (chỉ dành cho nhân viên và admin) -->
+        <div v-if="isAdminOrStaff" class="users-list">
             <h3>Danh sách người dùng</h3>
             <div v-for="user in users" :key="user._id" class="user-item" @click="selectReceiver(user)">
+                <span v-if="user.hasNewMessage" class="notification-dot"></span>
                 {{ user.FULLNAME }}
             </div>
         </div>
@@ -13,14 +14,16 @@
             <div v-for="(message, index) in messages" :key="index" class="message">
                 <span class="sender">{{ message.sender }}:</span>
                 <span class="content">{{ message.content }}</span>
+                <span class="timestamp">{{ formatTime(message.createdAt) }}</span>
+            </div>
+            <div class="chat-input">
+                <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="Nhập tin nhắn..." />
+                <button @click="sendMessage">Gửi</button>
             </div>
         </div>
 
         <!-- Input tin nhắn -->
-        <div class="chat-input">
-            <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="Nhập tin nhắn..." />
-            <button @click="sendMessage">Gửi</button>
-        </div>
+
     </div>
 </template>
 
@@ -38,12 +41,18 @@ export default {
             userId: null,
             receiverId: "", // ID của người nhận
             users: [], // Danh sách người dùng
+            defaultAdminId: "", // ID admin mặc định cho người dùng thường
         };
     },
     computed: {
         ...mapState(["userInfo"]), // Lấy thông tin người dùng từ Vuex
+
+        // Kiểm tra xem tài khoản là admin hoặc nhân viên
+        isAdminOrStaff() {
+            return this.userInfo?.ROLE?.ADMIN || this.userInfo?.ROLE?.STAFF;
+        },
     },
-    mounted() {
+    async mounted() {
         if (this.userInfo && this.userInfo._id) {
             this.userId = this.userInfo._id;
         } else {
@@ -51,10 +60,16 @@ export default {
             return;
         }
 
+        // Đặt ID admin mặc định nếu người dùng là user thường
+        if (!this.isAdminOrStaff) {
+            await this.setDefaultAdminId();
+            this.receiverId = this.defaultAdminId;
+        }
+
         // Kết nối với Socket.IO
         this.socket = io("http://localhost:3001", {
             auth: {
-                token: localStorage.getItem("accessToken"), // Truyền token qua xác thực
+                token: localStorage.getItem("accessToken"),
             },
         });
 
@@ -63,48 +78,75 @@ export default {
 
         // Lắng nghe sự kiện nhận tin nhắn từ server
         this.socket.on("receiveMessage", (message) => {
-            const senderName = message.senderName || "Unknown"; // Lấy tên người gửi
-            this.messages.push({
-                sender: senderName,
-                content: message.content,
-            });
+            // Xử lý tin nhắn nhận được
+            if (this.isAdminOrStaff) {
+                // Nếu là admin, cập nhật thông báo chấm đỏ cho người dùng
+                if (message.senderId !== this.receiverId) {
+                    this.updateUserNotification(message.senderId);
+                } else {
+                    this.messages.push({
+                        sender: message.senderName || "Unknown",
+                        content: message.content,
+                        createdAt: message.createdAt, // Thêm thời gian
+                    });
+                }
+            } else {
+                // Nếu là user thường, hiển thị tin nhắn từ admin
+                this.messages.push({
+                    sender: message.senderName || "TFOOD",
+                    content: message.content,
+                    createdAt: message.createdAt, // Thêm thời gian
+                });
+            }
         });
 
-        // Gọi API lấy danh sách người dùng
-        this.fetchUsers();
+        // Tải tin nhắn cũ ngay khi trang được tải
+        this.fetchMessages();
+
+        // Nếu là admin hoặc staff, tải danh sách người dùng
+        if (this.isAdminOrStaff) {
+            this.fetchUsers();
+        }
     },
 
     methods: {
         async fetchUsers() {
             try {
-                const token = localStorage.getItem("accessToken");
-                if (!token) {
-                    console.error("Token không tồn tại.");
-                    return;
-                }
-
                 const response = await axiosClient.get("/users/getAllUsers", {
-                    params: {
-                        tabStatus: 2,
-                        page: 1,
-                        limit: 10, // Hoặc số giới hạn mà bạn muốn
-                    },
+                    params: { tabStatus: 2, page: 1, limit: 10 },
                 });
 
-                // Kiểm tra xem response.data.data có phải là một mảng hay không
-                if (Array.isArray(response.data.data)) {
-                    this.users = response.data.data.filter(user => user._id !== this.userId);
-                } else {
-                    console.error("Dữ liệu từ API không phải là mảng:", response.data);
-                }
+                // Lọc bỏ người dùng hiện tại khỏi danh sách
+                this.users = response.data.data
+                    .filter(user => user._id !== this.userId)
+                    .map(user => ({ ...user, hasNewMessage: false }));
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách người dùng:", error);
             }
         },
 
+        async setDefaultAdminId() {
+            try {
+                // Sử dụng API lấy danh sách người dùng và tìm admin
+                const response = await axiosClient.get("/users/getAllUsers", {
+                    params: { tabStatus: 2, page: 1, limit: 10 },
+                });
+
+                // Tìm admin trong danh sách người dùng
+                const admins = response.data.data.filter(user => user.ROLE.ADMIN);
+
+                if (admins.length > 0) {
+                    this.defaultAdminId = admins[0]._id;
+                } else {
+                    console.error("Không tìm thấy admin nào.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy ID admin:", error);
+            }
+        },
+
         async fetchMessages() {
             if (!this.userId || !this.receiverId) {
-                console.error("Thiếu userId hoặc receiverId.");
                 return;
             }
 
@@ -118,42 +160,74 @@ export default {
                     }
                 );
 
-                // Sử dụng tên người gửi từ backend
-                this.messages = response.data.map(message => ({
-                    sender: message.senderName, // Tên người gửi
-                    content: message.content,
-                }));
+                if (response.data && Array.isArray(response.data)) {
+                    this.messages = response.data.map(message => ({
+                        sender: message.senderName,
+                        content: message.content,
+                        createdAt: message.createdAt, // Thêm thời gian
+                    }));
+                } else {
+                    console.error("Dữ liệu trả về không phải là mảng tin nhắn.");
+                }
             } catch (error) {
                 console.error("Lỗi khi lấy tin nhắn:", error);
             }
         },
 
         selectReceiver(user) {
+            if (!this.isAdminOrStaff) return;
+
+            // Xóa chấm đỏ khi chọn người nhận
+            user.hasNewMessage = false;
+
             this.receiverId = user._id;
-            this.fetchMessages(); // Lấy tin nhắn khi chọn người nhận
+            this.fetchMessages();
         },
 
         sendMessage() {
-            if (this.newMessage.trim() === "" || !this.receiverId) return;
+            if (this.newMessage.trim() === "") return;
+
+            // Nếu là người dùng thường, gửi tin nhắn tới admin
+            if (!this.isAdminOrStaff) {
+                this.receiverId = this.defaultAdminId;
+            }
+
+            if (!this.receiverId) {
+                console.error("Không thể gửi tin nhắn vì thiếu receiverId.");
+                return;
+            }
 
             const message = {
                 senderId: this.userId,
                 receiverId: this.receiverId,
                 content: this.newMessage,
-                senderName: this.userInfo.ROLE.ADMIN || this.userInfo.ROLE.STAFF ? "TFOOD" : this.userInfo.FULLNAME,
+                senderName: this.isAdminOrStaff ? "TFOOD" : this.userInfo.FULLNAME,
             };
 
             // Gửi tin nhắn lên server
             this.socket.emit("sendMessage", message);
 
-            // Thêm tin nhắn vào giao diện cho người gửi
+            // Thêm tin nhắn vào giao diện người gửi
             this.messages.push({
                 sender: "Bạn",
                 content: this.newMessage,
+                createdAt: new Date().toISOString(), // Thêm thời gian hiện tại
             });
 
             // Xóa nội dung tin nhắn sau khi gửi
             this.newMessage = "";
+        },
+
+        formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Định dạng thời gian
+        },
+
+        updateUserNotification(senderId) {
+            const user = this.users.find(user => user._id === senderId);
+            if (user) {
+                user.hasNewMessage = true; // Cập nhật chấm đỏ
+            }
         },
     },
     beforeDestroy() {
@@ -163,10 +237,19 @@ export default {
 </script>
 
 <style scoped>
-/* Kiểu dáng của giao diện chat */
+.notification-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+}
+
 .chat-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     height: 500px;
     border: 1px solid #ccc;
     padding: 10px;
@@ -176,21 +259,28 @@ export default {
 .users-list {
     margin-bottom: 10px;
     border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    /* Màu nền cho danh sách người dùng */
 }
 
 .user-item {
+    position: relative;
     cursor: pointer;
     margin-bottom: 5px;
     padding: 5px;
     border: 1px solid #7274FF;
     border-radius: 4px;
+    background-color: #e3f2fd;
+    /* Màu nền cho người dùng */
 }
 
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
     margin-bottom: 10px;
+    margin-left: 10px;
+    position: relative;
 }
 
 .message {
@@ -202,9 +292,21 @@ export default {
     margin-right: 5px;
 }
 
+.timestamp {
+    font-size: 0.8em;
+    color: gray;
+    /* Màu cho thời gian */
+    margin-left: 10px;
+    /* Khoảng cách giữa tin nhắn và thời gian */
+}
+
 .chat-input {
     display: flex;
     align-items: center;
+    margin-bottom: 10px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
 
 .chat-input input {
@@ -215,5 +317,18 @@ export default {
 
 .chat-input button {
     padding: 5px 10px;
+    background-color: #7274FF;
+    /* Màu nền nút gửi */
+    color: white;
+    /* Màu chữ */
+    border: none;
+    border-radius: 4px;
+    /* Bo tròn góc */
+    cursor: pointer;
+}
+
+.chat-input button:hover {
+    background-color: #5a5fc4;
+    /* Màu nền khi hover */
 }
 </style>

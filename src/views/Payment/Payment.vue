@@ -3,9 +3,6 @@
         <section class="payment-section">
             <div class="container">
                 <h2 class="section-title">Thanh Toán</h2>
-
-
-
                 <!-- Hiển thị thông tin giỏ hàng -->
                 <div v-if="cartItems.length > 0" class="payment-details">
                     <div class="order-summary">
@@ -42,18 +39,27 @@
                     <div class="payment-info">
                         <div class="user-info">
                             <div class="form-group floating">
-                                <input v-model="customerName" type="text" id="name" placeholder=" " required />
+                                <input v-model="customerName" type="text" id="name" placeholder=" " required
+                                    @input="validateName" />
                                 <label for="name">Họ và tên:</label>
+                                <span v-if="nameError" class="error-message">{{ nameError }}</span>
                             </div>
+
                             <div class="form-group floating">
-                                <input v-model="customerPhone" type="text" id="phone" placeholder=" " required />
+                                <input v-model="customerPhone" type="text" id="phone" placeholder=" " required
+                                    @input="validatePhone" maxlength="10" pattern="^[0-9]{10}$" />
                                 <label for="phone">Số điện thoại:</label>
+                                <span v-if="phoneError" class="error-message">{{ phoneError }}</span>
                             </div>
+
                             <div class="form-group floating">
-                                <input v-model="customerEmail" type="email" id="email" placeholder=" " required />
+                                <input v-model="customerEmail" type="email" id="email" placeholder=" " required
+                                    @input="validateEmail" />
                                 <label for="email">Email:</label>
+                                <span v-if="emailError" class="error-message">{{ emailError }}</span>
                             </div>
                         </div>
+
                         <h3>Tổng cộng: {{ formatPrice(totalPrice) }}</h3>
                         <div class="form-group select-payment-method">
                             <label for="paymentMethod">Phương thức thanh toán: {{ paymentMethod }}</label>
@@ -79,8 +85,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import axiosClient from "../../api/axiosClient"; // Sử dụng axiosClient từ file hiện có
-
 export default {
     name: 'PaymentPage',
     data() {
@@ -91,11 +97,23 @@ export default {
             customerPhone: '', // Số điện thoại khách hàng
             customerEmail: '', // Email khách hàng
             paymentMethod: 'Vnpay', // Phương thức thanh toán mặc định
+            nameError: '',
+            phoneError: '',
+            emailError: '',
         };
+    },
+    computed: {
+        ...mapGetters(['userInfo']),
     },
     mounted() {
         this.fetchSelectedTables(); // Gọi hàm lấy các bàn đã chọn
+        if (this.userInfo) {
+            this.customerName = this.userInfo.FULLNAME;
+            this.customerPhone = this.userInfo.PHONE_NUMBER;
+            this.customerEmail = this.userInfo.EMAIL;
+        }
     },
+
     methods: {
 
         async fetchSelectedTables() {
@@ -176,12 +194,10 @@ export default {
             };
             console.log(paymentData);
             try {
-                // Gọi API đặt phòng
                 const response = await axiosClient.post("/booking/createBookingFromCart", paymentData);
                 console.log(response);
 
                 if (response.data.success) {
-                    // Sau khi đặt phòng thành công, tạo URL thanh toán VNPAY
                     const paymentResponse = await axiosClient.post(
                         "/payments/create_payment_url",
                         {
@@ -189,7 +205,6 @@ export default {
                             totalPrice: response.data.data.TOTAL_PRICE,
                         }
                     );
-
                     if (paymentResponse.data && paymentResponse.data.data.url) {
                         window.open(paymentResponse.data.data.url, "_blank");
                     } else {
@@ -203,7 +218,47 @@ export default {
                 this.$toast.error("Đặt bàn thất bại. Vui lòng thử lại.");
             }
         },
-
+        validateName() {
+            const namePattern = /^[A-Za-zÀ-ÿ\s]+$/; // Allows letters and spaces
+            if (!this.customerName) {
+                this.nameError = "Họ và tên là bắt buộc.";
+            } else if (!namePattern.test(this.customerName)) {
+                this.nameError = "Họ và tên không được chứa số hoặc ký tự đặc biệt.";
+            } else {
+                this.nameError = '';
+            }
+        },
+        validatePhone() {
+            const phonePattern = /^[0-9]{10}$/; // Allows exactly 10 digits
+            if (!this.customerPhone) {
+                this.phoneError = "Số điện thoại là bắt buộc.";
+            } else if (!phonePattern.test(this.customerPhone)) {
+                this.phoneError = "Số điện thoại phải là 10 chữ số.";
+            } else {
+                this.phoneError = '';
+            }
+        },
+        validateEmail() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email pattern
+            if (!this.customerEmail) {
+                this.emailError = "Email là bắt buộc.";
+            } else if (!emailPattern.test(this.customerEmail)) {
+                this.emailError = "Email không hợp lệ.";
+            } else {
+                this.emailError = '';
+            }
+        },
+        watch: {
+            customerName() {
+                this.validateName();
+            },
+            customerPhone() {
+                this.validatePhone();
+            },
+            customerEmail() {
+                this.validateEmail();
+            }
+        },
     },
 };
 </script>
@@ -213,6 +268,7 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
 
 .PaymentPage {
+
     h5 {
         margin-bottom: 0;
     }
@@ -357,6 +413,14 @@ export default {
         }
     }
 }
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
 
 .form-group {
     position: relative;

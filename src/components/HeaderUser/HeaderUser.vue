@@ -19,17 +19,9 @@
               </a>
             </li>
 
-            <li class="nav-item dropdown hover-dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                aria-expanded="false">
-                Khuyến Mãi
-              </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Khuyến Mãi 1</a></li>
-                <li><a class="dropdown-item" href="#">Khuyến Mãi 2</a></li>
-              </ul>
-            </li>
-            <li class="nav-item"><a class="nav-link" href="contact.html">Liên Hệ</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Khuyến Mãi</a></li>
+            <li class="nav-item"><a class="nav-link" href="/contact">Liên Hệ</a></li>
+            <li class="nav-item"><a class="nav-link" href="/review">Đánh Giá</a></li>
           </ul>
 
           <ul class="navbar-nav ms-auto">

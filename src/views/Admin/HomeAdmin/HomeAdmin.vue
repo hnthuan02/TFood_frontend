@@ -3,7 +3,12 @@
         <!-- Thêm các ô màu cho thông tin -->
         <div class="info-cards">
             <div class="info-card revenue">
-                <h3>Doanh thu tháng {{ currentMonth }}</h3>
+                <h3>Doanh thu tháng</h3>
+                <div class="month-selector">
+                    <button @click="prevMonth" class="arrow-button">‹</button>
+                    <span>{{ currentMonth }}</span>
+                    <button @click="nextMonth" class="arrow-button">›</button>
+                </div>
                 <font-awesome-icon :icon="['fas', 'money-bill']" />
                 <h4>{{ formatCurrency(revenue) }}</h4>
             </div>
@@ -159,11 +164,28 @@ export default {
         },
         async getRevenue() {
             try {
-                const response = await axiosClient.get("booking/total-price");
-                this.revenue = response.data.totalPrice;
+                const response = await axiosClient.get(`booking/total-price?year=${new Date().getFullYear()}`);
+                const monthlyRevenue = response.data.monthlyRevenue;
+                this.revenue = monthlyRevenue[this.currentMonth - 1] || 0;
             } catch (error) {
                 console.error("Lỗi khi lấy doanh thu", error);
             }
+        },
+        prevMonth() {
+            if (this.currentMonth > 1) {
+                this.currentMonth -= 1;
+            } else {
+                this.currentMonth = 12;
+            }
+            this.getRevenue(); // Cập nhật doanh thu cho tháng mới
+        },
+        nextMonth() {
+            if (this.currentMonth < 12) {
+                this.currentMonth += 1;
+            } else {
+                this.currentMonth = 1;
+            }
+            this.getRevenue(); // Cập nhật doanh thu cho tháng mới
         },
         async getBookedOrders() {
             try {
@@ -247,6 +269,29 @@ export default {
 </script>
 
 <style scoped>
+.month-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    margin-top: 10px;
+    color: #ddd;
+}
+
+.arrow-button {
+    background: none;
+    border: none;
+    color: #6d4c41;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 10px;
+    transition: color 0.2s;
+}
+
+.arrow-button:hover {
+    color: #7274ff;
+}
+
 .order-list input[type="text"] {
     width: 30%;
     padding: 10px;

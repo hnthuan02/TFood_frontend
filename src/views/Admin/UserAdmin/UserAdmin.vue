@@ -1,8 +1,6 @@
 <template>
     <div class="user-management-container">
-        <!-- <div class="header">
-        <h1>Quản Lý Người Dùng</h1>
-      </div> -->
+        <!-- Tabs -->
         <div class="tabs">
             <button :class="{ active: activeTab === 'users' }"
                 @click="activeTab = 'users'; fetchUsers(selectedUserStatus)">
@@ -13,6 +11,8 @@
                 Nhân Viên
             </button>
         </div>
+
+        <!-- Bộ lọc và tìm kiếm -->
         <div class="search-filter-container">
             <div class="filter-container">
                 <select v-model="selectedUserStatus" @change="fetchUsers(selectedUserStatus)">
@@ -27,51 +27,56 @@
                     @input="handleSearch" class="search-input" />
             </div>
         </div>
-        <table class="user-table">
-            <thead>
-                <tr>
-                    <th>Họ Tên</th>
-                    <th>Email</th>
-                    <th>Số Điện Thoại</th>
-                    <th>Trạng Thái</th>
-                    <th>Hành Động</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="user in filteredUsers" :key="user._id">
-                    <td>{{ user.FULLNAME }}</td>
-                    <td>{{ user.EMAIL }}</td>
-                    <td>{{ user.PHONE_NUMBER }}</td>
-                    <td>{{ user.IS_ACTIVATED ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}</td>
-                    <td>
-                        <button class="edit-button" @click="toggleBlockUser(user)">
-                            {{ user.IS_BLOCKED?.CHECK ? 'Bỏ chặn' : 'Chặn' }}
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+
+        <!-- Danh sách người dùng dạng thẻ -->
+        <div class="user-card-container">
+            <div v-for="user in filteredUsers" :key="user._id" class="user-card">
+                <div class="user-card-header">
+                    <h3>{{ user.FULLNAME }}</h3>
+                    <span class="user-status">
+                        {{ user.IS_ACTIVATED ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}
+                    </span>
+                </div>
+                <div class="user-card-body">
+                    <p><strong>Email:</strong> {{ user.EMAIL }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ user.PHONE_NUMBER }}</p>
+                </div>
+                <div v-if="!userInfo?.ROLE.STAFF" class="user-card-footer">
+                    <button class="action-button" @click="toggleBlockUser(user)">
+                        {{ user.IS_BLOCKED?.CHECK ? 'Bỏ chặn' : 'Chặn' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phân trang -->
         <pagination v-if="totalPages > 1" :current-page="currentPage" :total-pages="totalPages"
             @page-changed="fetchUsers(selectedUserStatus)" />
     </div>
 </template>
+
 <script>
 import Swal from "sweetalert2"; // Import SweetAlert2
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from 'vuex';
 import axiosClient from "../../../api/axiosClient";
 export default {
     data() {
         return {
             activeTab: "users",
-            selectedUserStatus: "4", // Giá trị mặc định là chưa kích hoạt
+            selectedUserStatus: "4",
             searchQuery: "",
             users: [],
-            staff: [], // Danh sách nhân viên
+            staff: [],
             totalPages: 0,
             currentPage: 1,
         };
     },
     computed: {
+        ...mapGetters(['userInfo']),
+        shouldHideBlockButton() {
+            // Đảm bảo user.ROLE tồn tại và kiểm tra giá trị ROLE.STAFF
+            return this.user && this.user.ROLE && this.user.ROLE.STAFF === true;
+        },
         filteredUsers() {
             const allUsers = this.activeTab === 'users' ? this.users : this.staff;
             return allUsers.filter(user => {
@@ -89,31 +94,24 @@ export default {
         handleSearch() {
             this.fetchUsers(this.selectedUserStatus);
         },
-        editUser(user) {
-            // Chỉnh sửa thông tin người dùng
-        },
         async fetchUsers(status) {
             try {
                 const response = await axiosClient.get("/users/getAllUsers", {
                     params: {
                         tabStatus: status,
                         page: this.currentPage,
-                        limit: 10, // Hoặc số giới hạn mà bạn muốn
+                        limit: 10,
                     },
                 });
-                // Phân loại người dùng
                 this.users = response.data.data.filter(user => (!user.ROLE.STAFF && !user.ROLE.ADMIN));
                 this.staff = response.data.data.filter(user => (user.ROLE.STAFF));
-                // Gán tên khách sạn cho nhân viên
-
                 this.totalPages = response.data.totalPages;
             } catch (error) {
                 console.error("Lỗi khi lấy người dùng:", error);
             }
         },
         async toggleBlockUser(user) {
-            const isBlocked = !user.IS_BLOCKED?.CHECK; // Đảo ngược trạng thái chặn
-            // Hiển thị hộp thoại xác nhận trước khi thực hiện hành động
+            const isBlocked = !user.IS_BLOCKED?.CHECK;
             const result = await Swal.fire({
                 title: isBlocked ? "Bạn có chắc chắn muốn chặn người dùng này không?" : "Bạn có chắc chắn muốn bỏ chặn người dùng này không?",
                 icon: "warning",
@@ -122,16 +120,13 @@ export default {
                 cancelButtonText: "Hủy",
                 confirmButtonColor: isBlocked ? "#d33" : "#4CAF50",
             });
-            // Nếu người dùng xác nhận, thực hiện hành động chặn hoặc bỏ chặn
             if (result.isConfirmed) {
                 try {
                     await axiosClient.post('/users/blockUser', {
                         IS_BLOCKED: isBlocked,
                         userId: user._id,
                     });
-                    // Cập nhật lại danh sách người dùng sau khi chặn hoặc bỏ chặn
                     await this.fetchUsers(this.selectedUserStatus);
-                    // Hiển thị thông báo thành công
                     this.$message.success(`Đã ${isBlocked ? 'chặn' : 'bỏ chặn'} người dùng thành công!`);
                 } catch (error) {
                     console.error("Lỗi khi chặn/bỏ chặn người dùng:", error);
@@ -145,137 +140,145 @@ export default {
     },
 };
 </script>
+
 <style scoped>
 .user-management-container {
     padding: 20px;
-    background-color: #f5f5f5;
-    /* Màu nền trang */
-}
-
-.header {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.header h1 {
-    color: #6d4c41;
-    /* Màu chữ tiêu đề */
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tabs {
     display: flex;
     margin-bottom: 20px;
+}
 
-    button {
-        flex: 1;
-        padding: 10px;
-        background-color: #e0e0e0;
-        /* Màu nền cho tab */
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s;
+.tabs button {
+    flex: 1;
+    padding: 12px;
+    font-weight: bold;
+    background-color: #e8e8e8;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #34495E;
+    transition: background-color 0.3s, color 0.3s;
+}
 
-        &.active {
-            background-color: #7274ff;
-            /* Màu nền cho tab đang hoạt động */
-            color: white;
-        }
+.tabs button.active {
+    background-color: #34495E;
+    color: white;
+}
 
-        &:hover {
-            background-color: #d1d1d1;
-            /* Màu nền khi hover */
-        }
-    }
+.tabs button:hover {
+    background-color: #d9d9d9;
 }
 
 .search-filter-container {
     display: flex;
     justify-content: space-between;
-    /* Căn giữa hai phần */
     margin-bottom: 20px;
 }
 
 .search-container {
+
     flex: 1;
-    /* Để thanh tìm kiếm chiếm không gian còn lại */
     margin-right: 10px;
-    /* Khoảng cách giữa thanh tìm kiếm và thanh lọc */
 }
 
 .search-input {
+    margin-left: 10px;
+    height: 45px;
+    width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 2px solid #1d2d4a;
     border-radius: 5px;
     font-size: 16px;
-    width: 70%;
-    /* Chiếm toàn bộ chiều ngang */
-    margin-left: 10px;
-
-    &:focus {
-        border-color: #7274ff;
-        outline: none;
-        /* Loại bỏ outline mặc định */
-    }
+    transition: border-color 0.3s;
 }
 
-.filter-container {
-    display: flex;
-    align-items: center;
-    /* Căn giữa theo chiều dọc */
+.search-input:focus {
+    border-color: #6d4c41;
+    outline: none;
 }
 
 .filter-container select {
-    padding: 12px;
-    border: 1px solid #ccc;
+    height: 45px;
+    padding: 10px;
+    border: 2px solid #213451;
     border-radius: 5px;
     font-size: 16px;
-
-    &:focus {
-        border-color: #7274ff;
-        outline: none;
-        /* Loại bỏ outline mặc định */
-    }
+    transition: border-color 0.3s;
 }
 
-.user-table {
-    width: 100%;
-    border-collapse: collapse;
-    /* Để không có khoảng cách giữa các ô */
-    margin-top: 20px;
-    /* Khoảng cách giữa thanh tìm kiếm và bảng */
+.filter-container select:focus {
+    border-color: #6d4c41;
+    outline: none;
 }
 
-.user-table th,
-.user-table td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    /* Đường viền của bảng */
-    text-align: left;
-    /* Canh trái cho các ô */
+.user-card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
-.user-table th {
-    background-color: #e0e0e0;
-    /* Màu nền cho header */
-    color: #6d4c41;
-    /* Màu chữ cho header */
+.user-card {
+    width: 320px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.edit-button {
-    background-color: #7274ff;
-    /* Nút chỉnh sửa */
+.user-card-header {
+    padding: 15px;
+    background-color: #6d4c41;
     color: white;
-    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-card-header h3 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.user-status {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.user-card-body {
+    padding: 15px;
+}
+
+.user-card-body p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.user-card-footer {
+    padding: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.action-button {
+    background-color: #1f2043;
+    color: white;
+    padding: 8px 16px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+}
 
-    &:hover {
-        background-color: #5b5ed7;
-        /* Màu nền khi hover */
-    }
+.action-button:hover {
+    background-color: #5b5ed7;
 }
 </style>

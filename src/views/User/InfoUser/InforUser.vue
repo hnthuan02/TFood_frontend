@@ -14,6 +14,9 @@
             <div class="info-item">
                 <strong>Tổng điểm tích lũy:</strong> {{ user.CUMULATIVE_POINTS }}
             </div>
+            <div class="info-item">
+                <strong>Tổng số tiền đã đặt:</strong> {{ formatCurrency(totalBookingAmount) }}
+            </div>
         </div>
 
         <div class="button-group">
@@ -109,6 +112,7 @@ export default {
     data() {
         return {
             user: {},
+            totalBookingAmount: 0,
             isModalVisible: false,
             form: {
                 FULLNAME: '',
@@ -127,8 +131,24 @@ export default {
     },
     async created() {
         await this.fetchUserProfile();
+        await this.fetchTotalBookingAmount();
     },
     methods: {
+        async fetchTotalBookingAmount() {
+            try {
+                const response = await axiosClient.get('http://localhost:3001/booking/total-amount-by-user');
+                if (response.data.success) {
+                    this.totalBookingAmount = response.data.totalAmount;
+                } else {
+                    console.error('Lỗi khi lấy tổng số tiền đã đặt:', response.data.message);
+                }
+            } catch (error) {
+                console.error('Lỗi khi lấy tổng số tiền đã đặt:', error);
+            }
+        },
+        formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        },
         goToBookingHistory() {
             this.$router.push('/user/booked'); // Chuyển hướng đến trang /user/booked
         },
@@ -292,7 +312,7 @@ export default {
                     newPassword: this.newPassword,
                 });
                 if (response.data.success) {
-                    this.$message.error('Mật khẩu đã được thay đổi thành công.');
+                    this.$message.success('Mật khẩu đã được thay đổi thành công.');
                     this.closeOTPPasswordModal();
                 } else {
                     this.$message.error('OTP không chính xác hoặc hết hạn.');

@@ -26,6 +26,12 @@
             <li :class="{ active: currentTab === 'promotions' }" @click="setActiveTab('promotions')">
                 <i class="fas fa-tags"></i> Khuyến mãi
             </li>
+            <li :class="{ active: currentTab === 'chat' }" @click="setActiveTab('chat')">
+                <i class="fa-solid fa-headset"></i> CSKH
+            </li>
+            <li :class="{ active: currentTab === 'rating' }" @click="setActiveTab('rating')">
+                <i class="fa-regular fa-star-half-stroke"></i> Đánh giá
+            </li>
         </ul>
     </nav>
 </template>

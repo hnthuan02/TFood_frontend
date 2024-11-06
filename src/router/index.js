@@ -11,9 +11,12 @@ import TableLayout from "../layouts/Table/TableLayout.vue";
 import BillAdmin from "../views/Admin/BillAdmin/BillAdmin.vue";
 import HomeAdmin from "../views/Admin/HomeAdmin/HomeAdmin.vue";
 import MenuAdmin from "../views/Admin/MenuAdmin/MenuAdmin.vue";
+import Rating from "../views/Admin/Rating/Rating.vue";
 import TableAdmin from "../views/Admin/TableAdmin/TableAdmin.vue";
 import UserAdmin from "../views/Admin/UserAdmin/UserAdmin.vue";
+import ApprovedReviews from "../views/ApprovedReviews/ApprovedReviews.vue";
 import BookTable from "../views/BookTable/BookTable.vue";
+import Contact from "../views/Contact/Contact.vue";
 import HomePageUser from "../views/HomePage/HomeUser/HomePageUser.vue";
 import Menu from "../views/Menu/Menu.vue";
 import Payment from "../views/Payment/Payment.vue";
@@ -142,8 +145,33 @@ const routes = [
     },
   },
   {
-    path: "/chat",
+    path: "/dashboard/rating",
+    component: Rating,
+    meta: {
+      layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
+    },
+  },
+  {
+    path: "/dashboard/chat",
     component: Chat,
+    meta: {
+      layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
+    },
+  },
+  {
+    path: "/contact",
+    component: Contact,
+    meta: {
+      layout: LoginLayout,
+    },
+  },
+  {
+    path: "/review",
+    component: ApprovedReviews,
     meta: {
       layout: LoginLayout,
     },

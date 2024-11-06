@@ -195,7 +195,7 @@ export default {
                 });
 
                 if (response.data.success) {
-                    alert('Đánh giá thành công!');
+                    this.$message.success('Đánh giá thành công!');
                     this.closeReviewModal();
                     this.fetchBookingHistory(); // Làm mới danh sách sau khi đánh giá
                 } else {

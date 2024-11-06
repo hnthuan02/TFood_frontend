@@ -3,7 +3,8 @@
         <!-- Danh sách người dùng (chỉ dành cho nhân viên và admin) -->
         <div v-if="isAdminOrStaff" class="users-list">
             <h3>Danh sách người dùng</h3>
-            <div v-for="user in users" :key="user._id" class="user-item" @click="selectReceiver(user)">
+            <div v-for="user in users" :key="user._id" class="user-item" :class="{ selected: user.isSelected }"
+                @click="selectReceiver(user)">
                 <span v-if="user.hasNewMessage" class="notification-dot"></span>
                 {{ user.FULLNAME }}
             </div>
@@ -119,7 +120,7 @@ export default {
                 // Lọc bỏ người dùng hiện tại khỏi danh sách
                 this.users = response.data.data
                     .filter(user => user._id !== this.userId)
-                    .map(user => ({ ...user, hasNewMessage: false }));
+                    .map(user => ({ ...user, hasNewMessage: false, isSelected: false }));
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách người dùng:", error);
             }
@@ -176,6 +177,8 @@ export default {
 
         selectReceiver(user) {
             if (!this.isAdminOrStaff) return;
+            this.users.forEach(u => u.isSelected = false); // Đặt lại tất cả thành chưa chọn
+            user.isSelected = true; // Đánh dấu người dùng được chọn
 
             // Xóa chấm đỏ khi chọn người nhận
             user.hasNewMessage = false;
@@ -208,14 +211,15 @@ export default {
             this.socket.emit("sendMessage", message);
 
             // Thêm tin nhắn vào giao diện người gửi
-            this.messages.push({
-                sender: "Bạn",
-                content: this.newMessage,
-                createdAt: new Date().toISOString(), // Thêm thời gian hiện tại
-            });
+            // this.messages.push({
+            //     sender: "Bạn",
+            //     content: this.newMessage,
+            //     createdAt: new Date().toISOString(), // Thêm thời gian hiện tại
+            // });
 
             // Xóa nội dung tin nhắn sau khi gửi
             this.newMessage = "";
+            this.fetchMessages();
         },
 
         formatTime(timestamp) {
@@ -273,6 +277,11 @@ export default {
     border-radius: 4px;
     background-color: #e3f2fd;
     /* Màu nền cho người dùng */
+}
+
+.user-item.selected {
+    background-color: #d1c4e9;
+    /* Màu nền khi chọn người dùng */
 }
 
 .chat-messages {

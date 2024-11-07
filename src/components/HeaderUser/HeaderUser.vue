@@ -19,7 +19,7 @@
               </a>
             </li>
 
-            <li class="nav-item"><a class="nav-link" href="#">Khuyến Mãi</a></li>
+            <li class="nav-item"><a class="nav-link" href="/voucher">Khuyến Mãi</a></li>
             <li class="nav-item"><a class="nav-link" href="/contact">Liên Hệ</a></li>
             <li class="nav-item"><a class="nav-link" href="/review">Đánh Giá</a></li>
           </ul>

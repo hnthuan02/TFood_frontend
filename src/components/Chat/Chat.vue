@@ -119,7 +119,7 @@ export default {
 
                 // Lọc bỏ người dùng hiện tại khỏi danh sách
                 this.users = response.data.data
-                    .filter(user => user._id !== this.userId)
+                    .filter(user => user._id !== this.userId && !user.ROLE.STAFF)
                     .map(user => ({ ...user, hasNewMessage: false, isSelected: false }));
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách người dùng:", error);
@@ -254,7 +254,7 @@ export default {
 .chat-container {
     display: flex;
     flex-direction: row;
-    height: 500px;
+    height: 100%;
     border: 1px solid #ccc;
     padding: 10px;
     overflow: hidden;

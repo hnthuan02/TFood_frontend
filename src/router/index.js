@@ -14,6 +14,7 @@ import MenuAdmin from "../views/Admin/MenuAdmin/MenuAdmin.vue";
 import Rating from "../views/Admin/Rating/Rating.vue";
 import TableAdmin from "../views/Admin/TableAdmin/TableAdmin.vue";
 import UserAdmin from "../views/Admin/UserAdmin/UserAdmin.vue";
+import VoucherAdmin from "../views/Admin/Voucher/VoucherAdmin.vue";
 import ApprovedReviews from "../views/ApprovedReviews/ApprovedReviews.vue";
 import BookTable from "../views/BookTable/BookTable.vue";
 import Contact from "../views/Contact/Contact.vue";
@@ -24,6 +25,7 @@ import Booked from "../views/User/InfoUser/Booked.vue";
 import InforUser from "../views/User/InfoUser/InforUser.vue";
 import Login from "../views/User/LoginUser/Login.vue";
 import RegisterUser from "../views/User/RegisterUser/Register.vue";
+import Voucher from "../views/Voucher/Voucher.vue";
 
 const routes = [
   {
@@ -163,6 +165,15 @@ const routes = [
     },
   },
   {
+    path: "/dashboard/promotions",
+    component: VoucherAdmin,
+    meta: {
+      layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
+    },
+  },
+  {
     path: "/contact",
     component: Contact,
     meta: {
@@ -172,6 +183,13 @@ const routes = [
   {
     path: "/review",
     component: ApprovedReviews,
+    meta: {
+      layout: LoginLayout,
+    },
+  },
+  {
+    path: "/voucher",
+    component: Voucher,
     meta: {
       layout: LoginLayout,
     },

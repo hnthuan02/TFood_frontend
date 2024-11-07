@@ -58,9 +58,20 @@
                                 <label for="email">Email:</label>
                                 <span v-if="emailError" class="error-message">{{ emailError }}</span>
                             </div>
+
+                            <div class="form-group floating voucher-input">
+
+                                <div class="input-with-button">
+                                    <input v-model="voucherCode" type="text" id="voucher" placeholder=" " />
+                                    <label for="voucher">Mã giảm giá (Nếu có):</label>
+                                    <button @click="checkVoucherEligibility" class="btn-check-voucher">Kiểm tra</button>
+                                </div>
+                                <span v-if="voucherMessage" class="voucher-message">{{ voucherMessage }}</span>
+                            </div>
+
                         </div>
 
-                        <h3>Tổng cộng: {{ formatPrice(totalPrice) }}</h3>
+                        <h3>Tổng cộng: {{ formatPrice(displayTotalPrice) }}</h3>
                         <div class="form-group select-payment-method">
                             <label for="paymentMethod">Phương thức thanh toán: {{ paymentMethod }}</label>
                             <select v-model="paymentMethod" id="paymentMethod">
@@ -69,8 +80,6 @@
                                 <option value="Tiền mặt">Tiền mặt</option>
                             </select>
                         </div>
-
-
 
                         <button @click="processPayment" class="btn-payment">Xác nhận thanh toán</button>
                     </div>
@@ -96,10 +105,14 @@ export default {
             customerName: '', // Họ tên khách hàng
             customerPhone: '', // Số điện thoại khách hàng
             customerEmail: '', // Email khách hàng
+            voucherCode: '', // Code
             paymentMethod: 'Vnpay', // Phương thức thanh toán mặc định
             nameError: '',
             phoneError: '',
             emailError: '',
+            displayTotalPrice: 0,
+            voucherMessage: "",
+
         };
     },
     computed: {
@@ -124,26 +137,43 @@ export default {
                     this.$router.push('/cart'); // Quay lại trang giỏ hàng nếu không có bàn nào
                     return;
                 }
-
                 const response = await axiosClient.get("/carts/getCartById", {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                 });
-
                 const cartData = response.data.data;
-
                 // Lọc các bàn đã chọn từ giỏ hàng
                 this.cartItems = cartData.LIST_TABLES.filter(table =>
                     selectedTables.includes(table.TABLE_ID)
                 );
-
                 // Tính tổng giá
                 this.totalPrice = this.cartItems.reduce((total, table) => {
                     return total + table.TOTAL_PRICE_FOOD + table.TOTAL_SERVICE_PRICE;
                 }, 0);
+                this.displayTotalPrice = this.totalPrice;
             } catch (error) {
                 console.error("Lỗi khi lấy giỏ hàng:", error);
+            }
+        },
+        async checkVoucherEligibility() {
+            try {
+                const response = await axiosClient.post("/vouchers/checkEligibility", { code: this.voucherCode });
+
+                if (response.data.success && response.data.eligible) {
+                    const discount = response.data.discount_percent;
+                    this.displayTotalPrice = this.totalPrice * (1 - discount / 100); // Áp dụng chiết khấu
+                    this.voucherMessage = `Bạn đủ điều kiện sử dụng voucher với giảm giá ${discount}%.`;
+                } else {
+                    this.voucherCode = "";
+                    this.voucherMessage = response.data.message;
+                    this.displayTotalPrice = this.totalPrice;
+                }
+            } catch (error) {
+                this.voucherCode = "";
+                this.displayTotalPrice = this.totalPrice;
+                console.error("Lỗi khi kiểm tra voucher:", error);
+                this.voucherMessage = "Không có voucher này. Vui lòng thử lại.";
             }
         },
         translateType(type) {
@@ -183,19 +213,15 @@ export default {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
         },
         async processPayment() {
-            console.log("Customer Name:", this.customerName);
-            console.log("Customer Phone:", this.customerPhone);
-            console.log("Customer Email:", this.customerEmail);
             const paymentData = {
                 userName: this.customerName,
                 phoneNumber: this.customerPhone,
                 email: this.customerEmail,
+                voucherCode: this.voucherCode,
                 selectedTables: JSON.parse(localStorage.getItem('selectedTables')),
             };
-            console.log(paymentData);
             try {
                 const response = await axiosClient.post("/booking/createBookingFromCart", paymentData);
-                console.log(response);
 
                 if (response.data.success) {
                     const paymentResponse = await axiosClient.post(
@@ -516,5 +542,43 @@ export default {
 .select-payment-method select option {
     color: #333;
     background-color: #fff;
+}
+
+.voucher-input {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-with-button {
+    position: relative;
+    width: 100%;
+}
+
+.input-with-button input {
+    width: 100%;
+    padding-right: 90px;
+    /* Chừa không gian cho nút bên phải */
+    box-sizing: border-box;
+}
+
+.input-with-button button {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.voucher-message {
+    margin-top: 5px;
+    color: #d32710;
+    font-size: 14px;
 }
 </style>

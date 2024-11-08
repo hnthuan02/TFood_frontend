@@ -36,11 +36,15 @@
                     <span class="user-status">
                         {{ user.IS_ACTIVATED ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}
                     </span>
+
                 </div>
                 <div class="user-card-body">
+
                     <p><strong>Email:</strong> {{ user.EMAIL }}</p>
                     <p><strong>Số điện thoại:</strong> {{ user.PHONE_NUMBER }}</p>
+                    <p v-if="!user.ROLE.STAFF"><strong>Điểm tích luỹ:</strong> {{ user.CUMULATIVE_POINTS }}</p>
                 </div>
+
                 <div v-if="!userInfo?.ROLE.STAFF" class="user-card-footer">
                     <button class="action-button" @click="toggleBlockUser(user)">
                         {{ user.IS_BLOCKED?.CHECK ? 'Bỏ chặn' : 'Chặn' }}
@@ -221,10 +225,11 @@ export default {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    width: 1256px;
 }
 
 .user-card {
-    width: 320px;
+    width: 298px;
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -249,8 +254,9 @@ export default {
 }
 
 .user-status {
-    font-size: 14px;
+    font-size: 10px;
     font-weight: bold;
+    padding-right: auto;
 }
 
 .user-card-body {

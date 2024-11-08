@@ -143,12 +143,16 @@ export default {
       try {
         await this.login(payload);
         localStorage.setItem('isLoggedIn', 'true');
+        this.$message.success(
+          "Đăng nhập thành công!"
+        );
       } catch (error) {
         this.$message.error(
           error.response?.data?.message || "Đăng nhập thất bại!"
         );
       }
     },
+
     async handleForgotPassword() {
       try {
         const response = await axiosClient.post("/users/forgotPassword", {

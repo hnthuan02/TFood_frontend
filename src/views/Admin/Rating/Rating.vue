@@ -1,8 +1,15 @@
 <template>
     <div class="rating-container">
-        <h2>Danh sách đánh giá</h2>
-        <div v-if="reviews.length > 0" class="reviews-list">
-            <div v-for="review in reviews" :key="review._id" class="review-card">
+        <div class="header-container">
+            <h2>Danh sách đánh giá</h2>
+            <select v-model="selectedStatus" @change="filteredReviews" class="status-filter">
+                <option value="all">Tất cả</option>
+                <option value="approved">Đã duyệt</option>
+                <option value="pending">Chưa duyệt</option>
+            </select>
+        </div>
+        <div v-if="filteredReviews.length > 0" class="reviews-list">
+            <div v-for="review in filteredReviews" :key="review._id" class="review-card">
                 <div class="review-header">
                     <h3>{{ review.USER_ID.FULLNAME }}</h3>
                     <span>{{ formatDate(review.createdAt) }}</span>
@@ -23,6 +30,7 @@
             </div>
         </div>
         <p v-else>Không có đánh giá nào.</p>
+
     </div>
 </template>
 
@@ -33,7 +41,18 @@ export default {
     data() {
         return {
             reviews: [],
+            selectedStatus: "all",
         };
+    },
+    computed: {
+        filteredReviews() {
+            if (this.selectedStatus === "approved") {
+                return this.reviews.filter(review => review.STATUS === true);
+            } else if (this.selectedStatus === "pending") {
+                return this.reviews.filter(review => review.STATUS === false);
+            }
+            return this.reviews;
+        }
     },
     methods: {
         async fetchReviews() {

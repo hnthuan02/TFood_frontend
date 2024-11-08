@@ -568,7 +568,7 @@ tr:hover {
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    width: 660px;
+    width: 700px;
 }
 
 .popup-content {
@@ -587,8 +587,8 @@ tr:hover {
 }
 
 .popup-table-image {
-    width: 100%;
-    height: auto;
+    width: 300px;
+    height: 300px;
     border-radius: 8px;
     margin-top: 10px;
 }
@@ -647,12 +647,7 @@ tr:hover {
     background-color: #c0392b;
 }
 
-.popup-table-image {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
+
 
 .menu-section,
 .service-section {

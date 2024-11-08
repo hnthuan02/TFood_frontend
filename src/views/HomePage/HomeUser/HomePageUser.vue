@@ -5,7 +5,6 @@
             <div class="container-top">
                 <h1 class="display-4">Chào mừng đến với TFOOD</h1>
                 <p class="lead">Khám phá các món ăn ngon và ưu đãi hấp dẫn của chúng tôi</p>
-                <button class="btn-cta">Đặt bàn ngay</button>
             </div>
         </section>
 
@@ -106,7 +105,7 @@
             <div class="container">
                 <h2>Hãy đặt bàn ngay hôm nay!</h2>
                 <p>Liên hệ với chúng tôi hoặc đặt bàn để tận hưởng dịch vụ tuyệt vời nhất.</p>
-                <button class="btn-cta">Đặt bàn</button>
+                <button class="btn-cta" @click="goToTablePage">Đặt bàn</button>
             </div>
         </section>
     </div>
@@ -150,6 +149,9 @@ export default {
             } catch (error) {
                 console.error("Lỗi khi lấy đánh giá:", error);
             }
+        },
+        goToTablePage() {
+            this.$router.push('/table'); // Chuyển hướng sang trang /table
         }
     },
     mounted() {
@@ -188,8 +190,8 @@ export default {
 }
 
 .btn-cta {
-    background-color: #e74c3c;
-    color: white;
+    background-color: #34495E;
+    color: #FAE8B2;
     border: none;
     padding: 10px 20px;
     font-size: 1.2rem;
@@ -199,7 +201,7 @@ export default {
 }
 
 .btn-cta:hover {
-    background-color: #c0392b;
+    background-color: #1c6195;
 }
 
 .about-section {
@@ -265,6 +267,7 @@ export default {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    height: 150px;
 }
 
 .cta-section {

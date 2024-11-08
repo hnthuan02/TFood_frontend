@@ -28,13 +28,34 @@
                 <strong>Tổng giá:</strong> {{ formatPrice(booking.TOTAL_PRICE) }}
             </div>
 
+            <div v-if="booking.review" class="review-info">
+                <button class="delete-button" @click="deleteReview(booking.review._id)">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+
+                <div class="rating-section">
+                    <p>Đánh giá Món ăn:</p>
+                    <div class="star-rating">
+                        <span v-for="star in 5" :key="star"
+                            :class="{ selected: star <= booking.review.RATING_FOOD }">★</span>
+                    </div>
+                </div>
+                <div class="rating-section">
+                    <p>Đánh giá Dịch vụ:</p>
+                    <div class="star-rating">
+                        <span v-for="star in 5" :key="star"
+                            :class="{ selected: star <= booking.review.RATING_SERVICE }">★</span>
+                    </div>
+                </div>
+                <p class="review-comment"><strong>Nhận xét:</strong> {{ booking.review.COMMENT }}</p>
+            </div>
+
             <!-- Nút đánh giá -->
             <div v-if="booking.STATUS === 'Completed'" class="review-section">
                 <button @click="openReviewModal(booking)" class="review-button">Đánh giá</button>
             </div>
         </div>
 
-        <!-- Modal đánh giá -->
         <!-- Modal đánh giá -->
         <div v-if="showReviewModal" class="modal-overlay">
             <div class="modal-content">
@@ -102,6 +123,31 @@ export default {
         await this.fetchBookingHistory();
     },
     methods: {
+        handleDeleteClick(reviewId) {
+            console.log("Icon xóa được nhấp với ID:", reviewId);
+            this.deleteReview(reviewId);
+        },
+        async deleteReview(reviewId) {
+            console.log("Deleting review with ID:", reviewId); // Kiểm tra reviewId
+            const confirmDelete = confirm("Bạn có chắc chắn muốn xóa đánh giá này không?");
+            if (!confirmDelete) return;
+
+            console.log("Xóa đánh giá với ID:", reviewId); // Kiểm tra reviewId
+
+            try {
+                const response = await axiosClient.delete(`/reviews/delete/${reviewId}`);
+                if (response.data.success) {
+                    this.$message.success('Đánh giá đã được xóa thành công!');
+                    this.fetchBookingHistory(); // Làm mới danh sách sau khi xóa
+                } else {
+                    this.$message.error('Lỗi khi xóa đánh giá: ' + response.data.msg);
+                }
+            } catch (error) {
+                console.error('Lỗi khi xóa đánh giá:', error);
+                this.$message.error('Đã xảy ra lỗi khi xóa đánh giá.');
+            }
+        },
+
         translateStatus(status) {
             switch (status) {
                 case 'NotYetPaid':
@@ -124,6 +170,23 @@ export default {
             try {
                 const response = await axiosClient.get('/booking/getBookingsByUserId');
                 this.bookings = response.data.data;
+
+                // Duyệt qua mỗi booking để kiểm tra đánh giá
+                for (let booking of this.bookings) {
+                    try {
+                        const reviewResponse = await axiosClient.post('http://localhost:3001/reviews/getReviewByUserAndBooking', {
+                            bookingId: booking._id,
+                        });
+                        if (reviewResponse.data.success) {
+                            booking.review = reviewResponse.data.review; // Gán đánh giá cho booking
+                        } else {
+                            booking.review = null;
+                        }
+                    } catch (error) {
+                        //console.error(`Lỗi khi lấy đánh giá cho booking ${booking._id}:`, error);
+                        booking.review = null;
+                    }
+                }
             } catch (error) {
                 console.error('Lỗi khi lấy lịch sử đặt bàn:', error);
             }
@@ -172,7 +235,7 @@ export default {
                     this.existingReviewId = null;
                 }
             } catch (error) {
-                console.error('Lỗi khi kiểm tra đánh giá:', error);
+                //console.error('Lỗi khi kiểm tra đánh giá:', error);
                 this.isReviewExisting = false;
                 this.existingReviewId = null;
             }
@@ -255,11 +318,15 @@ export default {
 }
 
 .booking-card {
+    position: relative;
+    /* Thêm dòng này để phần review-info căn chỉnh theo thẻ này */
     background-color: #f8f9fa;
     margin-bottom: 30px;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding-right: 20px;
+    /* Thêm khoảng trống bên phải để không che phần chính */
 }
 
 .customer-info p,
@@ -276,7 +343,7 @@ export default {
 
 .table-image {
     width: 150px;
-    height: auto;
+    height: 100px;
     border-radius: 8px;
     margin-right: 20px;
     object-fit: cover;
@@ -369,23 +436,80 @@ p {
 .star-rating {
     display: flex;
     gap: 5px;
+    margin-bottom: 16px;
 }
 
 .star {
     font-size: 24px;
     cursor: pointer;
     color: #ccc;
-    /* Màu mặc định của ngôi sao */
     transition: color 0.2s;
 }
 
 .star.selected {
     color: #f39c12;
-    /* Màu vàng khi ngôi sao được chọn */
 }
 
 .star:hover {
     color: #f39c12;
-    /* Màu vàng khi hover qua ngôi sao */
+}
+
+.review-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 5px;
+    width: 280px;
+    text-align: left;
+}
+
+.rating-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.star-rating .selected {
+    color: #f39c12;
+}
+
+.review-comment {
+    color: #333;
+    font-style: italic;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.delete-icon {
+    color: #c0392b;
+    cursor: pointer;
+    margin-left: 10px;
+    pointer-events: auto;
+}
+
+
+.delete-icon:hover {
+    color: #e74c3c;
+}
+
+.delete-button {
+    background-color: #F1F1F1;
+    color: rgb(252, 0, 0);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.delete-button i {
+    margin-right: 5px;
+}
+
+.delete-button:hover {
+    background-color: #F1F1F1;
+    color: #b59c99;
 }
 </style>

@@ -112,6 +112,7 @@ export default {
     width: 300px;
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: auto;
 }
 
 .voucher-card:hover {

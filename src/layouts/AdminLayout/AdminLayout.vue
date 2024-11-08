@@ -66,5 +66,6 @@ export default {
     padding: 20px;
     background-color: #ecf0f1;
     overflow-y: auto;
+    max-width: 1336px;
 }
 </style>

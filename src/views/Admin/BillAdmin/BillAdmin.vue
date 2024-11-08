@@ -1,12 +1,27 @@
 <template>
     <div class="booking-invoices">
         <div class="header">
-            <h2>Danh sách hóa đơn đặt bàn</h2>
+            <h2>Danh sách hóa đơn</h2>
 
-            <!-- Thanh lọc hóa đơn theo ngày đặt -->
+            <!-- Thanh lọc hóa đơn theo ngày đặt, tháng đặt và trạng thái -->
             <div class="filter">
-                <label for="filterDate">Lọc theo ngày đặt:</label>
+                <label for="filterDate">Lọc theo ngày:</label>
                 <input type="date" v-model="filterDate" @change="filterBookings" />
+
+                <label for="filterMonth">Lọc theo tháng:</label>
+                <select v-model="filterMonth" @change="filterBookings">
+                    <option value="">Tất cả tháng</option>
+                    <option v-for="month in 12" :value="month" :key="month">
+                        Tháng {{ month }}
+                    </option>
+                </select>
+
+                <label for="filterStatus">Lọc theo trạng thái:</label>
+                <select v-model="filterStatus" @change="filterBookings">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="Booked">Đã đặt</option>
+                    <option value="Completed">Hoàn thành</option>
+                </select>
             </div>
         </div>
 
@@ -20,7 +35,7 @@
                 <h3>Hóa đơn #{{ booking._id }}</h3>
                 <p><strong>Khách hàng:</strong> {{ booking.USER_NAME }} ({{ booking.EMAIL }})</p>
                 <p><strong>Số điện thoại:</strong> {{ booking.PHONE_NUMBER }}</p>
-                <p><strong>Trạng thái:</strong> {{ booking.STATUS }}</p>
+                <p><strong>Trạng thái:</strong> {{ getStatusTranslation(booking.STATUS) }}</p>
                 <p><strong>Hình thức đặt:</strong> {{ booking.BOOKING_TYPE }}</p>
                 <p><strong>Ngày đặt:</strong> {{ formatDate(booking.createdAt) }}</p>
 
@@ -68,8 +83,6 @@
 </template>
 
 
-
-
 <script>
 import axiosClient from "../../../api/axiosClient"; // Đảm bảo đúng đường dẫn
 
@@ -79,6 +92,8 @@ export default {
             bookings: [], // Dữ liệu Booking từ API
             selectedBooking: null, // Booking được chọn để hiển thị chi tiết
             filterDate: '', // Ngày cần lọc
+            filterMonth: '',
+            filterStatus: '',
         };
     },
     mounted() {
@@ -86,14 +101,16 @@ export default {
     },
     computed: {
         filteredBookings() {
-            // Nếu không có ngày lọc, trả về tất cả bookings
-            if (!this.filterDate) {
-                return this.bookings;
-            }
-            // Lọc booking theo ngày đặt
+            // Lọc booking theo ngày, tháng và trạng thái
             return this.bookings.filter(booking => {
                 const bookingDate = this.formatDate(booking.createdAt);
-                return bookingDate === this.filterDate;
+                const bookingMonth = new Date(booking.createdAt).getMonth() + 1;
+
+                const matchesDate = !this.filterDate || bookingDate === this.filterDate;
+                const matchesMonth = !this.filterMonth || bookingMonth === Number(this.filterMonth);
+                const matchesStatus = !this.filterStatus || booking.STATUS === this.filterStatus;
+
+                return matchesDate && matchesMonth && matchesStatus;
             });
         },
     },
@@ -128,6 +145,13 @@ export default {
         filterBookings() {
             // Hàm này có thể để trống, vì việc lọc đã được thực hiện trong computed property
         },
+        getStatusTranslation(status) {
+            const translations = {
+                "Booked": "Đã đặt",
+                "Completed": "Hoàn thành",
+            };
+            return translations[status] || status;
+        },
     },
 };
 
@@ -159,31 +183,36 @@ h2 {
 
 .filter {
     display: flex;
-    /* Sử dụng Flexbox để sắp xếp label và input */
     align-items: center;
-    /* Căn giữa theo chiều dọc */
+    gap: 10px;
 }
 
 .filter label {
-    margin-right: 10px;
-    /* Khoảng cách bên phải của label */
     font-weight: bold;
-    /* Làm đậm chữ */
     color: #333;
-    /* Màu chữ */
 }
 
-.filter input[type="date"] {
+.filter input[type="date"],
+.filter select {
     padding: 8px;
-    /* Thêm padding cho input */
     border: 1px solid #ccc;
-    /* Đường viền nhẹ */
     border-radius: 4px;
-    /* Bo góc */
     font-size: 16px;
-    /* Kích thước font */
     transition: border-color 0.2s;
-    /* Hiệu ứng chuyển màu viền */
+}
+
+.filter select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.filter input[type="date"]:focus,
+.filter select:focus {
+    border-color: #2980b9;
+    outline: none;
 }
 
 .filter input[type="date"]:focus {

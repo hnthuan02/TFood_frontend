@@ -198,7 +198,7 @@ export default {
           this.$router.push('/user/login');
           setTimeout(() => {
             location.reload();
-          }, 400);
+          }, 100);
         } else if (response.data.errors) {
           this.otpErrors = response.data.errors;
         }

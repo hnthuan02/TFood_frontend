@@ -17,10 +17,10 @@
                 <div class="footer-section">
                     <h3 class="footer-title">Theo Dõi Chúng Tôi</h3>
                     <div class="social-icons">
-                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon"><i class="fa-brands fa-facebook fa-bounce"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter fa-bounce"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram fa-bounce"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube fa-bounce"></i></a>
                     </div>
                 </div>
             </div>

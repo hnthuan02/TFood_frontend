@@ -1,5 +1,6 @@
 <template>
     <div class="booking-container">
+        <div class="overlay" v-if="showPopup"></div>
         <h1 class="reservation-title">
             <span class="make-text">ĐẶT BÀN</span>
         </h1>
@@ -78,11 +79,9 @@
                 <div class="popup-left">
                     <h3>Thông tin đặt bàn {{ selectedTable.translatedType }} {{ selectedTable.TABLE_NUMBER }}</h3>
                     <img :src="selectedTable.IMAGES[0]" alt="Table Image" class="popup-table-image" />
-
                     <button class="confirm-button" @click="addTableToCart">Xác nhận</button>
                     <button class="close-button" @click="closePopup">Đóng</button>
                 </div>
-
                 <div class="popup-right">
                     <!-- Thêm dịch vụ -->
                     <div class="service-section">
@@ -95,7 +94,8 @@
                                     <svg viewBox="0 0 35.6 35.6">
                                         <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
                                         <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
-                                        <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                                        <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87">
+                                        </polyline>
                                     </svg>
                                 </div>
                                 <label :for="`service-${service._id}`">
@@ -116,7 +116,8 @@
                                 <p> Số lượng: {{ food.quantity }}</p> <!-- Hiển thị số lượng -->
                             </div>
                         </div>
-                        <button class="add-food-button" @click="addFood">Chọn thực đơn</button> <!-- Nút chọn món ăn -->
+                        <button class="add-food-button" @click="addFood">Chọn thực đơn</button>
+                        <!-- Nút chọn món ăn -->
                     </div>
                 </div>
             </div>
@@ -126,8 +127,18 @@
         <div v-if="showFoodPopup" class="food-popup">
             <div class="food-popup-content">
                 <h3>Chọn món ăn</h3>
+
+                <!-- Thanh lọc loại món ăn -->
+                <div class="filter-bar">
+                    <button v-for="(type, index) in filterTypes" :key="type" @click="selectFilter(type)"
+                        :class="{ active: selectedFilter === type }">
+                        {{ translatedFilterTypes[index] }}
+                    </button>
+                </div>
+
+                <!-- Danh sách món ăn được lọc -->
                 <div class="food-list">
-                    <div v-for="food in foodItems" :key="food._id" class="food-item">
+                    <div v-for="food in filteredFoodItems" :key="food._id" class="food-item">
                         <img :src="food.IMAGES[0]" :alt="food.NAME" />
                         <div class="food-info">
                             <h4>{{ food.NAME }}</h4>
@@ -172,6 +183,8 @@ export default {
             foodItems: [], // Danh sách các món ăn
             selectedFoodItems: [],
             quantities: {}, // Danh sách món ăn đã chọn
+            filterTypes: ['Steak', 'Pasta', 'Dessert', 'Drink'],
+            selectedFilter: 'Steak',
         };
     },
     mounted() {
@@ -203,6 +216,20 @@ export default {
 
             return Object.values(groupedTables);
         },
+        filteredFoodItems() {
+            const filtered = this.foodItems.filter(food => food.TYPE === this.selectedFilter);
+            console.log("Món ăn được lọc:", filtered); // Kiểm tra món ăn sau khi lọc
+            return filtered;
+        },
+        translatedFilterTypes() {
+            const translations = {
+                'Steak': 'Bít tết',
+                'Pasta': 'Mỳ ý',
+                'Dessert': 'Tráng miệng',
+                'Drink': 'Nước uống'
+            };
+            return this.filterTypes.map(type => translations[type] || type);
+        }
     },
     methods: {
         validateTime() {
@@ -287,8 +314,8 @@ export default {
             }
         },
         addFood() {
-            this.showFoodPopup = true; // Hiển thị pop-up chọn món ăn
             this.loadFoodItems(); // Tải danh sách món ăn
+            this.showFoodPopup = true; // Hiển thị pop-up chọn món ăn
         },
         confirmFoodSelection() {
             // Xử lý xác nhận món ăn đã chọn và số lượng
@@ -350,6 +377,9 @@ export default {
         },
         addToCart(table) {
             this.showTimePickerPopup(table);
+        },
+        selectFilter(type) {
+            this.selectedFilter = type; // Cập nhật loại món ăn đang được chọn
         },
     },
 };
@@ -568,7 +598,7 @@ tr:hover {
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    width: 700px;
+    width: 900px;
 }
 
 .popup-content {
@@ -685,7 +715,7 @@ tr:hover {
     background: #fff;
     padding: 20px;
     border-radius: 8px;
-    max-width: 80%;
+    width: 550px;
     max-height: 80%;
     overflow-y: auto;
 }
@@ -833,5 +863,41 @@ tr:hover {
 
 .checkbox-wrapper-31 input[type=checkbox]:checked+svg .check {
     stroke-dashoffset: 0;
+}
+
+.filter-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.filter-bar button {
+    background-color: #eee;
+    border: none;
+    padding: 8px 15px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.filter-bar button.active {
+    background-color: #1A242F;
+    color: white;
+}
+
+.filter-bar button:hover {
+    background-color: #243241;
+    color: white;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 900;
 }
 </style>

@@ -12,6 +12,7 @@ import BillAdmin from "../views/Admin/BillAdmin/BillAdmin.vue";
 import HomeAdmin from "../views/Admin/HomeAdmin/HomeAdmin.vue";
 import MenuAdmin from "../views/Admin/MenuAdmin/MenuAdmin.vue";
 import Rating from "../views/Admin/Rating/Rating.vue";
+import ServiceAdmin from "../views/Admin/ServiceAdmin/ServiceAdmin.vue";
 import TableAdmin from "../views/Admin/TableAdmin/TableAdmin.vue";
 import UserAdmin from "../views/Admin/UserAdmin/UserAdmin.vue";
 import VoucherAdmin from "../views/Admin/Voucher/VoucherAdmin.vue";
@@ -167,6 +168,15 @@ const routes = [
   {
     path: "/dashboard/promotions",
     component: VoucherAdmin,
+    meta: {
+      layout: AdminLayout,
+      requiresAuth: true,
+      requiresRole: true,
+    },
+  },
+  {
+    path: "/dashboard/services",
+    component: ServiceAdmin,
     meta: {
       layout: AdminLayout,
       requiresAuth: true,

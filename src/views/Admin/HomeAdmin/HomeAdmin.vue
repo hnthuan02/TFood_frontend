@@ -33,11 +33,7 @@
                 @click="activeTab = 'overview'; drawRevenueChart(); getRevenue(); drawBookingChart();">
                 Xem tổng quan
             </button>
-
         </div>
-
-
-
         <!-- Hiển thị danh sách đơn đặt bàn -->
         <div v-if="activeTab === 'orders'" class="order-list">
             <h3>Danh sách đơn đặt bàn</h3>
@@ -210,7 +206,6 @@ export default {
                         borderColor: 'rgba(23, 242, 102, 1)',
                         backgroundColor: 'rgba(23, 242, 102, 0.2)',
                         fill: true,
-                        tension: 0.4, // Độ cong của đường
                     },
                     {
                         label: 'Hoàn thành (Completed)',
@@ -283,10 +278,16 @@ export default {
                         // Tính tổng giá dịch vụ và thức ăn cho từng đơn hàng
                         order.LIST_TABLES.forEach(table => {
                             table.SERVICES.forEach(service => {
-                                totalServicePrice += service.SERVICES_ID.servicePrice;
+                                // Kiểm tra `service.SERVICES_ID` và `service.SERVICES_ID.servicePrice` trước khi cộng
+                                if (service.SERVICES_ID && service.SERVICES_ID.servicePrice) {
+                                    totalServicePrice += service.SERVICES_ID.servicePrice;
+                                }
                             });
                             table.LIST_FOOD.forEach(food => {
-                                totalFoodPrice += food.FOOD_ID.PRICE * food.QUANTITY;
+                                // Tương tự, kiểm tra giá và số lượng thức ăn trước khi cộng
+                                if (food.FOOD_ID && food.FOOD_ID.PRICE && food.QUANTITY) {
+                                    totalFoodPrice += food.FOOD_ID.PRICE * food.QUANTITY;
+                                }
                             });
                         });
 
@@ -300,8 +301,6 @@ export default {
                         if (totalOrderPrice > 0) {
                             const totalPriceDifference = totalOrderPrice - order.TOTAL_PRICE;
                             const priceAdjustment = totalPriceDifference / totalOrderPrice;
-                            console.log(totalOrderPrice);
-                            console.log(totalPriceDifference);
 
                             // Điều chỉnh giá trị `servicePrice` và `foodPrice` nếu có chênh lệch
                             adjustedServicePrice = totalServicePrice * (1 - priceAdjustment);
@@ -320,8 +319,7 @@ export default {
             } catch (error) {
                 console.error("Lỗi khi lấy doanh thu", error);
             }
-        }
-        ,
+        },
         async drawRevenueChart() {
             await nextTick();
             const canvas = document.getElementById('revenueChart');

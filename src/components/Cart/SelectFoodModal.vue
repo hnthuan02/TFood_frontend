@@ -23,16 +23,23 @@
                         <h4>{{ food.NAME }}</h4>
                         <p>{{ formatPrice(food.PRICE) }}</p>
                     </div>
-                    <input type="number" v-model.number="quantities[food._id]" min="0" placeholder="Số lượng"
-                        class="quantity-input" />
+                    <div class="quantity-selector">
+                        <button @click="decreaseQuantity(food._id)">-</button>
+                        <span>{{ quantities[food._id] || 0 }}</span>
+                        <button @click="increaseQuantity(food._id)">+</button>
+                    </div>
                     <button v-if="quantities[food._id] > 0 && modalMode === 'edit'" @click="removeFood(food._id)"
                         class="remove-button">
                         Xóa
                     </button>
                 </div>
             </div>
-            <button @click="saveChanges">{{ modalMode === 'edit' ? 'Lưu thay đổi' : 'Thêm món' }}</button>
-            <button @click="close">Đóng</button>
+            <div class="button-container">
+                <button @click="saveChanges" class="save-button">{{ modalMode === 'edit' ? 'Lưu thay đổi' : 'Thêm món'
+                    }}</button>
+                <button @click="close" class="close-button">Đóng</button>
+            </div>
+
         </div>
     </div>
 </template>
@@ -211,6 +218,15 @@ export default {
         close() {
             this.$emit('close');
         },
+
+        increaseQuantity(foodId) {
+            this.quantities[foodId] = (this.quantities[foodId] || 0) + 1;
+        },
+        decreaseQuantity(foodId) {
+            if (this.quantities[foodId] > 0) {
+                this.quantities[foodId] -= 1;
+            }
+        },
     },
 };
 </script>
@@ -250,14 +266,11 @@ export default {
 
 .food-item {
     display: flex;
-    /* Sử dụng flexbox để sắp xếp các thuộc tính theo chiều ngang */
     align-items: center;
-    /* Căn giữa theo chiều dọc */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 8px;
     margin-bottom: 10px;
-    /* Khoảng cách giữa các món ăn */
     background-color: rgb(255, 255, 255);
 }
 
@@ -273,18 +286,13 @@ export default {
 
 .food-info {
     flex: 1;
-    /* Để phần thông tin chiếm hết không gian còn lại */
     margin-right: 20px;
-    /* Khoảng cách giữa thông tin và ô nhập số lượng */
 }
 
 .quantity-input {
     width: 60px;
-    /* Đặt kích thước cho ô nhập số lượng */
     text-align: center;
-    /* Căn giữa nội dung */
     margin-right: 10px;
-    /* Khoảng cách giữa ô nhập số lượng và nút xóa */
 }
 
 .remove-button {
@@ -324,5 +332,102 @@ button:hover {
     border-radius: 5px;
     border: 1px solid #ddd;
     margin-left: 10px;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.quantity-selector button {
+    width: 30px;
+    height: 30px;
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+.quantity-selector button:hover {
+    background-color: #34495e;
+}
+
+.quantity-selector span {
+    margin: 0 10px;
+    font-size: 18px;
+    width: 30px;
+    text-align: center;
+}
+
+button,
+.confirm-button {
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover,
+.confirm-button:hover {
+    background-color: #2980b9;
+}
+
+.remove-button {
+    background-color: #e74c3c;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.remove-button:hover {
+    background-color: #c0392b;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.save-button,
+.close-button {
+    background-color: #2c3e50;
+    color: #fff;
+    font-size: 16px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-top: 20px;
+    text-transform: uppercase;
+    font-family: "Playfair Display", serif;
+}
+
+.save-button:hover {
+    background-color: #34495e;
+    transform: translateY(-2px);
+}
+
+.close-button {
+    background-color: #e74c3c;
+}
+
+.close-button:hover {
+    background-color: #e74c3c;
+    transform: translateY(-2px);
 }
 </style>

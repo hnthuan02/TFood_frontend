@@ -8,29 +8,40 @@
                 <option value="pending">Chưa duyệt</option>
             </select>
         </div>
-        <div v-if="filteredReviews.length > 0" class="reviews-list">
-            <div v-for="review in filteredReviews" :key="review._id" class="review-card">
-                <div class="review-header">
-                    <h3>{{ review.USER_ID.FULLNAME }}</h3>
-                    <span>{{ formatDate(review.createdAt) }}</span>
-                </div>
-                <div class="review-body">
-                    <p><strong>Đánh giá món ăn:</strong> {{ review.RATING_FOOD }}/5</p>
-                    <p><strong>Đánh giá dịch vụ:</strong> {{ review.RATING_SERVICE }}/5</p>
-                    <p><strong>Bình luận:</strong> {{ review.COMMENT }}</p>
-                </div>
-                <div class="review-footer">
-                    <span :class="{ 'status-active': review.STATUS, 'status-inactive': !review.STATUS }">
-                        {{ review.STATUS ? 'Đã duyệt' : 'Chưa duyệt' }}
-                    </span>
-                    <button class="status-toggle" @click="toggleStatus(review)">
-                        {{ review.STATUS ? 'Hủy duyệt' : 'Duyệt' }}
-                    </button>
-                </div>
-            </div>
+
+        <div v-if="filteredReviews.length > 0" class="table-container">
+            <table class="reviews-table">
+                <thead>
+                    <tr>
+                        <th>Người dùng</th>
+                        <th>Ngày</th>
+                        <th>Đánh giá món ăn</th>
+                        <th>Đánh giá dịch vụ</th>
+                        <th>Bình luận</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="review in filteredReviews" :key="review._id">
+                        <td>{{ review.USER_ID.FULLNAME }}</td>
+                        <td>{{ formatDate(review.createdAt) }}</td>
+                        <td>{{ review.RATING_FOOD }}/5</td>
+                        <td>{{ review.RATING_SERVICE }}/5</td>
+                        <td>{{ review.COMMENT }}</td>
+                        <td :class="{ 'status-active': review.STATUS, 'status-inactive': !review.STATUS }">
+                            {{ review.STATUS ? 'Đã duyệt' : 'Chưa duyệt' }}
+                        </td>
+                        <td>
+                            <button class="status-toggle" @click="toggleStatus(review)">
+                                {{ review.STATUS ? 'Ẩn' : 'Duyệt' }}
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         <p v-else>Không có đánh giá nào.</p>
-
     </div>
 </template>
 
@@ -90,7 +101,7 @@ export default {
 <style scoped>
 .rating-container {
     padding: 20px;
-    max-width: 800px;
+    max-width: 1200px;
     margin: auto;
     background-color: #f9f9f9;
     border-radius: 10px;
@@ -103,47 +114,38 @@ h2 {
     margin-bottom: 20px;
 }
 
-.reviews-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.table-container {
+    margin-top: 20px;
+    overflow-x: auto;
 }
 
-.review-card {
+.reviews-table {
+    width: 100%;
+    border-collapse: collapse;
     background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
 }
 
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    color: #7274ff;
+.reviews-table th,
+.reviews-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
 }
 
-.review-body p {
-    margin: 5px 0;
-}
-
-.review-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.reviews-table th {
+    background-color: #f2f2f2;
+    color: #34495E;
     font-weight: bold;
 }
 
 .status-active {
     color: #27ae60;
+    font-weight: bold;
 }
 
 .status-inactive {
     color: #c0392b;
+    font-weight: bold;
 }
 
 .status-toggle {
@@ -154,9 +156,22 @@ h2 {
     color: white;
     background-color: #7274ff;
     transition: background-color 0.3s;
+    width: 66px;
 }
 
 .status-toggle:hover {
     background-color: #5b5ed7;
+}
+
+.header-container select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #34495E;
+    transition: border-color 0.2s;
+    background-color: white;
+    width: 20%;
+    margin-bottom: 10px;
 }
 </style>

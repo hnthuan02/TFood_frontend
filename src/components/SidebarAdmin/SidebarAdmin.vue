@@ -20,6 +20,9 @@
             <li :class="{ active: currentTab === 'booking' }" @click="setActiveTab('booking')">
                 <i class="fas fa-calendar-check"></i> Bàn ăn
             </li>
+            <li :class="{ active: currentTab === 'services' }" @click="setActiveTab('services')">
+                <i class="fa-solid fa-bell-concierge"></i> Dịch vụ
+            </li>
             <li :class="{ active: currentTab === 'users' }" @click="setActiveTab('users')">
                 <i class="fas fa-users"></i> Người dùng
             </li>

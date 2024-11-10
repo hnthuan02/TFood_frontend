@@ -29,7 +29,7 @@
                         <td>
                             <ul>
                                 <li v-for="food in table.LIST_FOOD" :key="food.FOOD_ID">
-                                    {{ food.foodPrice.NAME }} {{ food.QUANTITY }}
+                                    {{ food.foodPrice.NAME }} x {{ food.QUANTITY }}
                                 </li>
                             </ul>
                         </td>

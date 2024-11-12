@@ -1,61 +1,67 @@
-<template>
-    <div class="chat-container">
-        <!-- Danh sách người dùng (chỉ dành cho nhân viên và admin) -->
-        <div v-if="isAdminOrStaff" class="users-list">
-            <h3>Danh sách người dùng</h3>
-            <div v-for="user in users" :key="user._id" class="user-item" :class="{ selected: user.isSelected }"
-                @click="selectReceiver(user)">
-                <div class="avatar" :style="{ backgroundColor: getRandomColor(user._id) }">
-                    {{ getInitial(user.FULLNAME) }}
+    <template>
+        <div class="chat-container">
+            <!-- Danh sách người dùng (chỉ dành cho nhân viên và admin) -->
+            <div v-if="isAdminOrStaff" class="users-list">
+                <h3>Danh sách người dùng</h3>
+                <div v-for="user in users" :key="user._id" class="user-item" :class="{ selected: user.isSelected }"
+                    @click="selectReceiver(user)">
+                    <div class="avatar" :style="{ backgroundColor: getRandomColor(user._id) }">
+                        {{ getInitial(user.FULLNAME) }}
+                    </div>
+                    <span v-if="user.hasNewMessage" class="notification-dot"></span>
+                    {{ user.FULLNAME }}
                 </div>
-                <span v-if="user.hasNewMessage" class="notification-dot"></span>
-                {{ user.FULLNAME }}
-            </div>
-        </div>
-
-        <!-- Tin nhắn hoặc thông báo chọn người dùng -->
-        <div class="chat-area">
-            <!-- Nếu chưa chọn người dùng và là admin hoặc staff thì hiển thị thông báo -->
-            <div v-if="!receiverId && isAdminOrStaff" class="select-user-message">
-                Chọn người dùng để chat
             </div>
 
-            <!-- Khi đã chọn người dùng, hiển thị tên và avatar ở góc trên cùng -->
-            <div v-else-if="receiverId && selectedUser" class="chat-header">
-                <div class="chat-header-avatar" :style="{ backgroundColor: getRandomColor(selectedUser._id) }">
-                    {{ getInitial(selectedUser.FULLNAME) }}
+            <!-- Tin nhắn hoặc thông báo chọn người dùng -->
+            <div class="chat-area">
+                <!-- Nếu chưa chọn người dùng và là admin hoặc staff thì hiển thị thông báo -->
+                <div v-if="!receiverId && isAdminOrStaff" class="select-user-message">
+                    Chọn người dùng để chat
                 </div>
-                <div class="chat-header-name">{{ selectedUser.FULLNAME }}</div>
-            </div>
 
-            <!-- Tin nhắn -->
-            <div class="chat-messages" v-if="receiverId">
-                <div v-for="(message, index) in groupedMessages" :key="index">
-                    <!-- Hiển thị ngày tháng năm nếu là đầu ngày mới -->
-                    <div v-if="message.isDateHeader" class="date-header">
-                        {{ message.date }}
+                <!-- Khi đã chọn người dùng, hiển thị tên và avatar ở góc trên cùng -->
+                <div v-else-if="receiverId && selectedUser" class="chat-header">
+                    <div class="chat-header-avatar" :style="{ backgroundColor: getRandomColor(selectedUser._id) }">
+                        {{ getInitial(selectedUser.FULLNAME) }}
+                    </div>
+                    <div class="chat-header-name">{{ selectedUser.FULLNAME }}</div>
+                </div>
+
+                <!-- Tin nhắn -->
+                <div class="chat-area">
+                    <!-- Tin nhắn -->
+                    <div class="chat-messages" v-if="receiverId">
+                        <div v-for="(message, index) in groupedMessages" :key="index">
+                            <!-- Hiển thị ngày tháng năm nếu là đầu ngày mới -->
+                            <div v-if="message.isDateHeader" class="date-header">
+                                {{ message.date }}
+                            </div>
+
+                            <!-- Hiển thị tin nhắn -->
+                            <div v-else :class="['message', message.senderId === userId ? 'sent' : 'received']">
+                                <span class="content">
+                                    <span class="sender">{{ message.sender }}:</span>
+                                    <span class="text">{{ message.content }}</span>
+                                    <span v-if="!message.isDateHeader" class="timestamp">{{
+                                        formatTime(message.createdAt)
+                                        }}</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Hiển thị tin nhắn -->
-                    <div v-else :class="['message', message.senderId === userId ? 'sent' : 'received']">
-                        <span class="content">
-                            <span class="sender">{{ message.sender }}:</span>
-                            <span class="text">{{ message.content }}</span>
-                            <span v-if="!message.isDateHeader" class="timestamp">{{ formatTime(message.createdAt)
-                                }}</span>
-                        </span>
+                    <!-- Input tin nhắn -->
+                    <div class="chat-input" v-if="receiverId">
+                        <input type="text" v-model="newMessage" @keyup.enter="sendMessage"
+                            placeholder="Nhập tin nhắn..." />
+                        <button @click="sendMessage">Gửi</button>
                     </div>
                 </div>
 
-                <!-- Input tin nhắn -->
-                <div class="chat-input">
-                    <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="Nhập tin nhắn..." />
-                    <button @click="sendMessage">Gửi</button>
-                </div>
             </div>
         </div>
-    </div>
-</template>
+    </template>
 
 
 
@@ -299,11 +305,11 @@ export default {
 <style scoped>
 .notification-dot {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 8px;
+    right: 8px;
     width: 10px;
     height: 10px;
-    background-color: red;
+    background-color: #ff5c5c;
     border-radius: 50%;
 }
 
@@ -311,63 +317,81 @@ export default {
     display: flex;
     flex-direction: row;
     height: 100%;
-    border: 1px solid #ccc;
-    padding: 10px;
+    background-color: #1e3a5f;
+    color: white;
+    border-radius: 15px;
     overflow: hidden;
 }
 
+/* Danh sách người dùng bên trái */
 .users-list {
-    margin-bottom: 10px;
-    border-bottom: 1px solid #ccc;
-    padding: 10px;
-    background-color: #f9f9f9;
+    width: 30%;
+    background-color: #233b6e;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
 }
 
 .users-list h3 {
-    border-bottom: 1px solid #000000;
-    ;
+    color: #ffffff;
+    font-size: 1.2em;
+    margin-bottom: 10px;
 }
 
 .user-item {
     display: flex;
     align-items: center;
-    position: relative;
+    gap: 10px;
     cursor: pointer;
-    margin-bottom: 5px;
-    padding: 5px;
-    border: 1px solid #062970;
-    border-radius: 4px;
-    background-color: #e3f2fd;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #2d4a76;
+    transition: background-color 0.3s;
 }
 
 .avatar {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    margin-right: 8px;
-    font-size: 16px;
+    font-size: 1.2em;
+    background-color: #5a82ba;
 }
 
 .user-item.selected {
-    background-color: #d1c4e9;
+    background-color: #496ba1;
+}
+
+.user-item:hover {
+    background-color: #3b5a8c;
+}
+
+.chat-area {
+    height: 545px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #1f3558;
 }
 
 .chat-messages {
     flex-grow: 1;
+    padding: 15px;
     overflow-y: auto;
-    margin-bottom: 10px;
-    margin-left: 10px;
-    position: relative;
+    background-color: #1e3a5f;
+    height: 545px;
 }
 
 .message {
     display: flex;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
+    align-items: flex-end;
 }
 
 .message.sent {
@@ -379,19 +403,26 @@ export default {
 }
 
 .message .content {
-    max-width: 70%;
-    padding: 8px;
-    border-radius: 8px;
+    max-width: 60%;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
 }
 
 .message.sent .content {
-    background-color: #7274FF;
+    background-color: #5a82ba;
     color: white;
+    border-top-right-radius: 0;
+}
+
+.message.sent .timestamp {
+    color: rgb(206, 206, 206);
 }
 
 .message.received .content {
     background-color: #f1f1f1;
     color: #161637;
+    border-top-left-radius: 0;
 }
 
 .sender {
@@ -401,44 +432,58 @@ export default {
 
 .timestamp {
     font-size: 0.8em;
-    margin-left: 10px;
+    color: #4f617a;
+    margin-top: 5px;
+    margin-left: 3px;
 }
 
 .chat-input {
     display: flex;
     align-items: center;
-    margin-top: 10px;
-    width: 100%;
-    margin-bottom: 10px;
+    padding: 15px;
+    background-color: #233b6e;
+    border-top: 1px solid #2d4a76;
 }
 
 .chat-input input {
     flex-grow: 1;
-    padding: 5px;
-    margin-right: 5px;
+    padding: 10px;
+    font-size: 1em;
+    border: none;
+    border-radius: 20px;
+    margin-right: 10px;
+    background-color: #2d4a76;
+    color: white;
+}
+
+.chat-input input::placeholder {
+    color: #8fa6c6;
 }
 
 .chat-input button {
-    padding: 5px 10px;
-    background-color: #7274FF;
+    padding: 10px 20px;
+    background-color: #5a82ba;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 20px;
+    font-weight: bold;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .chat-input button:hover {
-    background-color: #5a5fc4;
+    background-color: #496ba1;
 }
 
 .date-header {
     text-align: center;
     font-weight: bold;
-    color: #161637;
+    color: #8fa6c6;
     margin: 10px 0;
 }
 
 .chat-area {
+    width: 100%;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -451,7 +496,7 @@ export default {
     justify-content: center;
     font-size: 1.2em;
     color: #7274FF;
-    height: 100%;
+    height: 80%;
 }
 
 .select-user-message .timestamp {
@@ -461,14 +506,16 @@ export default {
 .chat-header {
     display: flex;
     align-items: center;
-    padding: 10px;
-    background-color: #f1f1f1;
-    border-bottom: 1px solid #ccc;
+    padding: 15px;
+    background-color: #2d4a76;
+    color: white;
+    font-size: 1.2em;
+    border-bottom: 1px solid #233b6e;
 }
 
 .chat-header-avatar {
-    width: 30px;
-    height: 30px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     color: white;
     display: flex;
@@ -476,11 +523,12 @@ export default {
     justify-content: center;
     font-weight: bold;
     margin-right: 10px;
+    font-size: 1.5em;
+    background-color: #5a82ba;
 }
 
 .chat-header-name {
-    font-size: 1em;
+    font-size: 1.2em;
     font-weight: bold;
-    color: #161637;
 }
 </style>

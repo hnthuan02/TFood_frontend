@@ -186,7 +186,7 @@ export default {
                 });
 
                 this.users = response.data.data
-                    .filter(user => user._id !== this.userId && !user.ROLE.STAFF)
+                    .filter(user => user._id !== this.userId && !user.ROLE.STAFF && !user.ROLE.ADMIN)
                     .map(user => ({ ...user, hasNewMessage: false, isSelected: false }));
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách người dùng:", error);
@@ -323,6 +323,11 @@ export default {
     background-color: #f9f9f9;
 }
 
+.users-list h3 {
+    border-bottom: 1px solid #000000;
+    ;
+}
+
 .user-item {
     display: flex;
     align-items: center;
@@ -330,7 +335,7 @@ export default {
     cursor: pointer;
     margin-bottom: 5px;
     padding: 5px;
-    border: 1px solid #7274FF;
+    border: 1px solid #062970;
     border-radius: 4px;
     background-color: #e3f2fd;
 }
@@ -404,6 +409,7 @@ export default {
     align-items: center;
     margin-top: 10px;
     width: 100%;
+    margin-bottom: 10px;
 }
 
 .chat-input input {

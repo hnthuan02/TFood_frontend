@@ -87,6 +87,7 @@ export default {
 .contact-chat {
     flex: 1;
     max-width: 500px;
+    max-height: 500px;
 }
 
 .contact-image {

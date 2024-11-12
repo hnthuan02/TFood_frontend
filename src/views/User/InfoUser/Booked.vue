@@ -14,7 +14,7 @@
             </div>
 
             <div class="hotel-info" v-for="(table, tableIndex) in booking.LIST_TABLES" :key="tableIndex">
-                <h3>{{ table.TABLE_ID.TABLE_NUMBER }}</h3>
+                <h3><strong>Bàn:</strong> {{ table.TABLE_ID.TABLE_NUMBER }}</h3>
                 <div class="table-details">
                     <img :src="table.TABLE_ID.IMAGES[0]" alt="Hình ảnh bàn" class="table-image" />
                     <div class="table-info">
@@ -51,8 +51,15 @@
             </div>
 
             <!-- Nút đánh giá -->
-            <div v-if="booking.STATUS === 'Completed'" class="review-section">
+            <div v-if="(booking.STATUS === 'Completed') && (!booking.review)" class="review-section">
                 <button @click="openReviewModal(booking)" class="review-button">Đánh giá</button>
+            </div>
+            <div v-if="(booking.STATUS === 'Completed') && (booking.review)" class="review-section">
+                <button @click="openReviewModal(booking)" class="review-button">Đánh giá lại</button>
+            </div>
+            <div v-if="booking.STATUS === 'NotYetPaid'" class="payment-section">
+                <button @click="repaymentBooking(booking._id, booking.TOTAL_PRICE)" class="payment-button">Thanh toán
+                    lại</button>
             </div>
         </div>
 
@@ -192,7 +199,11 @@ export default {
             }
         },
         getStatusClass(status) {
-            return status === 'Booked' ? 'status-confirmed' : 'status-pending';
+            if (status === 'Booked')
+                return 'status-confirmed';
+            else if (status === 'Completed')
+                return 'status-pending';
+            return 'status-notyetpaid';
         },
         formatPrice(price) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -295,6 +306,25 @@ export default {
         setRating(type, value) {
             this.reviewData[type] = value;
         },
+        async repaymentBooking(bookingId, totalPriceBooking) {
+            try {
+                const paymentResponse = await axiosClient.post(
+                    "/payments/create_payment_url",
+                    {
+                        id: bookingId,
+                        totalPrice: totalPriceBooking,
+                    }
+                );
+                if (paymentResponse.data && paymentResponse.data.data.url) {
+                    window.open(paymentResponse.data.data.url, "_blank");
+                } else {
+                    this.$toast.error("Không thể tạo liên kết thanh toán VNPAY.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi đặt bàn:", error);
+                this.$toast.error("Đặt bàn thất bại. Vui lòng thử lại.");
+            }
+        }
     }
 };
 </script>
@@ -372,6 +402,11 @@ export default {
     font-weight: bold;
 }
 
+.status-notyetpaid {
+    color: #eb0000;
+    font-weight: bold;
+}
+
 h3 {
     color: #34495E;
 }
@@ -412,6 +447,19 @@ p {
 
 .review-button:hover {
     background-color: #e67e22;
+}
+
+.payment-button {
+    background-color: #208c22;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.payment-button:hover {
+    background-color: #46d641;
 }
 
 .submit-button {
@@ -502,6 +550,7 @@ p {
     cursor: pointer;
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 
 .delete-button i {

@@ -10,7 +10,7 @@
             <div class="info-card employees">
                 <h3>Nhân viên</h3>
                 <font-awesome-icon :icon="['fas', 'user-tie']" />
-                <h4>{{ employees }}</h4>
+                <h4>{{ totalStaff }}</h4>
             </div>
             <div class="info-card customers">
                 <h3>Khách hàng</h3>
@@ -117,8 +117,8 @@ export default {
             currentMonth: new Date().getMonth() + 1, // Tháng hiện tại
             activeTab: 'dashboard', // Tab mặc định
             revenue: '', // Doanh thu
-            employees: 20, // Số lượng nhân viên
-            customers: 1200, // Số lượng khách hàng
+            employees: null, // Số lượng nhân viên
+            customers: null, // Số lượng khách hàng
             orders: 30, // Số đơn đang được đặt
             bookedOrders: [], // Mảng lưu trữ các đơn hàng có status là Booked
             openedOrderIndex: null, // Biến theo dõi đơn hàng đang mở
@@ -130,6 +130,7 @@ export default {
             monthlyRevenue: [],
             monthlyBookingStats: [],
             bookingChartInstance: null,
+            totalStaff: null
         };
     },
     mounted() {
@@ -137,6 +138,7 @@ export default {
         this.getBookedOrders(); // Gọi hàm lấy danh sách đơn hàng Booked
         this.getBookingStats();
         this.getRevenueData();
+        this.fetchUsers();
 
     },
     computed: {
@@ -452,7 +454,19 @@ export default {
         isOrderOpen(index) {
             return this.openedOrderIndex === index;
         },
-
+        async fetchUsers() {
+            try {
+                const response = await axiosClient.get("/users/getAllUsers", {
+                    params: {
+                        tabStatus: 4,
+                    },
+                });
+                this.totalStaff = response.data.totalStaff;
+                this.customers = response.data.totalUser;
+            } catch (error) {
+                console.error("Lỗi khi lấy người dùng:", error);
+            }
+        },
         formatDate(date) {
             const formattedDate = new Date(date);
             const year = formattedDate.getFullYear();

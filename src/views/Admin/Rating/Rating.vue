@@ -139,11 +139,13 @@ h2 {
 }
 
 .status-active {
+    width: 92px;
     color: #27ae60;
     font-weight: bold;
 }
 
 .status-inactive {
+    width: 92px;
     color: #c0392b;
     font-weight: bold;
 }

@@ -143,8 +143,11 @@ export default {
       try {
         await this.login(payload);
         localStorage.setItem('isLoggedIn', 'true');
-        this.$message.success(
-          "Đăng nhập thành công!"
+        notification.success(
+          {
+            message: 'Đăng nhập thành công!',
+            description: 'Chào mừng đến với nhà hàng TFood.',
+          }
         );
       } catch (error) {
         this.$message.error(

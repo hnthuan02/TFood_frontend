@@ -14,7 +14,7 @@
             </div>
 
             <!-- Tin nhắn hoặc thông báo chọn người dùng -->
-            <div class="chat-area">
+            <div class="chat-area-top">
                 <!-- Nếu chưa chọn người dùng và là admin hoặc staff thì hiển thị thông báo -->
                 <div v-if="!receiverId && isAdminOrStaff" class="select-user-message">
                     Chọn người dùng để chat
@@ -45,7 +45,7 @@
                                     <span class="text">{{ message.content }}</span>
                                     <span v-if="!message.isDateHeader" class="timestamp">{{
                                         formatTime(message.createdAt)
-                                        }}</span>
+                                    }}</span>
                                 </span>
                             </div>
                         </div>
@@ -372,8 +372,8 @@ export default {
     background-color: #3b5a8c;
 }
 
-.chat-area {
-    height: 545px;
+.chat-area-top {
+    height: 480px;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -385,7 +385,7 @@ export default {
     padding: 15px;
     overflow-y: auto;
     background-color: #1e3a5f;
-    height: 545px;
+    height: 430px;
 }
 
 .message {

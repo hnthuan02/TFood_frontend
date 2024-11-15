@@ -62,6 +62,7 @@ export default {
     padding: 20px;
     max-width: 1000px;
     margin: auto;
+    height: 700px;
 }
 
 .contact-info {

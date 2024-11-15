@@ -72,10 +72,15 @@
                                         </div>
 
                                         <!-- Nút cập nhật trạng thái -->
+                                        <button class="add-food-button"
+                                            @click="addFood({ BOOKING_ID: order._id, TABLE_ID: table.TABLE_ID })">
+                                            Thêm món vào bàn
+                                        </button>
                                         <button @click="updateBookingTimeStatus(table.TABLE_ID, table.BOOKING_TIME)"
                                             :disabled="table.STATUS === 'Completed'" class="update-button">
                                             Xác nhận trả bàn
                                         </button>
+
                                     </div>
                                 </td>
                             </tr>
@@ -95,6 +100,55 @@
                 <canvas id="bookingChart"></canvas>
             </div>
         </div>
+
+        <div v-if="showFoodPopup" class="food-popup">
+            <div class="food-popup-content">
+                <h3>Chọn món ăn</h3>
+
+                <!-- Thanh lọc loại món ăn -->
+                <div class="filter-bar">
+                    <button v-for="(type, index) in filterTypes" :key="type" @click="selectFilter(type)"
+                        :class="{ active: selectedFilter === type }">
+                        {{ translatedFilterTypes[index] }}
+                    </button>
+                </div>
+
+                <!-- Danh sách món ăn được lọc -->
+                <div class="food-list">
+                    <div v-for="food in filteredFoodItems" :key="food._id" class="food-item">
+                        <img :src="food.IMAGES[0]" :alt="food.NAME" />
+                        <div class="food-info">
+                            <h4>{{ food.NAME }}</h4>
+                            <p>{{ formatPrice(food.PRICE) }}</p>
+                            <div class="quantity-selector">
+                                <button @click="decreaseQuantity(food._id)">-</button>
+                                <span>{{ quantities[food._id] || 0 }}</span>
+                                <button @click="increaseQuantity(food._id)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contain-button">
+                    <button @click="confirmFoodSelection" class="confirm-button">Xác nhận</button>
+                    <button @click="closeFoodPopup" class="close-button">Đóng</button>
+                </div>
+            </div>
+        </div>
+        <div v-if="showPaymentModal" class="payment-modal">
+            <div class="payment-modal-content">
+                <h3>Xác nhận thanh toán</h3>
+                <p>Bạn đã chọn <strong>{{ selectedFoodItems.length }}</strong> món ăn.</p>
+                <p>Số tiền dự kiến: <strong>{{ calculateSelectedItemsTotal() }}</strong></p>
+                <div class="payment-options">
+                    <button @click="payByCash" :disabled="isPaid" class="cash-button">
+                        {{ isPaid ? "Đã thanh toán" : "Thanh toán tiền mặt" }}
+                    </button>
+                    <button @click="payByVNPay" class="vnpay-button">Thanh toán bằng VNPay</button>
+                </div>
+                <button @click="closePaymentModal" class="close-modal-button">Đóng</button>
+            </div>
+        </div>
+
 
 
     </div>
@@ -130,7 +184,17 @@ export default {
             monthlyRevenue: [],
             monthlyBookingStats: [],
             bookingChartInstance: null,
-            totalStaff: null
+            totalStaff: null,
+            showFoodPopup: false,
+            foodItems: [],
+            selectedFoodItems: [],
+            quantities: {},
+            filterTypes: ['Steak', 'Pasta', 'Dessert', 'Drink'],
+            selectedFilter: 'Steak',
+            showPaymentModal: false, // Hiển thị modal thanh toán
+            selectedTable: null, // Bàn được chọn
+            addedItemsTotal: 0, // Tổng tiền cần thanh toán
+            isPaid: false,
         };
     },
     mounted() {
@@ -174,6 +238,19 @@ export default {
             }
             return 0;
         },
+        filteredFoodItems() {
+            const filtered = this.foodItems.filter(food => food.TYPE === this.selectedFilter);
+            return filtered;
+        },
+        translatedFilterTypes() {
+            const translations = {
+                'Steak': 'Bít tết',
+                'Pasta': 'Mỳ ý',
+                'Dessert': 'Tráng miệng',
+                'Drink': 'Nước uống'
+            };
+            return this.filterTypes.map(type => translations[type] || type);
+        }
     },
     methods: {
         async getBookingStats() {
@@ -479,7 +556,145 @@ export default {
         },
         formatCurrency(value) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-        }
+        },
+        addFood(table) {
+            this.selectedTable = {
+                bookingId: table.BOOKING_ID,
+                tableId: table.TABLE_ID
+            };
+            this.showFoodPopup = true; // Hiển thị popup chọn món ăn
+            this.loadFoodItems(); // Gọi hàm tải danh sách món ăn từ API
+        },
+
+
+        async loadFoodItems() {
+            try {
+                const response = await axiosClient.get("foods/allFood"); // API lấy danh sách món ăn
+                this.foodItems = response.data; // Lưu kết quả trả về vào foodItems
+            } catch (error) {
+                console.error("Lỗi khi lấy danh sách món ăn:", error);
+            }
+        },
+
+        closeFoodPopup() {
+            this.showFoodPopup = false; // Ẩn pop-up món ăn
+        },
+        selectFilter(type) {
+            this.selectedFilter = type; // Cập nhật loại món ăn đang được chọn
+        },
+        formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        },
+        increaseQuantity(foodId) {
+            this.quantities[foodId] = (this.quantities[foodId] || 0) + 1; // Tăng số lượng
+        },
+        decreaseQuantity(foodId) {
+            if (this.quantities[foodId] > 0) {
+                this.quantities[foodId] -= 1; // Giảm số lượng
+            }
+        },
+        confirmFoodSelection() {
+            this.selectedFoodItems = Object.entries(this.quantities)
+                .filter(([foodId, quantity]) => quantity > 0)
+                .map(([foodId, quantity]) => {
+                    const foodItem = this.foodItems.find(food => food._id === foodId);
+                    return {
+                        FOOD_ID: foodId,
+                        name: foodItem.NAME,
+                        QUANTITY: quantity,
+                        PRICE: foodItem.PRICE
+                    };
+                });
+
+            if (this.selectedFoodItems.length === 0) {
+                alert("Vui lòng chọn ít nhất một món ăn!");
+                return;
+            }
+
+            this.showFoodPopup = false; // Đóng popup chọn món ăn
+            this.showPaymentModal = true; // Hiển thị modal thanh toán
+        },
+
+        // Thanh toán bằng tiền mặt
+        calculateSelectedItemsTotal() {
+            return this.selectedFoodItems.reduce((total, item) => {
+                return total + item.QUANTITY * item.PRICE;
+            }, 0);
+        },
+
+        // Thanh toán bằng tiền mặt
+        async payByCash() {
+            try {
+                const payload = {
+                    bookingId: this.selectedTable.bookingId,
+                    tableId: this.selectedTable.tableId,
+                    foods: this.selectedFoodItems.map(item => ({
+                        FOOD_ID: item.FOOD_ID,
+                        QUANTITY: item.QUANTITY
+                    }))
+                };
+
+                const response = await axiosClient.put("http://localhost:3001/booking/add-items", payload);
+
+                if (response.data.success) {
+                    this.addedItemsTotal = response.data.addedItemsTotal;
+                    this.isPaid = true; // Đánh dấu đã thanh toán
+                    this.showPaymentModal = false; // Đóng modal thanh toán
+                    alert("Thanh toán thành công!");
+                }
+            } catch (error) {
+                console.error("Lỗi khi gọi API thanh toán:", error);
+                alert("Có lỗi xảy ra khi thanh toán!");
+            }
+        },
+
+        // Thanh toán bằng VNPay
+        async payByVNPay() {
+            try {
+                const additionalAmountPay = this.calculateSelectedItemsTotal();
+                if (additionalAmountPay <= 0) {
+                    alert("Số tiền không hợp lệ. Vui lòng chọn ít nhất một món ăn.");
+                    return;
+                }
+                const payload = {
+                    bookingId: this.selectedTable.bookingId,
+                    tableId: this.selectedTable.tableId,
+                    foods: this.selectedFoodItems.map(item => ({
+                        FOOD_ID: item.FOOD_ID,
+                        QUANTITY: item.QUANTITY
+                    }))
+                };
+                const paymentResponse = await axiosClient.post(
+                    "/payments/create_additional_payment_url",
+                    {
+                        bookingId: this.selectedTable.bookingId,
+                        additionalAmount: additionalAmountPay,
+                    }
+                );
+                if (paymentResponse.data && paymentResponse.data.data.url) {
+                    window.open(paymentResponse.data.data.url, "_blank");
+                } else {
+                    this.$toast.error("Không thể tạo liên kết thanh toán VNPAY.");
+                }
+
+                const response = await axiosClient.put("http://localhost:3001/booking/add-items", payload);
+
+                if (response.data.success) {
+                    this.addedItemsTotal = response.data.addedItemsTotal;
+                    this.showPaymentModal = false; // Đóng modal thanh toán
+                    alert("Chuyển hướng đến VNPay...");
+                    // Thực hiện logic điều hướng hoặc xử lý thanh toán với VNPay
+                }
+            } catch (error) {
+                console.error("Lỗi khi gọi API thanh toán VNPay:", error);
+                alert("Có lỗi xảy ra khi thanh toán!");
+            }
+        },
+
+        // Đóng modal thanh toán
+        closePaymentModal() {
+            this.showPaymentModal = false;
+        },
     },
 };
 </script>
@@ -714,6 +929,7 @@ export default {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
+    height: 44px;
 }
 
 .update-button:disabled {
@@ -777,5 +993,226 @@ canvas {
 
 h4 {
     margin: 0;
+}
+
+.food-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.food-popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 550px;
+    max-height: 80%;
+    overflow-y: auto;
+
+}
+
+.add-food-button {
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.add-food-button:hover {
+    background-color: #34495e;
+}
+
+.food-list {
+    display: flex;
+    flex-direction: column;
+    /* Hiển thị các món ăn theo hàng dọc */
+    gap: 10px;
+    /* Khoảng cách giữa các món ăn */
+}
+
+.food-item {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.food-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.food-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.food-info h4 {
+    margin: 0;
+}
+
+.quantity-selector {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.quantity-selector button {
+    width: 30px;
+    height: 30px;
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.quantity-selector button:hover {
+    background-color: #34495e;
+}
+
+.quantity-selector span {
+    margin: 0 10px;
+    font-size: 18px;
+    width: 30px;
+    text-align: center;
+}
+
+.confirm-button,
+.close-button {
+    background-color: #2c3e50;
+    color: #fff;
+    font-size: 16px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-top: 20px;
+    text-transform: uppercase;
+    font-family: "Playfair Display", serif;
+}
+
+.confirm-button:hover,
+.close-button:hover {
+    background-color: #34495e;
+    transform: translateY(-2px);
+}
+
+.close-button {
+    background-color: #e74c3c;
+}
+
+.close-button:hover {
+    background-color: #c0392b;
+}
+
+.filter-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.filter-bar button {
+    background-color: #eee;
+    border: none;
+    padding: 8px 15px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.filter-bar button.active {
+    background-color: #1A242F;
+    color: white;
+}
+
+.filter-bar button:hover {
+    background-color: #243241;
+    color: white;
+}
+
+.contain-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.payment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.payment-modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    text-align: center;
+}
+
+.payment-options button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.cash-button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+}
+
+.cash-button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+.vnpay-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+}
+
+.close-modal-button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 5px;
 }
 </style>

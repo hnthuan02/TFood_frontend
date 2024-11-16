@@ -17,7 +17,9 @@
                 <tbody>
                     <tr v-for="table in cart.LIST_TABLES" :key="table.TABLE_ID">
                         <td>
-                            <input type="checkbox" :value="table.TABLE_ID" v-model="selectedTables" />
+                            <input type="checkbox" :checked="isTableSelected(table)"
+                                @change="toggleTableSelection(table)" />
+
                         </td>
                         <td>
                             {{ table.tableInfo.TABLE_NUMBER }}<br />
@@ -40,7 +42,7 @@
                                 </li>
                             </ul>
                         </td>
-                        <td>{{ calculateTotalPrice(table) }} VND</td>
+                        <td>{{ formatPrice(calculateTotalPrice(table)) }}</td>
                         <td class="action-buttons-cart">
                             <button @click="addFood(table)" class="action-button">Thêm món ăn</button>
                             <button @click="editFood(table)" class="action-button">Chỉnh sửa món ăn</button>
@@ -52,7 +54,7 @@
                 </tbody>
             </table>
             <div class="price-info">
-                <h3 class="total-price">Tổng cộng: {{ cart.TOTAL_PRICES }} VND</h3>
+                <h3 class="total-price">Tổng cộng: {{ formatPrice(cart.TOTAL_PRICES) }} </h3>
                 <button @click="goToPayment" class="payment">Đặt ngay</button>
             </div>
         </div>
@@ -236,6 +238,23 @@ export default {
         },
         disabledDate(current) {
             return current && current < new Date();
+        },
+        formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        },
+        isTableSelected(table) {
+            // Kiểm tra xem `tableId` đã tồn tại trong danh sách `selectedTables` hay chưa
+            return this.selectedTables.includes(table.TABLE_ID);
+        },
+        toggleTableSelection(table) {
+            const index = this.selectedTables.indexOf(table.TABLE_ID);
+            if (index > -1) {
+                // Nếu đã chọn, bỏ chọn
+                this.selectedTables.splice(index, 1);
+            } else {
+                // Nếu chưa chọn, thêm vào
+                this.selectedTables.push(table.TABLE_ID);
+            }
         },
     },
 };

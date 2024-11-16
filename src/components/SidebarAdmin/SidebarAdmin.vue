@@ -9,7 +9,7 @@
         <!-- Các mục của sidebar -->
         <ul>
             <li :class="{ active: currentTab === 'dashboard' }" @click="setActiveTab('dashboard')">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
+                <i class="fas fa-tachometer-alt"></i> Tổng quan
             </li>
             <li :class="{ active: currentTab === 'menu' }" @click="setActiveTab('menu')">
                 <i class="fas fa-utensils"></i> Thực đơn

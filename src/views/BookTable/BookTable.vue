@@ -365,8 +365,12 @@ export default {
                     this.$message.error("Thêm bàn vào giỏ hàng thất bại!");
                 }
             } catch (error) {
+                if (error.response && error.response.data) {
+                    this.$message.error(error.response.data.error || error.response.data.message || "Đã xảy ra lỗi!");
+                } else {
+                    this.$message.error("Đã xảy ra lỗi khi thêm bàn vào giỏ hàng!");
+                }
                 console.error("Lỗi khi thêm bàn vào giỏ hàng:", error);
-                this.$message.error("Thêm bàn vào giỏ hàng thất bại!");
             }
         },
         closePopup() {

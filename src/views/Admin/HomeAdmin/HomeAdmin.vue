@@ -1,98 +1,99 @@
 <template>
-    <div class="content">
 
-        <div class="info-cards">
-            <div class="info-card revenue">
-                <h3>Doanh thu tháng {{ currentMonth }}</h3>
-                <font-awesome-icon :icon="['fas', 'money-bill']" />
-                <h4>{{ formatCurrency(revenue) }}</h4>
-            </div>
-            <div class="info-card employees">
-                <h3>Nhân viên</h3>
-                <font-awesome-icon :icon="['fas', 'user-tie']" />
-                <h4>{{ totalStaff }}</h4>
-            </div>
-            <div class="info-card customers">
-                <h3>Khách hàng</h3>
-                <font-awesome-icon :icon="['fas', 'user-group']" />
-                <h4>{{ customers }}</h4>
-            </div>
-            <div class="info-card orders">
-                <h3>Tổng đơn tháng {{ currentMonth }}</h3>
-                <font-awesome-icon :icon="['fas', 'clipboard-list']" />
-                <h4>{{ currentMonthTotalBookings }}</h4>
-            </div>
-
+    <div class="info-cards">
+        <div class="info-card revenue">
+            <h3>Doanh thu tháng {{ currentMonth }}</h3>
+            <font-awesome-icon :icon="['fas', 'money-bill']" />
+            <h4>{{ formatCurrency(revenue) }}</h4>
         </div>
-        <!-- Tabs để chuyển đổi giữa hai phần -->
-        <div class="tabs">
-            <button :class="{ active: activeTab === 'orders' }" @click="activeTab = 'orders'">
-                Danh sách đơn đặt bàn
-            </button>
-            <button :class="{ active: activeTab === 'overview' }"
-                @click="activeTab = 'overview'; drawRevenueChart(); getRevenue(); drawBookingChart();">
-                Xem tổng quan
-            </button>
+        <div class="info-card employees">
+            <h3>Nhân viên</h3>
+            <font-awesome-icon :icon="['fas', 'user-tie']" />
+            <h4>{{ totalStaff }}</h4>
         </div>
-        <!-- Hiển thị danh sách đơn đặt bàn -->
-        <div v-if="activeTab === 'orders'" class="order-list">
-            <h3>Danh sách đơn đặt bàn</h3>
+        <div class="info-card customers">
+            <h3>Khách hàng</h3>
+            <font-awesome-icon :icon="['fas', 'user-group']" />
+            <h4>{{ customers }}</h4>
+        </div>
+        <div class="info-card orders">
+            <h3>Tổng đơn tháng {{ currentMonth }}</h3>
+            <font-awesome-icon :icon="['fas', 'clipboard-list']" />
+            <h4>{{ currentMonthTotalBookings }}</h4>
+        </div>
 
-            <!-- Thêm thanh tìm kiếm -->
-            <input type="text" v-model="searchQuery" placeholder="Tìm kiếm theo tên, số điện thoại hoặc email" />
+    </div>
+    <!-- Tabs để chuyển đổi giữa hai phần -->
+    <div class="tabs">
+        <button :class="{ active: activeTab === 'orders' }" @click="activeTab = 'orders'">
+            Danh sách đơn đặt bàn
+        </button>
+        <button :class="{ active: activeTab === 'overview' }"
+            @click="activeTab = 'overview'; drawRevenueChart(); getRevenue(); drawBookingChart(); fetchFoodQuantityData();">
+            Xem tổng quan
+        </button>
+    </div>
+    <!-- Hiển thị danh sách đơn đặt bàn -->
+    <div v-if="activeTab === 'orders'" class="order-list">
+        <h3>Danh sách đơn đặt bàn</h3>
 
-            <div v-if="bookedOrders.length > 0" class="order-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tên khách hàng</th>
-                            <th>Số điện thoại</th>
-                            <th>Email</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày đặt</th>
+        <!-- Thêm thanh tìm kiếm -->
+        <input type="text" v-model="searchQuery" placeholder="Tìm kiếm theo tên, số điện thoại hoặc email" />
+
+        <div v-if="bookedOrders.length > 0" class="order-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên khách hàng</th>
+                        <th>Số điện thoại</th>
+                        <th>Email</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày đặt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template v-for="(order, index) in filteredBookedOrders" :key="order._id">
+                        <!-- Hàng chính (order) -->
+                        <tr @click="toggleOrderDetails(index)">
+                            <td>{{ order.USER_NAME }}</td>
+                            <td>{{ order.PHONE_NUMBER }}</td>
+                            <td>{{ order.EMAIL }}</td>
+                            <td>{{ order.STATUS === 'Booked' ? 'Đã thanh toán' : 'Đang xử lí' }}</td>
+                            <td>{{ formatDate(order.createdAt) }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <template v-for="(order, index) in filteredBookedOrders" :key="order._id">
-                            <!-- Hàng chính (order) -->
-                            <tr @click="toggleOrderDetails(index)">
-                                <td>{{ order.USER_NAME }}</td>
-                                <td>{{ order.PHONE_NUMBER }}</td>
-                                <td>{{ order.EMAIL }}</td>
-                                <td>{{ order.STATUS === 'Booked' ? 'Đã thanh toán' : 'Đang xử lí' }}</td>
-                                <td>{{ formatDate(order.createdAt) }}</td>
-                            </tr>
-                            <tr :ref="'table-details-' + index" class="dropdown-row">
-                                <td colspan="5" class="dropdown-content">
-                                    <div v-for="table in orderTables[index]" :key="table.TABLE_ID" class="table-row">
-                                        <div class="table-info">
-                                            Bàn số: {{ table.TABLE_NUMBER }} - Thời gian đặt: {{ table.BOOKING_TIME }}
-                                            - Trạng thái hiện tại: {{ table.STATUS === 'Completed' ? 'Hoàn thành' :
-                                                'Đang chờ' }}
-                                        </div>
-
-                                        <!-- Nút cập nhật trạng thái -->
-                                        <button class="add-food-button"
-                                            @click="addFood({ BOOKING_ID: order._id, TABLE_ID: table.TABLE_ID })">
-                                            Thêm món vào bàn
-                                        </button>
-                                        <button @click="updateBookingTimeStatus(table.TABLE_ID, table.BOOKING_TIME)"
-                                            :disabled="table.STATUS === 'Completed'" class="update-button">
-                                            Xác nhận trả bàn
-                                        </button>
-
+                        <tr :ref="'table-details-' + index" class="dropdown-row">
+                            <td colspan="5" class="dropdown-content">
+                                <div v-for="table in orderTables[index]" :key="table.TABLE_ID" class="table-row">
+                                    <div class="table-info">
+                                        Bàn số: {{ table.TABLE_NUMBER }} - Thời gian đặt: {{ table.BOOKING_TIME }}
+                                        - Trạng thái hiện tại: {{ table.STATUS === 'Completed' ? 'Hoàn thành' :
+                                            'Đang chờ' }}
                                     </div>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-            <p v-else>Không có đơn hàng nào đã đặt.</p>
-        </div>
 
-        <!-- Hiển thị biểu đồ doanh thu và đặt bàn -->
-        <div v-if="activeTab === 'overview'" class="charts-container">
+                                    <!-- Nút cập nhật trạng thái -->
+                                    <button class="add-food-button"
+                                        @click="addFood({ BOOKING_ID: order._id, TABLE_ID: table.TABLE_ID })">
+                                        Thêm món vào bàn
+                                    </button>
+                                    <button @click="updateBookingTimeStatus(table.TABLE_ID, table.BOOKING_TIME)"
+                                        :disabled="table.STATUS === 'Completed'" class="update-button">
+                                        Xác nhận trả bàn
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <p v-else>Không có đơn hàng nào đã đặt.</p>
+    </div>
+
+    <!-- Hiển thị biểu đồ doanh thu và đặt bàn -->
+    <div v-if="activeTab === 'overview'" class="charts-container">
+        <!-- Biểu đồ doanh thu và đặt bàn nằm cùng hàng -->
+        <div class="chart-row">
             <div class="chart-item">
                 <canvas id="revenueChart"></canvas>
             </div>
@@ -100,58 +101,65 @@
                 <canvas id="bookingChart"></canvas>
             </div>
         </div>
+        <!-- Biểu đồ số lượng món ăn nằm ở hàng riêng -->
+        <div class="chart-row">
+            <div class="chart-item-full">
+                <canvas id="foodQuantityChart"></canvas>
+            </div>
+        </div>
+    </div>
 
-        <div v-if="showFoodPopup" class="food-popup">
-            <div class="food-popup-content">
-                <h3>Chọn món ăn</h3>
 
-                <!-- Thanh lọc loại món ăn -->
-                <div class="filter-bar">
-                    <button v-for="(type, index) in filterTypes" :key="type" @click="selectFilter(type)"
-                        :class="{ active: selectedFilter === type }">
-                        {{ translatedFilterTypes[index] }}
-                    </button>
-                </div>
+    <div v-if="showFoodPopup" class="food-popup">
+        <div class="food-popup-content">
+            <h3>Chọn món ăn</h3>
 
-                <!-- Danh sách món ăn được lọc -->
-                <div class="food-list">
-                    <div v-for="food in filteredFoodItems" :key="food._id" class="food-item">
-                        <img :src="food.IMAGES[0]" :alt="food.NAME" />
-                        <div class="food-info">
-                            <h4>{{ food.NAME }}</h4>
-                            <p>{{ formatPrice(food.PRICE) }}</p>
-                            <div class="quantity-selector">
-                                <button @click="decreaseQuantity(food._id)">-</button>
-                                <span>{{ quantities[food._id] || 0 }}</span>
-                                <button @click="increaseQuantity(food._id)">+</button>
-                            </div>
+            <!-- Thanh lọc loại món ăn -->
+            <div class="filter-bar">
+                <button v-for="(type, index) in filterTypes" :key="type" @click="selectFilter(type)"
+                    :class="{ active: selectedFilter === type }">
+                    {{ translatedFilterTypes[index] }}
+                </button>
+            </div>
+
+            <!-- Danh sách món ăn được lọc -->
+            <div class="food-list">
+                <div v-for="food in filteredFoodItems" :key="food._id" class="food-item">
+                    <img :src="food.IMAGES[0]" :alt="food.NAME" />
+                    <div class="food-info">
+                        <h4>{{ food.NAME }}</h4>
+                        <p>{{ formatPrice(food.PRICE) }}</p>
+                        <div class="quantity-selector">
+                            <button @click="decreaseQuantity(food._id)">-</button>
+                            <span>{{ quantities[food._id] || 0 }}</span>
+                            <button @click="increaseQuantity(food._id)">+</button>
                         </div>
                     </div>
                 </div>
-                <div class="contain-button">
-                    <button @click="confirmFoodSelection" class="confirm-button">Xác nhận</button>
-                    <button @click="closeFoodPopup" class="close-button">Đóng</button>
-                </div>
+            </div>
+            <div class="contain-button">
+                <button @click="confirmFoodSelection" class="confirm-button">Xác nhận</button>
+                <button @click="closeFoodPopup" class="close-button">Đóng</button>
             </div>
         </div>
-        <div v-if="showPaymentModal" class="payment-modal">
-            <div class="payment-modal-content">
-                <h3>Xác nhận thanh toán</h3>
-                <p>Bạn đã chọn <strong>{{ selectedFoodItems.length }}</strong> món ăn.</p>
-                <p>Số tiền dự kiến: <strong>{{ calculateSelectedItemsTotal() }}</strong></p>
-                <div class="payment-options">
-                    <button @click="payByCash" :disabled="isPaid" class="cash-button">
-                        {{ isPaid ? "Đã thanh toán" : "Thanh toán tiền mặt" }}
-                    </button>
-                    <button @click="payByVNPay" class="vnpay-button">Thanh toán bằng VNPay</button>
-                </div>
-                <button @click="closePaymentModal" class="close-modal-button">Đóng</button>
-            </div>
-        </div>
-
-
-
     </div>
+    <div v-if="showPaymentModal" class="payment-modal">
+        <div class="payment-modal-content">
+            <h3>Xác nhận thanh toán</h3>
+            <p>Bạn đã chọn <strong>{{ selectedFoodItems.length }}</strong> món ăn.</p>
+            <p>Số tiền dự kiến: <strong>{{ calculateSelectedItemsTotal() }}</strong></p>
+            <div class="payment-options">
+                <button @click="payByCash" :disabled="isPaid" class="cash-button">
+                    {{ isPaid ? "Đã thanh toán" : "Thanh toán tiền mặt" }}
+                </button>
+                <button @click="payByVNPay" class="vnpay-button">Thanh toán bằng VNPay</button>
+            </div>
+            <button @click="closePaymentModal" class="close-modal-button">Đóng</button>
+        </div>
+    </div>
+
+
+
 </template>
 
 
@@ -195,6 +203,8 @@ export default {
             selectedTable: null, // Bàn được chọn
             addedItemsTotal: 0, // Tổng tiền cần thanh toán
             isPaid: false,
+            foodQuantityData: [], // Lưu trữ dữ liệu món ăn
+            foodChartInstance: null,
         };
     },
     mounted() {
@@ -695,6 +705,110 @@ export default {
         closePaymentModal() {
             this.showPaymentModal = false;
         },
+        async fetchFoodQuantityData() {
+            try {
+                const response = await axiosClient.get("http://localhost:3001/booking/total-food-quantity");
+                if (response.data.success) {
+                    this.foodQuantityData = response.data.data; // Lưu dữ liệu vào state
+                    this.drawFoodQuantityChart(); // Vẽ biểu đồ sau khi có dữ liệu
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu số lượng món ăn:", error);
+            }
+        },
+
+        async drawFoodQuantityChart() {
+            await nextTick();
+            const canvas = document.getElementById('foodQuantityChart');
+            if (!canvas) {
+                console.error("Không tìm thấy phần tử với id 'foodQuantityChart'");
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            if (this.foodChartInstance) {
+                this.foodChartInstance.destroy(); // Xóa biểu đồ cũ nếu tồn tại
+            }
+
+            // Sắp xếp dữ liệu theo số lượng bán
+            const sortedData = [...this.foodQuantityData].sort((a, b) => a.totalQuantity - b.totalQuantity);
+
+            // Lấy 5 món bán ít nhất và 5 món bán nhiều nhất
+            const leastSold = sortedData.slice(0, 5); // Món ít bán nhất
+            const mostSold = sortedData.slice(-5);   // Món bán chạy nhất
+
+            // Kết hợp dữ liệu theo thứ tự từ ít đến nhiều
+            const combinedData = [...leastSold, ...mostSold];
+            const labels = combinedData.map(item => item.foodName); // Tên món ăn
+            const data = combinedData.map(item => item.totalQuantity); // Số lượng món ăn
+
+            // Tạo màu sắc: Đỏ cho món ít bán, Xanh cho món bán chạy
+            const backgroundColors = [
+                ...leastSold.map(() => 'rgba(255, 99, 132, 0.5)'), // Đỏ nhạt
+                ...mostSold.map(() => 'rgba(75, 192, 192, 0.5)')  // Xanh nhạt
+            ];
+            const borderColors = [
+                ...leastSold.map(() => 'rgba(255, 99, 132, 1)'), // Đỏ đậm
+                ...mostSold.map(() => 'rgba(75, 192, 192, 1)')  // Xanh đậm
+            ];
+
+            this.foodChartInstance = new Chart(ctx, {
+                type: 'bar', // Loại biểu đồ
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Số lượng bán',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                generateLabels: (chart) => {
+                                    return [
+                                        {
+                                            text: 'Bán ít',
+                                            fillStyle: 'rgba(255, 99, 132, 0.5)',
+                                            strokeStyle: 'rgba(255, 99, 132, 1)',
+                                            lineWidth: 2,
+                                        },
+                                        {
+                                            text: 'Bán chạy',
+                                            fillStyle: 'rgba(75, 192, 192, 0.5)',
+                                            strokeStyle: 'rgba(75, 192, 192, 1)',
+                                            lineWidth: 2,
+                                        },
+                                    ];
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Số lượng',
+                            },
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tên món ăn',
+                            },
+                        },
+                    },
+                },
+            });
+        },
     },
 };
 </script>
@@ -979,6 +1093,7 @@ canvas {
 
 .charts-container {
     display: flex;
+    flex-direction: column;
     gap: 20px;
     margin-top: 20px;
     justify-content: center;
@@ -1214,5 +1329,23 @@ h4 {
     background-color: #e74c3c;
     color: white;
     border-radius: 5px;
+}
+
+.chart-row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    max-height: 304px;
+}
+
+.chart-item-full {
+    flex: 1;
+    max-width: 50%;
+    /* Giới hạn chiều rộng để giống với 2 biểu đồ kia */
+    height: 300px;
+    /* Đặt chiều cao cố định cho biểu đồ */
+    margin: 0 auto;
+    /* Căn giữa nếu cần */
 }
 </style>

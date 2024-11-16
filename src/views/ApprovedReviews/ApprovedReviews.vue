@@ -1,107 +1,118 @@
 <template>
-    <div class="approved-reviews-container">
-        <h2>Đánh giá</h2>
+    <div class="reviews-container">
+        <div class="approved-reviews-container">
 
-        <!-- Thống kê đánh giá -->
-        <div class="statistics">
-            <!-- Thống kê đánh giá món ăn -->
-            <div class="average-rating">
-                <h4>Đánh giá món ăn</h4>
-                <div class="star-rating-wrapper">
-                    <div class="star-rating rating2">
-                        <span v-for="star in 5" :key="star" class="star" :class="{
-                            filled: star <= Math.floor(averageFoodRating),
-                            'half-filled': star === Math.ceil(averageFoodRating) && !Number.isInteger(averageFoodRating)
-                        }">★</span>
-                    </div>
-                    <span class="average-score-value">{{ averageFoodRating.toFixed(1) }}</span>
-                </div>
-                <span class="average-score">Dựa trên {{ totalFoodReviews }} đánh giá</span>
-                <div class="rating-breakdown">
-                    <div v-for="(count, rating) in foodRatingCounts" :key="rating" class="rating-bar">
-                        <span>{{ rating }} sao</span>
-                        <div class="bar">
-                            <div class="filled-bar" :style="{ width: getRatingPercentage(count) + '%' }"></div>
+            <!-- Thống kê đánh giá -->
+            <div class="statistics">
+                <!-- Thống kê đánh giá món ăn -->
+                <div class="average-rating">
+                    <h4>Đánh giá món ăn</h4>
+                    <div class="star-rating-wrapper">
+                        <div class="star-rating rating2">
+                            <span v-for="star in 5" :key="star" class="star" :class="{
+                                filled: star <= Math.floor(averageFoodRating),
+                                'half-filled': star === Math.ceil(averageFoodRating) && !Number.isInteger(averageFoodRating)
+                            }">★</span>
                         </div>
-                        <span>{{ getRatingPercentage(count) }}%</span>
+                        <span class="average-score-value">{{ averageFoodRating.toFixed(1) }}</span>
+                    </div>
+                    <span class="average-score">Dựa trên {{ totalFoodReviews }} đánh giá</span>
+                    <div class="rating-breakdown">
+                        <div v-for="(count, rating) in foodRatingCounts" :key="rating" class="rating-bar">
+                            <span>{{ rating }} sao</span>
+                            <div class="bar">
+                                <div class="filled-bar" :style="{ width: getRatingPercentage(count) + '%' }"></div>
+                            </div>
+                            <span>{{ getRatingPercentage(count) }}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thống kê đánh giá dịch vụ -->
+                <div class="average-rating">
+                    <h4>Đánh giá dịch vụ</h4>
+                    <div class="star-rating-wrapper">
+                        <div class="star-rating rating2">
+                            <span v-for="star in 5" :key="star" class="star" :class="{
+                                filled: star <= Math.floor(averageServiceRating),
+                                'half-filled': star === Math.ceil(averageServiceRating) && !Number.isInteger(averageServiceRating)
+                            }">★</span>
+                        </div>
+                        <span class="average-score-value">{{ averageServiceRating.toFixed(1) }}</span>
+                    </div>
+                    <span class="average-score">Dựa trên {{ totalServiceReviews }} đánh giá</span>
+                    <div class="rating-breakdown">
+                        <div v-for="(count, rating) in serviceRatingCounts" :key="rating" class="rating-bar">
+                            <span>{{ rating }} sao</span>
+                            <div class="bar">
+                                <div class="filled-bar" :style="{ width: getRatingPercentage(count) + '%' }"></div>
+                            </div>
+                            <span>{{ getRatingPercentage(count) }}%</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Thống kê đánh giá dịch vụ -->
-            <div class="average-rating">
-                <h4>Đánh giá dịch vụ</h4>
-                <div class="star-rating-wrapper">
-                    <div class="star-rating rating2">
-                        <span v-for="star in 5" :key="star" class="star" :class="{
-                            filled: star <= Math.floor(averageServiceRating),
-                            'half-filled': star === Math.ceil(averageServiceRating) && !Number.isInteger(averageServiceRating)
-                        }">★</span>
+            <!-- Bộ lọc đánh giá -->
+            <div class="filter">
+                <label>Lọc theo sao cho món ăn:</label>
+                <select v-model="selectedFoodStar" @change="filterReviews">
+                    <option value="">Tất cả</option>
+                    <option v-for="star in [5, 4, 3, 2, 1]" :key="star" :value="star">{{ star }} sao</option>
+                </select>
+
+                <label>Lọc theo sao cho dịch vụ:</label>
+                <select v-model="selectedServiceStar" @change="filterReviews">
+                    <option value="">Tất cả</option>
+                    <option v-for="star in [5, 4, 3, 2, 1]" :key="star" :value="star">{{ star }} sao</option>
+                </select>
+            </div>
+
+            <!-- Danh sách đánh giá -->
+            <div v-if="currentPageReviews.length > 0" class="reviews-list">
+                <div v-for="review in currentPageReviews" :key="review._id" class="review-card">
+                    <div class="review-header">
+                        <h3>{{ review.USER_ID.FULLNAME }}</h3>
+                        <span>{{ formatDate(review.createdAt) }}</span>
                     </div>
-                    <span class="average-score-value">{{ averageServiceRating.toFixed(1) }}</span>
-                </div>
-                <span class="average-score">Dựa trên {{ totalServiceReviews }} đánh giá</span>
-                <div class="rating-breakdown">
-                    <div v-for="(count, rating) in serviceRatingCounts" :key="rating" class="rating-bar">
-                        <span>{{ rating }} sao</span>
-                        <div class="bar">
-                            <div class="filled-bar" :style="{ width: getRatingPercentage(count) + '%' }"></div>
+                    <div class="review-content">
+                        <!-- Phần điểm đánh giá -->
+                        <div class="review-ratings">
+                            <!-- Đánh giá món ăn -->
+                            <p><strong>Đánh giá món ăn:</strong></p>
+                            <div class="star-rating">
+                                <span v-for="star in 5" :key="star" class="star"
+                                    :class="{ filled: star <= review.RATING_FOOD }">★</span>
+                            </div>
+
+                            <!-- Đánh giá dịch vụ -->
+                            <p><strong>Đánh giá dịch vụ:</strong></p>
+                            <div class="star-rating">
+                                <span v-for="star in 5" :key="star" class="star"
+                                    :class="{ filled: star <= review.RATING_SERVICE }">★</span>
+                            </div>
                         </div>
-                        <span>{{ getRatingPercentage(count) }}%</span>
+
+                        <!-- Phần bình luận -->
+                        <div class="review-comment">
+                            <p><strong>Bình luận:</strong> {{ review.COMMENT }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Bộ lọc đánh giá -->
-        <div class="filter">
-            <label>Lọc theo sao cho món ăn:</label>
-            <select v-model="selectedFoodStar" @change="filterReviews">
-                <option value="">Tất cả</option>
-                <option v-for="star in [5, 4, 3, 2, 1]" :key="star" :value="star">{{ star }} sao</option>
-            </select>
-
-            <label>Lọc theo sao cho dịch vụ:</label>
-            <select v-model="selectedServiceStar" @change="filterReviews">
-                <option value="">Tất cả</option>
-                <option v-for="star in [5, 4, 3, 2, 1]" :key="star" :value="star">{{ star }} sao</option>
-            </select>
-        </div>
-
-        <!-- Danh sách đánh giá -->
-        <div v-if="filteredReviews.length > 0" class="reviews-list">
-            <div v-for="review in filteredReviews" :key="review._id" class="review-card">
-                <div class="review-header">
-                    <h3>{{ review.USER_ID.FULLNAME }}</h3>
-                    <span>{{ formatDate(review.createdAt) }}</span>
-                </div>
-                <div class="review-content">
-                    <!-- Phần điểm đánh giá -->
-                    <div class="review-ratings">
-                        <!-- Đánh giá món ăn -->
-                        <p><strong>Đánh giá món ăn:</strong></p>
-                        <div class="star-rating">
-                            <span v-for="star in 5" :key="star" class="star"
-                                :class="{ filled: star <= review.RATING_FOOD }">★</span>
-                        </div>
-
-                        <!-- Đánh giá dịch vụ -->
-                        <p><strong>Đánh giá dịch vụ:</strong></p>
-                        <div class="star-rating">
-                            <span v-for="star in 5" :key="star" class="star"
-                                :class="{ filled: star <= review.RATING_SERVICE }">★</span>
-                        </div>
-                    </div>
-
-                    <!-- Phần bình luận -->
-                    <div class="review-comment">
-                        <p><strong>Bình luận:</strong> {{ review.COMMENT }}</p>
-                    </div>
-                </div>
+            <p v-else>Không có đánh giá nào phù hợp.</p>
+            <div class="pagination">
+                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">❮</button>
+                <span v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }"
+                    @click="changePage(page)">
+                    {{ page }}
+                </span>
+                <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">❯</button>
             </div>
+
         </div>
-        <p v-else>Không có đánh giá nào phù hợp.</p>
     </div>
+
 </template>
 
 <script>
@@ -114,9 +125,19 @@ export default {
             selectedFoodStar: "",
             selectedServiceStar: "",
             filteredReviews: [],
+            currentPage: 1, // Trang hiện tại
+            itemsPerPage: 3,
         };
     },
     computed: {
+        totalPages() {
+            return Math.ceil(this.filteredReviews.length / this.itemsPerPage);
+        },
+        currentPageReviews() {
+            const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+            const endIndex = startIndex + this.itemsPerPage;
+            return this.filteredReviews.slice(startIndex, endIndex);
+        },
         // Tính điểm đánh giá trung bình món ăn
         averageFoodRating() {
             const totalFoodRating = this.reviews.reduce((sum, review) => sum + review.RATING_FOOD, 0);
@@ -162,10 +183,20 @@ export default {
         },
         filterReviews() {
             this.filteredReviews = this.reviews.filter((review) => {
-                const matchesFood = this.selectedFoodStar ? review.RATING_FOOD === parseInt(this.selectedFoodStar) : true;
-                const matchesService = this.selectedServiceStar ? review.RATING_SERVICE === parseInt(this.selectedServiceStar) : true;
+                const matchesFood = this.selectedFoodStar
+                    ? review.RATING_FOOD === parseInt(this.selectedFoodStar)
+                    : true;
+                const matchesService = this.selectedServiceStar
+                    ? review.RATING_SERVICE === parseInt(this.selectedServiceStar)
+                    : true;
                 return matchesFood && matchesService;
             });
+            this.currentPage = 1; // Reset về trang đầu khi lọc
+        },
+        changePage(page) {
+            if (page >= 1 && page <= this.totalPages) {
+                this.currentPage = page;
+            }
         },
         formatDate(date) {
             const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
@@ -182,26 +213,37 @@ export default {
 </script>
 
 <style scoped>
+.reviews-container {
+    background-image: url(../../assets/rating3.webp);
+}
+
 .approved-reviews-container {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    /* Đảm bảo áp dụng */
     padding: 20px;
     max-width: 800px;
     margin: auto;
-    background-color: #f9f9f9;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+
 h2 {
     text-align: center;
-    color: #6d4c41;
+    color: #0b4e5d;
     margin-bottom: 20px;
 }
 
 .statistics {
+    background-color: #E6F4F1;
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
+    border-radius: 20px;
+    padding-top: 10px;
 }
+
+
 
 .average-rating {
     text-align: center;
@@ -257,25 +299,60 @@ h2 {
 .filter {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 20px;
     margin-bottom: 20px;
 }
 
-.filter-button {
-    background-color: #7274ff;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+.filter label {
+    color: rgb(0, 0, 0);
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
 }
 
-.filter-button:hover {
-    background-color: #5b5ed7;
+.filter select {
+    appearance: none;
+    background-color: #64bcb8;
+    /* Màu nền xanh tối */
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    outline: none;
+    width: 150px;
+    /* Đảm bảo kích thước đẹp */
+    position: relative;
 }
+
+.filter select:focus {
+    box-shadow: 0 0 5px #0d9488;
+    /* Hiệu ứng tập trung */
+}
+
+.filter select option {
+    background-color: #83d9d9;
+    /* Màu nền tùy chọn */
+    color: white;
+}
+
+.filter select::after {
+    content: "▼";
+    /* Biểu tượng mũi tên */
+    position: absolute;
+    right: 10px;
+    font-size: 12px;
+    pointer-events: none;
+}
+
 
 .reviews-list {
+
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -358,6 +435,54 @@ p {
 
 .average-score-value {
     font-size: 1.1rem;
-    color: #7274ff;
+    color: #0c1355;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    background-color: #e6f4f1;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination button,
+.pagination span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background-color: white;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.pagination button.disabled,
+.pagination button:disabled {
+    background-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled),
+.pagination span:hover {
+    background-color: #25a18e;
+    color: white;
+}
+
+.pagination span.active {
+    background-color: #25a18e;
+    color: white;
+    font-weight: bold;
+    cursor: default;
 }
 </style>

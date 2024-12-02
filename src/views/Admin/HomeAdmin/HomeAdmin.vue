@@ -169,6 +169,7 @@
 
 <script>
 import { Chart, registerables } from 'chart.js';
+import Swal from "sweetalert2";
 import { nextTick } from 'vue';
 import axiosClient from "../../../api/axiosClient";
 
@@ -650,11 +651,27 @@ export default {
                     this.addedItemsTotal = response.data.addedItemsTotal;
                     this.isPaid = true; // Đánh dấu đã thanh toán
                     this.showPaymentModal = false; // Đóng modal thanh toán
-                    alert("Thanh toán thành công!");
+
+                    // Hiển thị thông báo đẹp mắt bằng SweetAlert2
+                    Swal.fire({
+                        title: 'Thanh toán thành công!',
+                        text: 'Cảm ơn bạn đã sử dụng dịch vụ.',
+                        icon: 'success', // Biểu tượng: success, error, warning, info
+                        confirmButtonText: 'OK',
+                        timer: 3000, // Tự động đóng sau 3 giây
+                        timerProgressBar: true
+                    });
                 }
             } catch (error) {
                 console.error("Lỗi khi gọi API thanh toán:", error);
-                alert("Có lỗi xảy ra khi thanh toán!");
+
+                // Hiển thị thông báo lỗi bằng SweetAlert2
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: 'Có lỗi xảy ra khi thanh toán. Vui lòng thử lại!',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         },
 

@@ -23,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="review in filteredReviews" :key="review._id">
+                    <tr v-for="review in currentPageReviews" :key="review._id">
                         <td>{{ review.USER_ID.FULLNAME }}</td>
                         <td>{{ formatDate(review.createdAt) }}</td>
                         <td>{{ review.RATING_FOOD }}/5</td>
@@ -40,10 +40,17 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Phân trang -->
+            <div class="pagination">
+                <button @click="prevPage" :disabled="currentPage === 1">Trước</button>
+                <span>{{ currentPage }} / {{ totalPages }}</span>
+                <button @click="nextPage" :disabled="currentPage === totalPages">Sau</button>
+            </div>
         </div>
-        <p v-else>Không có đánh giá nào.</p>
     </div>
 </template>
+
 
 <script>
 import axiosClient from "../../../api/axiosClient"; // Đảm bảo đường dẫn đến axiosClient là đúng
@@ -53,9 +60,14 @@ export default {
         return {
             reviews: [],
             selectedStatus: "all",
+            currentPage: 1, // Trang hiện tại
+            reviewsPerPage: 5, // Số đánh giá mỗi trang
         };
     },
     computed: {
+        totalPages() {
+            return Math.ceil(this.filteredReviews.length / this.reviewsPerPage);
+        },
         filteredReviews() {
             if (this.selectedStatus === "approved") {
                 return this.reviews.filter(review => review.STATUS === true);
@@ -63,9 +75,25 @@ export default {
                 return this.reviews.filter(review => review.STATUS === false);
             }
             return this.reviews;
+        },
+        currentPageReviews() {
+            const startIndex = (this.currentPage - 1) * this.reviewsPerPage;
+            const endIndex = startIndex + this.reviewsPerPage;
+            return this.filteredReviews.slice(startIndex, endIndex);
         }
     },
     methods: {
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+            }
+        },
+        // Quay lại trang trước
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
         async fetchReviews() {
             try {
                 const response = await axiosClient.get("/reviews/getAllReviews");
@@ -125,6 +153,10 @@ h2 {
     background-color: white;
 }
 
+.reviews-table td {
+    height: 68px;
+}
+
 .reviews-table th,
 .reviews-table td {
     padding: 10px;
@@ -175,5 +207,30 @@ h2 {
     background-color: white;
     width: 20%;
     margin-bottom: 10px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination span {
+    display: flex;
+    align-items: center;
+}
+
+.pagination button {
+    margin: 0 10px;
+    padding: 5px 10px;
+    background-color: #34495e;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 </style>

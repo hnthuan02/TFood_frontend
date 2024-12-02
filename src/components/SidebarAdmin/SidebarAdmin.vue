@@ -20,19 +20,23 @@
             <li :class="{ active: currentTab === 'booking' }" @click="setActiveTab('booking')">
                 <i class="fas fa-calendar-check"></i> Bàn ăn
             </li>
-            <li :class="{ active: currentTab === 'services' }" @click="setActiveTab('services')">
+            <li v-if="userInfo.ROLE.STAFF !== true" :class="{ active: currentTab === 'services' }"
+                @click="setActiveTab('services')">
                 <i class="fa-solid fa-bell-concierge"></i> Dịch vụ
             </li>
-            <li :class="{ active: currentTab === 'users' }" @click="setActiveTab('users')">
+            <li v-if="userInfo.ROLE.STAFF !== true" :class="{ active: currentTab === 'users' }"
+                @click="setActiveTab('users')">
                 <i class="fas fa-users"></i> Người dùng
             </li>
-            <li :class="{ active: currentTab === 'promotions' }" @click="setActiveTab('promotions')">
+            <li v-if="userInfo.ROLE.STAFF !== true" :class="{ active: currentTab === 'promotions' }"
+                @click="setActiveTab('promotions')">
                 <i class="fas fa-tags"></i> Khuyến mãi
             </li>
             <li :class="{ active: currentTab === 'chat' }" @click="setActiveTab('chat')">
                 <i class="fa-solid fa-headset"></i> CSKH
             </li>
-            <li :class="{ active: currentTab === 'rating' }" @click="setActiveTab('rating')">
+            <li v-if="userInfo.ROLE.STAFF !== true" :class="{ active: currentTab === 'rating' }"
+                @click="setActiveTab('rating')">
                 <i class="fa-regular fa-star-half-stroke"></i> Đánh giá
             </li>
         </ul>
@@ -40,6 +44,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 export default {
     data() {
         return {
@@ -51,6 +56,9 @@ export default {
         $route(to) {
             this.updateActiveTab(to.path); // Cập nhật tab hoạt động khi route thay đổi
         },
+    },
+    computed: {
+        ...mapGetters(['userInfo']),
     },
     created() {
         this.updateActiveTab(this.$route.path); // Thiết lập tab khi component được khởi tạo

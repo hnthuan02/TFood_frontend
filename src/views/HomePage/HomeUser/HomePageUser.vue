@@ -130,8 +130,11 @@ export default {
             try {
                 const response = await axiosClient.get("http://localhost:3001/reviews/getAllReviews");
                 if (response.data.success) {
+                    // Lọc các đánh giá có STATUS là true
+                    const filteredReviews = response.data.reviews.filter(review => review.STATUS === true);
+
                     // Sắp xếp đánh giá theo điểm trung bình giảm dần và chỉ lấy 3 đánh giá đầu tiên
-                    const sortedReviews = response.data.reviews
+                    const sortedReviews = filteredReviews
                         .map(review => ({
                             ...review,
                             averageRating: (review.RATING_FOOD + review.RATING_SERVICE) / 2
@@ -150,6 +153,7 @@ export default {
                 console.error("Lỗi khi lấy đánh giá:", error);
             }
         },
+
         goToTablePage() {
             this.$router.push('/table'); // Chuyển hướng sang trang /table
         }

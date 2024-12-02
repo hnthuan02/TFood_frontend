@@ -51,7 +51,7 @@
         <!-- Modal thêm bàn -->
         <div v-if="showModalAdd" class="modal-tableAdmin">
             <div class="modal-content">
-                <h3>{{ isEditing ? 'Sửa' : 'Thêm' }} bàn mới</h3>
+                <h3>{{ isEditing ? 'Sửa' : 'Thêm' }} bàn</h3>
                 <form @submit.prevent="isEditing ? updateTable() : createTable()">
                     <div class="form-group">
                         <label for="table-type">Loại bàn:</label>

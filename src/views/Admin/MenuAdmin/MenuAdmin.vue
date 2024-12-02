@@ -110,6 +110,7 @@
 </template>
 
 <script>
+import Swal from "sweetalert2";
 import axiosClient from "../../../api/axiosClient"; // Đảm bảo axiosClient đúng đường dẫn
 
 export default {
@@ -276,11 +277,31 @@ export default {
                 if (response.status === 201 || response.status === 200) {
                     this.showModal = false;
                     this.fetchFoods(); // Làm mới danh sách món ăn
+
+                    // Hiển thị thông báo thành công
+                    Swal.fire({
+                        icon: "success",
+                        title: "Thành công",
+                        text: "Món ăn đã được tạo thành công!",
+                        confirmButtonText: "Đóng"
+                    });
                 } else {
-                    console.error("Lỗi khi thêm món ăn:", response.data);
+                    // Hiển thị lỗi từ phản hồi không mong muốn
+                    Swal.fire({
+                        icon: "error",
+                        title: "Lỗi!",
+                        text: response.data.message || "Có lỗi xảy ra khi thêm món ăn.",
+                        confirmButtonText: "Đóng"
+                    });
                 }
             } catch (error) {
-                console.error("Lỗi khi thêm món ăn:", error);
+                // Hiển thị lỗi từ phần catch
+                Swal.fire({
+                    icon: "error",
+                    title: "Lỗi!",
+                    text: error.response?.data?.message || "Có lỗi xảy ra khi thêm món ăn. Vui lòng thử lại!",
+                    confirmButtonText: "Đóng"
+                });
             } finally {
                 this.loading = false; // Kết thúc trạng thái loading
             }

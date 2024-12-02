@@ -93,7 +93,7 @@ export default {
 
 <style scoped>
 .contain-voucher-page {
-    background-image: url(https://files.oaiusercontent.com/file-1M6i2xd17vB9PGvMthrnqvgc?se=2024-11-16T08%3A35%3A09Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D1cfcb31c-5635-449a-bf98-1e074bc1f75d.webp&sig=Syqa0bUlA6PD%2BFC9b/qaoAW955guljzC927x1Rai384%3D);
+    background-image: url(../../assets/bannervoucher.webp);
     background-size: cover;
     background-repeat: no-repeat;
 }

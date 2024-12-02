@@ -1,105 +1,115 @@
 <template>
-    <div class="user-profile">
-        <h1 class="profile-title">Thông tin người dùng</h1>
-        <div class="profile-info">
-            <div class="info-item">
-                <strong>Họ tên:</strong> {{ user.FULLNAME }}
+    <div class="contain-page">
+        <div class="user-profile">
+            <h1 class="profile-title">Thông tin người dùng</h1>
+            <div class="profile-info">
+                <div class="info-item">
+                    <span class="info-label">ID người dùng:</span>
+                    <span class="info-value">{{ user._id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Họ và tên:</span>
+                    <span class="info-value">{{ user.FULLNAME }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Số điện thoại:</span>
+                    <span class="info-value">{{ user.PHONE_NUMBER }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{ user.EMAIL }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tổng tiền đã đặt:</span>
+                    <span class="info-value">{{ formatCurrency(totalBookingAmount) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tổng điểm tích luỹ:</span>
+                    <span class="info-value">{{ user.CUMULATIVE_POINTS }}</span>
+                </div>
             </div>
-            <div class="info-item">
-                <strong>Email:</strong> {{ user.EMAIL }}
-            </div>
-            <div class="info-item">
-                <strong>Số điện thoại:</strong> {{ user.PHONE_NUMBER }}
-            </div>
-            <div class="info-item">
-                <strong>Tổng điểm tích lũy:</strong> {{ user.CUMULATIVE_POINTS }}
-            </div>
-            <div class="info-item">
-                <strong>Tổng số tiền đã đặt:</strong> {{ formatCurrency(totalBookingAmount) }}
-            </div>
-        </div>
 
-        <div class="button-group">
-            <button @click="showEditModal" class="btn-edit">Chỉnh sửa</button>
-            <button @click="showChangePasswordModal" class="btn-change-password">Đổi mật khẩu</button>
-            <button class="btn-history" @click="goToBookingHistory">Lịch sử đặt bàn</button>
-
-        </div>
-
-        <div v-if="isPasswordModalVisible" class="modal-overlay" @click.self="closePasswordModal">
-            <div class="modal-content">
-                <h2>Đổi mật khẩu</h2>
-                <form @submit.prevent="sendForgotPasswordEmail">
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" v-model="user.EMAIL" disabled />
-                    </div>
-                    <div class="buttons">
-                        <button type="submit" class="btn-confirm">Gửi OTP</button>
-                        <button type="button" @click="closePasswordModal" class="btn-close">Đóng</button>
-                    </div>
-                </form>
+            <div class="button-group">
+                <button class="btn-edit" @click="showEditModal">Chỉnh sửa</button>
+                <button class="btn-change-password" @click="showChangePasswordModal">Đổi mật khẩu</button>
+                <button class="btn-history" @click="goToBookingHistory">Lịch sử đặt bàn</button>
             </div>
-        </div>
 
-        <!-- Form nhập OTP và mật khẩu mới -->
-        <div v-if="isOTPPasswordVisible" class="modal-overlay" @click.self="closeOTPPasswordModal">
-            <div class="modal-content">
-                <h2>Nhập OTP và mật khẩu mới</h2>
-                <form @submit.prevent="resetPassword">
-                    <div class="form-group">
-                        <label for="otp">OTP:</label>
-                        <input type="text" id="otp" v-model="otpPassword" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="newPassword">Mật khẩu mới:</label>
-                        <input type="password" id="newPassword" v-model="newPassword" required />
-                    </div>
-                    <div class="buttons">
-                        <button type="submit" class="btn-confirm">Xác nhận</button>
-                        <button type="button" @click="closeOTPPasswordModal" class="btn-close">Đóng</button>
-                    </div>
-                </form>
+            <div v-if="isPasswordModalVisible" class="modal-overlay" @click.self="closePasswordModal">
+                <div class="modal-content">
+                    <h2>Đổi mật khẩu</h2>
+                    <form @submit.prevent="sendForgotPasswordEmail">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" v-model="user.EMAIL" disabled />
+                        </div>
+                        <div class="buttons">
+                            <button type="submit" class="btn-confirm">Gửi OTP</button>
+                            <button type="button" @click="closePasswordModal" class="btn-close">Đóng</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        <!-- Modal Chỉnh sửa thông tin người dùng -->
-        <div v-if="isModalVisible" class="modal-overlay" @click.self="closeEditModal">
-            <div class="modal-content">
-                <h2>Chỉnh sửa thông tin người dùng</h2>
-                <form @submit.prevent="validateFormBeforeOtp">
-                    <div class="form-group">
-                        <label for="fullname">Họ tên:</label>
-                        <input type="text" id="fullname" v-model="form.FULLNAME" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" v-model="form.EMAIL" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Số điện thoại:</label>
-                        <input type="text" id="phone" v-model="form.PHONE_NUMBER" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Nhập mật khẩu xác nhận:</label>
-                        <input type="password" id="password" v-model="passwordConfirm" required />
-                    </div>
-
-                    <div class="buttons">
-                        <button type="submit" class="btn-confirm">Xác nhận</button>
-                        <button type="button" @click="closeEditModal" class="btn-close">Đóng</button>
-                    </div>
-                </form>
+            <!-- Form nhập OTP và mật khẩu mới -->
+            <div v-if="isOTPPasswordVisible" class="modal-overlay" @click.self="closeOTPPasswordModal">
+                <div class="modal-content">
+                    <h2>Nhập OTP và mật khẩu mới</h2>
+                    <form @submit.prevent="resetPassword">
+                        <div class="form-group">
+                            <label for="otp">OTP:</label>
+                            <input type="text" id="otp" v-model="otpPassword" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">Mật khẩu mới:</label>
+                            <input type="password" id="newPassword" v-model="newPassword" required />
+                        </div>
+                        <div class="buttons">
+                            <button type="submit" class="btn-confirm">Xác nhận</button>
+                            <button type="button" @click="closeOTPPasswordModal" class="btn-close">Đóng</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        <!-- Popup Nhập OTP -->
-        <div v-if="isOTPVisible" class="otp-popup">
-            <div class="otp-popup-content">
-                <h3>Nhập OTP</h3>
-                <input type="text" v-model="otp" placeholder="Nhập mã OTP" required />
-                <button @click="verifyOTP" class="btn-confirm">Xác thực OTP</button>
-                <button @click="closeOTPModal" class="btn-close">Đóng</button>
+            <!-- Modal Chỉnh sửa thông tin người dùng -->
+            <div v-if="isModalVisible" class="modal-overlay" @click.self="closeEditModal">
+                <div class="modal-content">
+                    <h2>Chỉnh sửa thông tin người dùng</h2>
+                    <form @submit.prevent="validateFormBeforeOtp">
+                        <div class="form-group">
+                            <label for="fullname">Họ tên:</label>
+                            <input type="text" id="fullname" v-model="form.FULLNAME" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" v-model="form.EMAIL" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Số điện thoại:</label>
+                            <input type="text" id="phone" v-model="form.PHONE_NUMBER" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Nhập mật khẩu xác nhận:</label>
+                            <input type="password" id="password" v-model="passwordConfirm" required />
+                        </div>
+
+                        <div class="buttons">
+                            <button type="submit" class="btn-confirm">Xác nhận</button>
+                            <button type="button" @click="closeEditModal" class="btn-close">Đóng</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Popup Nhập OTP -->
+            <div v-if="isOTPVisible" class="otp-popup">
+                <div class="otp-popup-content">
+                    <h3>Nhập OTP</h3>
+                    <input type="text" v-model="otp" placeholder="Nhập mã OTP" required />
+                    <button @click="verifyOTP" class="btn-confirm">Xác thực OTP</button>
+                    <button @click="closeOTPModal" class="btn-close">Đóng</button>
+                </div>
             </div>
         </div>
     </div>
@@ -328,48 +338,80 @@ export default {
 
 
 <style scoped>
-.user-profile {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    color: #333;
-    margin-top: 100px;
-    margin-bottom: 100px;
+.contain-page {
+    background-image: url(https://i.pinimg.com/474x/2f/ea/20/2fea20034894e0b7960cd1c402f2d91d.jpg);
+    padding-top: 50px;
+    padding-bottom: 50px;
 }
 
-.profile-title {
-    text-align: center;
-    font-family: 'Playfair Display', serif;
-    font-size: 24px;
+.user-profile {
+
+    max-width: 700px;
+    margin: 0px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Roboto', sans-serif;
     color: #2c3e50;
 }
 
+
+.profile-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
 .profile-info {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
     margin-top: 20px;
-    font-size: 18px;
 }
 
 .info-item {
-    margin-bottom: 10px;
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.info-value {
+    margin-left: auto;
+    color: #333;
+    font-size: 16px;
 }
 
 .button-group {
     display: flex;
     justify-content: center;
+    gap: 15px;
     margin-top: 20px;
 }
 
-.btn-edit {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3498db;
-    color: white;
+.btn-edit,
+.btn-change-password,
+.btn-history {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
     cursor: pointer;
+    border: none;
+    transition: background-color 0.3s;
 }
+
+.btn-edit {
+    background-color: #3498db;
+}
+
 
 .btn-edit:hover {
     background-color: #2980b9;
@@ -603,12 +645,7 @@ button:active {
 
 /* Thêm nút Đổi mật khẩu */
 .btn-change-password {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
     background-color: #e67e22;
-    color: white;
-    cursor: pointer;
 }
 
 .btn-change-password:hover {
@@ -616,15 +653,25 @@ button:active {
 }
 
 .btn-history {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
     background-color: #06c03a;
-    color: white;
-    cursor: pointer;
 }
 
 .btn-history:hover {
     background-color: #047260;
+}
+
+@media (max-width: 768px) {
+    .user-profile {
+        padding: 20px;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-value {
+        margin-top: 5px;
+    }
 }
 </style>

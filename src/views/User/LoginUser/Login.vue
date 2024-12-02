@@ -19,13 +19,16 @@
                   <input v-model="identifier" type="text" id="form3Example1"
                     class="form-control form-control-lg border-submit" placeholder=" " />
                   <label for="form3Example1" class="text-submit">Email hoặc SĐT</label>
+                  <span v-if="errors.identifier" class="text-danger">{{ errors.identifier }}</span>
                 </div>
 
                 <div class="form-floating mb-2">
                   <input v-model="password" type="password" id="form3Example2"
                     class="form-control form-control-lg border-submit" placeholder=" " />
                   <label for="form3Example2" class="text-submit">Mật khẩu</label>
+                  <span v-if="errors.password" class="text-danger">{{ errors.password }}</span>
                 </div>
+
                 <div class="mb-3 d-flex justify-content-between">
                   <a href="/user/signup" class="btn btn-link text-formLogin">Chưa có tài khoản?</a>
                   <a href="#" class="btn btn-link text-formLogin" data-bs-toggle="modal"
@@ -35,22 +38,7 @@
                   <button type="submit" class="btn btn-submit rounded-pill btn-block">Đăng nhập</button>
                 </div>
                 <div class="text-center mb-4">
-                  <p class="text-formLogin">hoặc đăng nhập bằng:</p>
-                  <div class="d-grid mb-4">
-                    <button type="button" class="btn btn-google rounded-pill mb-2 btn-block">
-                      <i class="fab fa-google"></i> Google
-                    </button>
-                  </div>
-                  <div class="d-grid mb-4">
-                    <button type="button" class="btn btn-facebook rounded-pill mb-2">
-                      <i class="fab fa-facebook-f"></i> Facebook
-                    </button>
-                  </div>
-                  <div class="d-grid mb-4">
-                    <button type="button" class="btn btn-apple rounded-pill mb-2">
-                      <i class="fab fa-apple"></i> Apple
-                    </button>
-                  </div>
+
                 </div>
               </form>
             </div>
@@ -121,6 +109,10 @@ export default {
         identifier: "",
         password: "",
       },
+      errors: {
+        identifier: '',
+        password: '',
+      },
       currentEmail: '',
       newPassword: '',
       confirmNewPassword: '',
@@ -135,20 +127,33 @@ export default {
   methods: {
     ...mapActions(['login']),
     async handleSubmit() {
+      this.errors.identifier = '';
+      this.errors.password = '';
+
+      // Kiểm tra nếu các trường input trống
+      if (!this.identifier) {
+        this.errors.identifier = "Vui lòng nhập Email hoặc Số điện thoại.";
+      }
+      if (!this.password) {
+        this.errors.password = "Vui lòng nhập Mật khẩu.";
+      }
+      if (this.errors.identifier || this.errors.password) {
+        return;
+      }
+
       const isEmail = this.identifier.includes('@');
       const payload = {
         [isEmail ? 'EMAIL' : 'PHONE_NUMBER']: this.identifier,
         PASSWORD: this.password,
       };
+
       try {
         await this.login(payload);
         localStorage.setItem('isLoggedIn', 'true');
-        notification.success(
-          {
-            message: 'Đăng nhập thành công!',
-            description: 'Chào mừng đến với nhà hàng TFood.',
-          }
-        );
+        notification.success({
+          message: 'Đăng nhập thành công!',
+          description: 'Chào mừng đến với nhà hàng TFood.',
+        });
       } catch (error) {
         this.$message.error(
           error.response?.data?.message || "Đăng nhập thất bại!"

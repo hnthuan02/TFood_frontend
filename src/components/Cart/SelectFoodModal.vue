@@ -249,6 +249,7 @@ export default {
     background-image: url('https://t4.ftcdn.net/jpg/02/92/20/37/360_F_292203735_CSsyqyS6A4Z9Czd4Msf7qZEhoxjpzZl1.jpg');
     background-size: cover;
     background-position: center;
+    padding-top: 40px;
     padding: 20px;
     border-radius: 8px;
     max-height: 80vh;

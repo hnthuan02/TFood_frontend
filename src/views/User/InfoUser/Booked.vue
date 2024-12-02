@@ -13,7 +13,7 @@
                 </p>
             </div>
 
-            <div class="hotel-info" v-for="(table, tableIndex) in booking.LIST_TABLES" :key="tableIndex">
+            <div class="booking-info" v-for="(table, tableIndex) in booking.LIST_TABLES" :key="tableIndex">
                 <h3><strong>Bàn:</strong> {{ table.TABLE_ID.TABLE_NUMBER }}</h3>
                 <div class="table-details">
                     <img :src="table.TABLE_ID.IMAGES[0]" alt="Hình ảnh bàn" class="table-image" />
@@ -24,52 +24,103 @@
                 </div>
             </div>
 
-            <div class="total-price">
-                <strong>Tổng giá:</strong> {{ formatPrice(booking.TOTAL_PRICE) }}
-            </div>
+
 
             <div v-if="booking.review" class="review-info">
-                <button class="delete-button" @click="deleteReview(booking.review._id)">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
+                <div class="review-status">
+                    <span>{{ booking.review.STATUS ? ' ' : 'Chờ duyệt' }}</span>
+                    <button class="delete-button" @click="deleteReview(booking.review._id)">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+
 
                 <div class="rating-section">
-                    <p>Đánh giá Món ăn:</p>
+                    <p class="p-review">Đánh giá Món ăn:</p>
                     <div class="star-rating">
                         <span v-for="star in 5" :key="star"
                             :class="{ selected: star <= booking.review.RATING_FOOD }">★</span>
                     </div>
                 </div>
+
                 <div class="rating-section">
-                    <p>Đánh giá Dịch vụ:</p>
+                    <p class="p-review">Đánh giá Dịch vụ:</p>
                     <div class="star-rating">
                         <span v-for="star in 5" :key="star"
                             :class="{ selected: star <= booking.review.RATING_SERVICE }">★</span>
                     </div>
                 </div>
+
                 <p class="review-comment"><strong>Nhận xét:</strong> {{ booking.review.COMMENT }}</p>
             </div>
 
+
             <!-- Nút đánh giá -->
-            <div v-if="(booking.STATUS === 'Completed') && (!booking.review)" class="review-section">
-                <button @click="openReviewModal(booking)" class="review-button">Đánh giá</button>
+            <div class="action-section">
+                <div class="button-section">
+                    <div v-if="(booking.STATUS === 'Completed') && (!booking.review)" class="review-section">
+                        <button @click="openReviewModal(booking)" class="review-button">Đánh giá</button>
+                    </div>
+                    <div v-if="(booking.STATUS === 'Completed') && (booking.review)" class="review-section">
+                        <button @click="openReviewModal(booking)" class="review-button">Đánh giá lại</button>
+                    </div>
+                    <div v-if="booking.STATUS === 'NotYetPaid'" class="payment-section">
+                        <button @click="repaymentBooking(booking._id, booking.TOTAL_PRICE)" class="payment-button">Thanh
+                            toán lại</button>
+                    </div>
+                    <div>
+                        <button class="detail-button" @click="openDetailModal(booking)">Chi tiết đơn</button>
+                    </div>
+                </div>
+                <div class="total-price">
+                    <strong>Tổng giá:</strong> {{ formatPrice(booking.TOTAL_PRICE) }}
+                </div>
             </div>
-            <div v-if="(booking.STATUS === 'Completed') && (booking.review)" class="review-section">
-                <button @click="openReviewModal(booking)" class="review-button">Đánh giá lại</button>
-            </div>
-            <div v-if="booking.STATUS === 'NotYetPaid'" class="payment-section">
-                <button @click="repaymentBooking(booking._id, booking.TOTAL_PRICE)" class="payment-button">Thanh toán
-                    lại</button>
+            <div v-if="showDetailModal" class="modal-overlay" @click.self="closeDetailModal">
+                <div class="modal-content">
+                    <h4>Chi tiết hóa đơn #{{ selectedBooking._id }}</h4>
+
+                    <h4>Danh sách bàn:</h4>
+                    <div class="ListTable" v-for="table in selectedBooking.LIST_TABLES" :key="table.TABLE_ID">
+                        <p><strong>Bàn số:</strong> {{ table.TABLE_ID?.TABLE_NUMBER || table.TABLE_ID }}</p>
+                        <p><strong>Thời gian đặt:</strong> {{ table.BOOKING_TIME }}</p>
+
+                        <div v-if="table.SERVICES.length > 0">
+                            <h5>Dịch vụ:</h5>
+                            <ul>
+                                <li v-for="service in table.SERVICES" :key="service.SERVICES_ID">
+                                    {{ service.SERVICES_ID?.serviceName || service.SERVICES_ID }}
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div v-if="table.LIST_FOOD.length > 0">
+                            <h5>Danh sách món ăn:</h5>
+                            <ul>
+                                <li v-for="food in table.LIST_FOOD" :key="food.FOOD_ID">
+                                    {{ food.FOOD_ID?.NAME || food.FOOD_ID }} - Số lượng: {{ food.QUANTITY }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <p class="Money"><strong>Tổng tiền:</strong> {{ formatCurrency(selectedBooking.TOTAL_PRICE) }}</p>
+
+                    <!-- Nút đóng modal -->
+                    <button @click="closeModal" class="close-button">x</button>
+                </div>
             </div>
         </div>
 
         <!-- Modal đánh giá -->
-        <div v-if="showReviewModal" class="modal-overlay">
+        <div v-if="showReviewModal" class="modal-overlay-review">
             <div class="modal-content">
-                <h3>Đánh giá Đặt Bàn</h3>
+                <button class="close-button" @click="closeReviewModal">×</button>
+                <h3 class="modal-title">Viết đánh giá</h3>
                 <form @submit.prevent="isReviewExisting ? updateReview() : submitReview()">
+                    <!-- Đánh giá món ăn -->
                     <div class="form-group">
-                        <label>Đánh giá Món ăn:</label>
+                        <label class="form-label">Đánh giá món ăn</label>
                         <div class="star-rating">
                             <span v-for="star in 5" :key="star"
                                 :class="['star', { 'selected': star <= reviewData.ratingFood }]"
@@ -79,8 +130,9 @@
                         </div>
                     </div>
 
+                    <!-- Đánh giá dịch vụ -->
                     <div class="form-group">
-                        <label>Đánh giá Dịch vụ:</label>
+                        <label class="form-label">Đánh giá dịch vụ</label>
                         <div class="star-rating">
                             <span v-for="star in 5" :key="star"
                                 :class="['star', { 'selected': star <= reviewData.ratingService }]"
@@ -90,32 +142,37 @@
                         </div>
                     </div>
 
+                    <!-- Nhận xét -->
                     <div class="form-group">
-                        <label for="comment">Nhận xét:</label>
-                        <textarea v-model="reviewData.comment" id="comment" rows="4" required></textarea>
+                        <label class="form-label">Nhận xét</label>
+                        <textarea v-model="reviewData.comment" class="form-textarea" rows="4"
+                            placeholder="Hãy chia sẻ ý kiến của bạn..." required></textarea>
                     </div>
 
+                    <!-- Nút hành động -->
                     <div class="modal-buttons">
+                        <button type="button" class="cancel-button" @click="closeReviewModal">Hủy</button>
                         <button type="submit" class="submit-button">
-                            {{ isReviewExisting ? 'Cập nhật đánh giá' : 'Gửi đánh giá' }}
+                            {{ isReviewExisting ? 'Cập nhật' : 'Xác nhận' }}
                         </button>
-                        <button type="button" @click="closeReviewModal" class="cancel-button">Hủy</button>
                     </div>
                 </form>
             </div>
         </div>
+
     </div>
 </template>
 
 
 <script>
+import Swal from 'sweetalert2';
 import axiosClient from '../../../api/axiosClient';
-
 export default {
     data() {
         return {
             bookings: [],
             showReviewModal: false, // Trạng thái hiển thị modal đánh giá
+            showDetailModal: false,
             selectedBooking: null, // Đơn đặt bàn được chọn để đánh giá
             reviewData: {
                 ratingFood: 1,
@@ -130,31 +187,80 @@ export default {
         await this.fetchBookingHistory();
     },
     methods: {
+        closeModal() {
+            this.showDetailModal = null; // Đóng modal
+        },
+        formatCurrency(value) {
+            return new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+            }).format(value);
+        },
+        openDetailModal(booking) {
+            this.selectedBooking = booking; // Gán booking được chọn
+            this.showDetailModal = true; // Hiển thị modal
+        },
+        closeDetailModal() {
+            this.showDetailModal = false; // Đóng modal
+            this.selectedBooking = null; // Reset booking được chọn
+        },
         handleDeleteClick(reviewId) {
             console.log("Icon xóa được nhấp với ID:", reviewId);
             this.deleteReview(reviewId);
         },
         async deleteReview(reviewId) {
             console.log("Deleting review with ID:", reviewId); // Kiểm tra reviewId
-            const confirmDelete = confirm("Bạn có chắc chắn muốn xóa đánh giá này không?");
-            if (!confirmDelete) return;
+
+            // Hiển thị hộp thoại xác nhận
+            const result = await Swal.fire({
+                title: 'Xác nhận xóa đánh giá',
+                text: 'Bạn có chắc chắn muốn xóa đánh giá này không?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33', // Màu nút "Đồng ý"
+                cancelButtonColor: '#3085d6', // Màu nút "Hủy"
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy',
+            });
+
+            // Nếu người dùng chọn "Hủy"
+            if (!result.isConfirmed) {
+                return;
+            }
 
             console.log("Xóa đánh giá với ID:", reviewId); // Kiểm tra reviewId
 
             try {
                 const response = await axiosClient.delete(`/reviews/delete/${reviewId}`);
                 if (response.data.success) {
-                    this.$message.success('Đánh giá đã được xóa thành công!');
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: 'Đánh giá đã được xóa thành công!',
+                        icon: 'success',
+                        confirmButtonColor: '#6d4c41', // Màu chủ đạo của nút
+                        confirmButtonText: 'OK',
+                    });
                     this.fetchBookingHistory(); // Làm mới danh sách sau khi xóa
                 } else {
-                    this.$message.error('Lỗi khi xóa đánh giá: ' + response.data.msg);
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        text: `Lỗi khi xóa đánh giá: ${response.data.msg}`,
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'OK',
+                    });
                 }
             } catch (error) {
                 console.error('Lỗi khi xóa đánh giá:', error);
-                this.$message.error('Đã xảy ra lỗi khi xóa đánh giá.');
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: 'Đã xảy ra lỗi khi xóa đánh giá.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'OK',
+                });
             }
         },
-
         translateStatus(status) {
             switch (status) {
                 case 'NotYetPaid':
@@ -360,7 +466,7 @@ export default {
 }
 
 .customer-info p,
-.hotel-info h3 {
+.booking-info h3 {
     margin: 5px 0;
     font-size: 18px;
 }
@@ -415,25 +521,96 @@ p {
     color: #34495E;
 }
 
+.Money {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.05);
+    /* Màu đen mờ */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 
+.modal-overlay-review {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* Màu đen mờ */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+
 .modal-content {
-    background-color: white;
+    background-color: #fff;
     padding: 20px;
     border-radius: 8px;
-    width: 400px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.ListTable {
+    border-bottom: 2px solid #333;
+    padding: 10px 0;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #888;
+}
+
+.table-details img {
+    width: 100%;
+    max-width: 200px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.close-button:hover {
+    color: #444;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 10px;
 }
 
 .review-button {
@@ -462,40 +639,67 @@ p {
     background-color: #46d641;
 }
 
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
 .submit-button {
-    background-color: #27ae60;
+    background-color: #7274FF;
+    /* Màu chủ đạo */
     color: white;
-    padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
     cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #5a5ec8;
 }
 
 .cancel-button {
-    background-color: #c0392b;
-    color: white;
-    padding: 10px 20px;
+    background-color: #f0f0f0;
+    color: #333;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
     cursor: pointer;
-    margin-left: 10px;
+    transition: background-color 0.3s;
 }
 
-.star-rating {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 16px;
+.cancel-button:hover {
+    background-color: #ddd;
 }
 
 .star {
-    font-size: 24px;
     cursor: pointer;
     color: #ccc;
-    transition: color 0.2s;
+    transition: color 0.3s;
 }
 
 .star.selected {
-    color: #f39c12;
+    color: #ffcc00;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-textarea:focus {
+    border-color: #7274FF;
 }
 
 .star:hover {
@@ -509,7 +713,7 @@ p {
     background-color: #f1f1f1;
     padding: 10px;
     border-radius: 5px;
-    width: 280px;
+    width: 330px;
     text-align: left;
 }
 
@@ -519,8 +723,15 @@ p {
     gap: 5px;
 }
 
+.star-rating {
+    display: flex;
+    gap: 5px;
+    font-size: 1.5rem;
+}
+
 .star-rating .selected {
-    color: #f39c12;
+    color: #FFD700;
+    /* Màu vàng cho sao được chọn */
 }
 
 .review-comment {
@@ -528,6 +739,16 @@ p {
     font-style: italic;
     font-size: 14px;
     margin-top: 5px;
+}
+
+.close-button {
+    padding: 8px 15px;
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .delete-icon {
@@ -560,5 +781,40 @@ p {
 .delete-button:hover {
     background-color: #F1F1F1;
     color: #b59c99;
+}
+
+.action-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.button-section {
+    display: flex;
+    gap: 10px;
+}
+
+.detail-button {
+    background-color: #30cfcf;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.p-review {
+    margin: 0;
+}
+
+.review-status {
+    display: flex;
+    justify-content: space-between;
+}
+
+.review-status span {
+    font-weight: bold;
+    color: rgb(83, 83, 18);
 }
 </style>

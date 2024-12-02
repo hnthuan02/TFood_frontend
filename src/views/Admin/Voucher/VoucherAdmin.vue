@@ -3,7 +3,16 @@
         <h2>Danh sách Voucher</h2>
 
         <!-- Nút thêm Voucher mới -->
-        <button @click="openAddVoucherModal" class="btn-add-voucher">Thêm Voucher Mới</button>
+        <div class="filter-bar">
+            <input v-model="searchQuery" type="text" placeholder="Tìm kiếm voucher..." class="search-bar"
+                @input="filterVouchers" />
+            <select v-model="statusFilter" @change="filterVouchers" class="status-filter">
+                <option value="">Tất cả trạng thái</option>
+                <option value="true">Kích hoạt</option>
+                <option value="false">Vô hiệu hóa</option>
+            </select>
+            <button @click="openAddVoucherModal" class="btn-add-voucher">Thêm Voucher Mới</button>
+        </div>
 
         <!-- Modal thêm hoặc chỉnh sửa Voucher -->
         <div v-if="showVoucherForm" class="modal-overlay" @click.self="closeVoucherModal">
@@ -23,7 +32,7 @@
                     <input v-model.number="voucherForm.REQUIRED_POINTS" type="number" placeholder="Điểm yêu cầu"
                         required />
                     <label for="phone">Ngày hết hạn:</label>
-                    <input v-model="voucherForm.EXPIRATION_DATE" type="date" required />
+                    <input v-model="voucherForm.EXPIRATION_DATE" type="date" required :min="minDate" />
                     <div class="modal-buttons">
                         <button type="submit">{{ isEditMode ? "Cập nhật" : "Tạo Voucher" }}</button>
                         <button type="button" @click="closeVoucherModal">Hủy</button>
@@ -34,14 +43,18 @@
 
         <!-- Danh sách Voucher -->
         <div class="voucher-list">
-            <div v-for="voucher in vouchers" :key="voucher._id" class="voucher-card">
+            <div v-for="voucher in filteredVouchers" :key="voucher._id" class="voucher-card">
                 <h3>{{ voucher.CODE }}</h3>
                 <p><strong>Mô tả:</strong> {{ voucher.DESCRIPTION }}</p>
                 <p><strong>Giảm giá:</strong> {{ voucher.DISCOUNT_PERCENT }}%</p>
                 <p><strong>Điểm yêu cầu:</strong> {{ voucher.REQUIRED_POINTS }}</p>
                 <p><strong>Số lượt dùng còn lại:</strong> {{ voucher.USAGE_LIMIT }}</p>
                 <p><strong>Hạn sử dụng:</strong> {{ formatDate(voucher.EXPIRATION_DATE) }}</p>
-                <p><strong>Trạng thái:</strong> {{ voucher.STATUS ? "Kích hoạt" : "Vô hiệu hóa" }}</p>
+                <p><strong>Trạng thái:</strong> <span
+                        :class="{ 'active-status': voucher.STATUS, 'inactive-status': !voucher.STATUS }">{{ voucher.STATUS
+                            ? "Kích hoạt" : "Vô hiệu hóa" }}</span></p>
+
+
                 <button @click="toggleVoucherStatus(voucher)"
                     :class="{ 'btn-active': voucher.STATUS, 'btn-inactive': !voucher.STATUS }">
                     {{ voucher.STATUS ? "Vô hiệu hóa" : "Kích hoạt" }}
@@ -70,12 +83,28 @@ export default {
                 EXPIRATION_DATE: "",
                 STATUS: true,
             },
+            minDate: new Date().toISOString().split('T')[0],
             currentVoucherId: null, // ID của voucher hiện tại khi ở chế độ chỉnh sửa
+            filteredVouchers: [],
+            searchQuery: "",
+            statusFilter: "",
         };
     },
     methods: {
+        filterVouchers() {
+            this.filteredVouchers = this.vouchers.filter(voucher => {
+                const matchesSearchQuery = voucher.CODE.toLowerCase().includes(this.searchQuery.toLowerCase());
+                const matchesStatus =
+                    this.statusFilter === "" || voucher.STATUS === (this.statusFilter === "true");
+                return matchesSearchQuery && matchesStatus;
+            });
+        },
         async toggleVoucherStatus(voucher) {
             try {
+                if (new Date(voucher.EXPIRATION_DATE) <= new Date()) {
+                    this.$message.error("Voucher đã hết hạn, vui lòng thay đổi ngày hết hạn.");
+                    return; // Dừng việc thay đổi trạng thái nếu voucher đã hết hạn
+                }
                 // Kiểm tra USAGE_LIMIT trước khi thay đổi trạng thái
                 if (voucher.USAGE_LIMIT === 0) {
                     this.$message.error("Hãy tăng lượt sử dụng lên trước khi kích hoạt.");
@@ -99,6 +128,7 @@ export default {
                 const response = await axios.get("http://localhost:3001/vouchers/getAll");
                 if (response.data.success) {
                     this.vouchers = response.data.data;
+                    this.filteredVouchers = [...this.vouchers]; // Hiển thị tất cả voucher ban đầu
                 }
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách voucher:", error);
@@ -142,6 +172,7 @@ export default {
                         this.vouchers[index] = response.data.data;
                     }
                     this.closeVoucherModal();
+                    this.fetchVouchers();
                 }
             } catch (error) {
                 console.error("Lỗi khi cập nhật voucher:", error);
@@ -184,6 +215,30 @@ h2 {
     color: #6d4c41;
 }
 
+.filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-bar {
+    flex: 1;
+    max-width: 60%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.status-filter {
+    height: 45.6px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
 .btn-add-voucher {
     background-color: #4caf50;
     color: white;
@@ -191,9 +246,13 @@ h2 {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    display: block;
-    margin: 10px auto;
+    font-size: 14px;
 }
+
+.btn-add-voucher:hover {
+    background-color: #45a049;
+}
+
 
 /* Modal Styles */
 .modal-overlay {
@@ -262,6 +321,17 @@ h2 {
     gap: 20px;
 }
 
+.active-status {
+    color: green;
+    font-weight: bold;
+}
+
+.inactive-status {
+    color: red;
+    font-weight: bold;
+}
+
+
 .voucher-card {
     flex: 1 1 45%;
     background: white;
@@ -280,6 +350,7 @@ h2 {
 }
 
 .btn-active {
+    width: 110px;
     background-color: #f44336;
     color: white;
     padding: 8px 12px;
@@ -289,6 +360,7 @@ h2 {
 }
 
 .btn-inactive {
+    width: 110px;
     background-color: #4caf50;
     color: white;
     padding: 8px 12px;

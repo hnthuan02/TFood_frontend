@@ -17,19 +17,19 @@
                                     <ul>
                                         <li v-for="(food, idx) in table.LIST_FOOD" :key="idx">
                                             {{ food.foodPrice.NAME }} - Số lượng: {{ food.QUANTITY }} - Giá: {{
-                                                food.foodPrice.PRICE }} VND
+                                                formatPrice(food.foodPrice.PRICE) }}
                                         </li>
                                     </ul>
-                                    Tổng giá món ăn: {{ table.TOTAL_PRICE_FOOD }} VND
+                                    Tổng giá món ăn: {{ formatPrice(table.TOTAL_PRICE_FOOD) }}
                                 </div>
                                 <div v-if="table.SERVICES.length > 0">
                                     <h5 class="service-contain">Dịch vụ:</h5>
                                     <ul>
                                         <li v-for="(service, idx) in table.SERVICES" :key="idx">
-                                            {{ service.serviceName }} - Giá: {{ service.servicePrice }} VND
+                                            {{ service.serviceName }} - Giá: {{ formatPrice(service.servicePrice) }}
                                         </li>
                                     </ul>
-                                    Tổng giá dịch vụ: {{ table.TOTAL_SERVICE_PRICE }} VND
+                                    Tổng giá dịch vụ: {{ formatPrice(table.TOTAL_SERVICE_PRICE) }}
                                 </div>
                             </div>
                         </div>
@@ -71,7 +71,13 @@
 
                         </div>
 
-                        <h3>Tổng cộng: {{ formatPrice(displayTotalPrice) }}</h3>
+                        <h3>
+                            Tổng cộng:
+                            <span v-if="voucherApplied" class="old-price">{{ formatPrice(totalPrice) }}</span>
+                            <span v-if="voucherApplied" class="new-price">{{ formatPrice(displayTotalPrice) }}</span>
+                            <span v-else>{{ formatPrice(totalPrice) }}</span>
+                        </h3>
+
                         <div class="form-group select-payment-method">
                             <label for="paymentMethod">Phương thức thanh toán: {{ paymentMethod }}</label>
                             <select v-model="paymentMethod" id="paymentMethod">
@@ -111,6 +117,7 @@ export default {
             phoneError: '',
             emailError: '',
             displayTotalPrice: 0,
+            voucherApplied: false,
             voucherMessage: "",
 
         };
@@ -164,16 +171,19 @@ export default {
                     const discount = response.data.discount_percent;
                     this.displayTotalPrice = this.totalPrice * (1 - discount / 100); // Áp dụng chiết khấu
                     this.voucherMessage = `Bạn đủ điều kiện sử dụng voucher với giảm giá ${discount}%.`;
+                    this.voucherApplied = true; // Đánh dấu voucher đã áp dụng
                 } else {
                     this.voucherCode = "";
                     this.voucherMessage = response.data.message;
                     this.displayTotalPrice = this.totalPrice;
+                    this.voucherApplied = false; // Đánh dấu voucher không được áp dụng
                 }
             } catch (error) {
                 this.voucherCode = "";
                 this.displayTotalPrice = this.totalPrice;
                 console.error("Lỗi khi kiểm tra voucher:", error);
                 this.voucherMessage = "Không có voucher này. Vui lòng thử lại.";
+                this.voucherApplied = false; // Đánh dấu voucher không được áp dụng
             }
         },
         translateType(type) {
@@ -580,5 +590,20 @@ export default {
     margin-top: 5px;
     color: #d32710;
     font-size: 14px;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #d32710;
+    /* Màu đỏ */
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.new-price {
+    color: #2ecc71;
+    /* Màu xanh */
+    font-weight: bold;
+    font-size: 24px;
 }
 </style>
